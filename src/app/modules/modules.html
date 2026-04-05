@@ -1,0 +1,15 @@
+<div class="modules-wrapper">
+  <app-header (toggleSidebar)="toggleSidebar()"></app-header>
+  <div class="modules-container">
+    <!-- @if (showSidebar() && !isMobile()) {
+      <app-sidebar [showHeader]="false"></app-sidebar>
+    } -->
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
+
+<ng-template #sidebarTemplate>
+  <app-sidebar></app-sidebar>
+</ng-template>

@@ -1,0 +1,27 @@
+@if (isBrowser) {
+  <div class="editor-style">
+    <div class="flex justify-between items-center mb-2">
+      <p-select
+        [options]="languageOptions"
+        size="small"
+        optionLabel="label"
+        optionValue="value"
+        [(ngModel)]="languageId"
+      ></p-select>
+      <p-button
+        label="Submit"
+        [loading]="isSubmitting()"
+        size="small"
+        icon="pi pi-cloud-upload"
+        (onClick)="runCode()"
+      ></p-button>
+    </div>
+
+    <ngx-monaco-editor
+      (onInit)="onEditorInit($event)"
+      [options]="editorOptions()"
+      [(ngModel)]="code"
+    >
+    </ngx-monaco-editor>
+  </div>
+}

@@ -1,0 +1,28 @@
+<header>
+  <div class="logo cursor-pointer" (click)="navigateToHome()">
+    <h1>DSA Drill</h1>
+  </div>
+
+  <div class="flex-1"></div>
+
+  <div class="user-profile" aria-label="User profile">
+    <div class="avatar" [attr.aria-label]="'User initial ' + userInitial">
+      {{ userInitial }}
+    </div>
+
+    <p-button
+      type="button"
+      label="Logout"
+      icon="pi pi-sign-out"
+      severity="danger"
+      [outlined]="true"
+      size="small"
+      styleClass="logout-btn"
+      (onClick)="logout()"
+    ></p-button>
+  </div>
+</header>
+
+<ng-template #sidebarTemplate>
+  <app-sidebar></app-sidebar>
+</ng-template>

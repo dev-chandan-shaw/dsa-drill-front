@@ -1,0 +1,76 @@
+:host {
+  display: block;
+}
+
+.auth-page {
+  align-items: center;
+  background: radial-gradient(circle at top, var(--p-surface-800), var(--p-surface-900));
+  display: flex;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 1.5rem;
+}
+
+.auth-card {
+  background: var(--p-surface-900);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 16px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+  max-width: 520px;
+  padding: 1.75rem;
+  width: 100%;
+}
+
+.auth-header {
+  margin-bottom: 1.25rem;
+
+  h1 {
+    font-size: 1.9rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  p {
+    color: var(--p-text-muted-color);
+    margin: 0.4rem 0 0 0;
+  }
+}
+
+.auth-form {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.form-field {
+  display: grid;
+}
+
+.field-error {
+  min-height: 1.35rem;
+  margin: 0.35rem 0 0 0;
+}
+
+.error-text {
+  color: var(--p-red-400);
+  font-size: 0.8rem;
+}
+
+.switch-auth {
+  color: var(--p-text-muted-color);
+  font-size: 0.9rem;
+  margin: 0.4rem 0;
+  text-align: right;
+
+  a {
+    color: var(--p-primary-color);
+    font-weight: 600;
+    text-decoration: none;
+  }
+}
+
+:host ::ng-deep .p-button {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 0.5rem;
+}

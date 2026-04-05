@@ -1,0 +1,41 @@
+<p-card styleClass="h-full">
+  <ng-template pTemplate="header">
+    <div class="problem-header">
+      <h2>{{ question().id }}. {{ question().title }}</h2>
+      <p-tag [severity]="difficultySeverity()" [value]="question().difficulty"></p-tag>
+    </div>
+  </ng-template>
+
+  <section aria-label="Problem statement" class="description-section">
+    <h3>Problem Description</h3>
+    <p>{{ description() }}</p>
+  </section>
+
+  <p-divider></p-divider>
+
+  <section aria-label="Examples" class="examples-section">
+    <div class="examples-header">
+      <h3>Examples</h3>
+      <p-tag [value]="examples().length + ' sample(s)'" severity="info"></p-tag>
+    </div>
+
+    @if (examples().length === 0) {
+      <p class="empty-examples">No sample test cases are available for this problem.</p>
+    } @else {
+      <div class="examples-list">
+        @for (example of examples(); track $index; let index = $index) {
+          <div class="example-item">
+            <p class="example-title">Example {{ index + 1 }}:</p>
+            <p><strong>Input:</strong> {{ example.inputDescription }}</p>
+            <p><strong>Output:</strong> {{ example.outputDescription }}</p>
+            <p><strong>Explanation:</strong> {{ example.explanation }}</p>
+
+            @if (example.imageUrl) {
+              <img [alt]="'Example ' + (index + 1) + ' illustration'" [src]="example.imageUrl" />
+            }
+          </div>
+        }
+      </div>
+    }
+  </section>
+</p-card>

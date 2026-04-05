@@ -1,0 +1,94 @@
+header {
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--p-surface-800);
+    height: 54px;
+    gap: 16px;
+    background-color: var(--p-surface-900);
+}
+
+.hamburger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    color: var(--p-text-color);
+
+    &:hover {
+        background-color: var(--p-surface-800);
+    }
+
+    &:active {
+        background-color: var(--p-surface-700);
+    }
+}
+
+.hamburger-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+.logo {
+    h1 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--p-primary-color, #6366f1);
+    }
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.35rem 0.45rem 0.35rem 0.75rem;
+    border: 1px solid var(--p-content-border-color);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--p-surface-900) 92%, var(--p-primary-color) 8%);
+
+    .avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background: var(--p-primary-700);
+        color: var(--p-primary-contrast-color, #ffffff);
+        font-weight: 700;
+        font-size: 16px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+        &:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+    }
+}
+
+:host ::ng-deep .logout-btn.p-button {
+    border-radius: 999px;
+    font-weight: 600;
+    padding-inline: 0.9rem;
+}
+
+:host ::ng-deep .logout-btn.p-button .p-button-label {
+    font-size: 0.85rem;
+}
+
+:host ::ng-deep .logout-btn.p-button:hover {
+    background: var(--p-red-500);
+    border-color: var(--p-red-500);
+    color: var(--p-red-contrast-color, #fff);
+}

@@ -1,0 +1,54 @@
+<p-card styleClass="h-full">
+  <ng-template pTemplate="header">
+    <div class="panel-header">
+      <h3>Test Cases</h3>
+      @if (summaryTag()) {
+        <p-tag [value]="summaryTag()!" severity="contrast"></p-tag>
+      } @else {
+        <p-tag [value]="orderedTestCases().length + ' total'" severity="info"></p-tag>
+      }
+    </div>
+  </ng-template>
+
+  @if (orderedTestCases().length === 0) {
+    <p class="empty-state">No test cases available for this problem.</p>
+  } @else {
+    <p-tabs [value]="orderedTestCases()[0].id">
+      <p-tablist>
+        @for (testCase of orderedTestCases(); track testCase.id; let tabPosition = $index) {
+          <p-tab [value]="testCase.id">
+            Case {{ testCase.orderIndex }}
+            @if (getResultForTestCase(testCase.orderIndex, tabPosition); as result) {
+              <span class="tab-result" [class.pass]="result.passed" [class.fail]="!result.passed">
+                {{ result.passed ? 'PASS' : 'FAIL' }}
+              </span>
+            }
+          </p-tab>
+        }
+      </p-tablist>
+
+      <p-tabpanels>
+        @for (testCase of orderedTestCases(); track testCase.id; let tabPosition = $index) {
+          <p-tabpanel [value]="testCase.id">
+            <div class="content-block">
+              <p>Input</p>
+              <pre>{{ testCase.stdin }}</pre>
+            </div>
+
+            <div class="content-block">
+              <p>Expected Output</p>
+              <pre>{{ testCase.expectedOutput }}</pre>
+            </div>
+
+            @if (getResultForTestCase(testCase.orderIndex, tabPosition); as result) {
+              <div class="content-block">
+                <p>Actual Output</p>
+                <pre>{{ result.actualOutput || 'No output returned' }}</pre>
+              </div>
+            }
+          </p-tabpanel>
+        }
+      </p-tabpanels>
+    </p-tabs>
+  }
+</p-card>

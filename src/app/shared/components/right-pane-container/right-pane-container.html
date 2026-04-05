@@ -1,0 +1,41 @@
+@if (rightPaneService.isOpen) {
+  <!-- Overlay -->
+  <div
+    class="fixed inset-0 bg-black/60 z-40 transition-opacity"
+    (click)="rightPaneService.close()"
+  ></div>
+
+  <!-- Right Pane - From Right -->
+  @if (rightPaneService.side === PaneSide.RIGHT) {
+    <div
+      animate.enter="enter"
+      animate.leave="leaving"
+      [style.width]="width"
+      [style.height]="'100dvh'"
+      class="fixed top-0 right-0 flex flex-col bg-white shadow-lg z-50 !bg-[var(--p-surface-900)]"
+    >
+      <div class="overflow-y-auto flex-1">
+        <ng-container
+          *ngTemplateOutlet="rightPaneService.template; context: rightPaneService.context"
+        ></ng-container>
+      </div>
+    </div>
+  }
+
+  <!-- Left Pane - From Left -->
+  @if (rightPaneService.side === PaneSide.LEFT) {
+    <div
+      animate.enter="enterLeft"
+      animate.leave="leavingLeft"
+      [style.width]="width"
+      [style.height]="'100dvh'"
+      class="fixed top-0 left-0 flex flex-col bg-white shadow-lg z-50 !bg-[var(--p-surface-900)]"
+    >
+      <div class="overflow-y-auto flex-1">
+        <ng-container
+          *ngTemplateOutlet="rightPaneService.template; context: rightPaneService.context"
+        ></ng-container>
+      </div>
+    </div>
+  }
+}

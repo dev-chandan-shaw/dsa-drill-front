@@ -1,0 +1,25 @@
+<div class="chip-input-container">
+  <div class="flex gap-2 flex-wrap my-2">
+    @for (chip of chips; track $index; let i = $index) {
+      <p-chip
+        [label]="chip"
+        (onRemove)="removeChip(i)"
+        [removable]="true"
+      ></p-chip>
+    }
+  </div>
+
+  <input
+    type="text"
+    pInputText
+    (blur)="touch()"
+    class="chip-input-field w-full"
+    (input)="error = null"
+    (keydown.enter)="$event.preventDefault(); addChip($event)"
+  />
+  @if (error) {
+    <div class="text-red-600 mt-1 text-sm">
+      {{ error }}
+    </div>
+  }
+</div>

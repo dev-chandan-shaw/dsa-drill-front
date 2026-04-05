@@ -1,0 +1,42 @@
+.select-field {
+    width: 16rem;
+}
+
+:host ::ng-deep .p-rowgroup-footer td {
+    font-weight: 700;
+}
+
+:host ::ng-deep .p-rowgroup-header {
+    span {
+        font-weight: 700;
+    }
+
+    .p-row-toggler {
+        vertical-align: middle;
+        margin-right: .25rem;
+    }
+}
+
+:host ::ng-deep .p-rowgroup-footer td {
+    font-weight: 700;
+}
+
+:host ::ng-deep .p-rowgroup-header {
+    span {
+        font-weight: 700;
+    }
+
+    .p-row-toggler {
+        vertical-align: middle;
+        margin-right: .25rem;
+    }
+}
+
+::ng-deep .p-datatable-table-container {
+    min-height: calc(100vh - 250px);
+}
+
+.home {
+    width: 1080px;
+    margin: 0 auto;
+}

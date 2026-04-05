@@ -1,0 +1,101 @@
+<div class="auth-page">
+  <section class="auth-card" aria-label="Signup form">
+    <header class="auth-header">
+      <h1>Create Account</h1>
+      <p>Sign up to start solving problems.</p>
+    </header>
+
+    <form [formGroup]="registerForm" (ngSubmit)="submitForm()" class="auth-form">
+      <div class="form-field">
+        <p-floatlabel variant="on">
+          <input pInputText id="firstName" formControlName="firstName" style="width: 100%" />
+          <label for="firstName">First Name</label>
+        </p-floatlabel>
+        <p class="field-error">
+          <small
+            *ngIf="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched"
+            class="error-text"
+          >
+            First name is required.
+          </small>
+        </p>
+      </div>
+
+      <div class="form-field">
+        <p-floatlabel variant="on">
+          <input pInputText id="lastName" formControlName="lastName" style="width: 100%" />
+          <label for="lastName">Last Name</label>
+        </p-floatlabel>
+        <p class="field-error">
+          <small
+            *ngIf="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched"
+            class="error-text"
+          >
+            Last name is required.
+          </small>
+        </p>
+      </div>
+
+      <div class="form-field">
+        <p-floatlabel variant="on">
+          <input pInputText id="email" formControlName="email" style="width: 100%" />
+          <label for="email">Email</label>
+        </p-floatlabel>
+        <p class="field-error">
+          <small
+            *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+            class="error-text"
+          >
+            Valid email is required.
+          </small>
+        </p>
+      </div>
+
+      <div class="form-field">
+        <p-floatlabel variant="on">
+          <p-inputgroup>
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              pInputText
+              id="password"
+              formControlName="password"
+              style="width: 100%"
+            />
+            <p-inputgroup-addon>
+              <p-button
+                [icon]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"
+                severity="secondary"
+                variant="text"
+                (click)="showPassword = !showPassword"
+              />
+            </p-inputgroup-addon>
+          </p-inputgroup>
+          <label for="password">Password</label>
+        </p-floatlabel>
+        <p class="field-error">
+          <small
+            *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+            class="error-text"
+          >
+            Password must be at least 8 characters.
+          </small>
+        </p>
+      </div>
+
+      <p class="switch-auth">
+        Already have an account?
+        <span>
+          <a [routerLink]="['/login']">Signin</a>
+        </span>
+      </p>
+
+      <p-button
+        [label]="isLoading() ? 'Signing up...' : 'Signup'"
+        size="large"
+        type="submit"
+        styleClass="w-full"
+        [disabled]="registerForm.invalid"
+      />
+    </form>
+  </section>
+</div>

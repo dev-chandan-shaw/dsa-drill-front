@@ -1,0 +1,102 @@
+@if (isLoading()) {
+  <p-progressbar mode="indeterminate" [style]="{ height: '4px' }" />
+} @else {
+  <div class="flex home flex-col p-4 h-full overflow-y-auto">
+    @if (questions().length === 0) {
+      <ng-container *ngTemplateOutlet="noData"></ng-container>
+    } @else {
+      <!-- Normal List -->
+      <div class="flex flex-wrap gap-2 mb-4 items-center">
+        @for (category of categories(); track $index) {
+          <p
+            class="cursor-pointer px-2 py-1 rounded-full text-sm flex gap-1 flex-wrap items-center"
+          >
+            <span>{{ category.name }}</span>
+            <span class="bg-[var(--p-surface-800)] text-[var(--p-surface-400)] px-2 rounded-full">{{
+              category.problemCount ?? 100
+            }}</span>
+          </p>
+        }
+      </div>
+      @for (question of questions(); let rowIndex = $index; track question.id) {
+        <div
+          [ngClass]="{ 'bg-[var(--p-surface-900)] rounded-xl': rowIndex % 2 === 0 }"
+          class="group w-full min-w-0 p-4 flex items-center gap-2 sm:gap-4 text-sm"
+        >
+          <!-- <p-button
+            (onClick)="toggleSolved(question.id)"
+            [icon]="questionStatuses[question.id]?.isSolved ? 'pi pi-check-square' : 'pi pi-stop'"
+            rounded="true"
+            variant="text"
+          /> -->
+          <a
+            [routerLink]="['/problems', question.slug]"
+            class="flex-1 min-w-0 cursor-pointer whitespace-normal break-words"
+          >
+            {{ rowIndex + 1 }}. {{ question.title }}
+          </a>
+          <p-tag [value]="question.difficulty" />
+          <!-- <p-button
+            (onClick)="toggleMarkForRevision(question.id)"
+            [icon]="
+              questionStatuses[question.id]?.isMarkedForRevision ? 'pi pi-star-fill' : 'pi pi-star'
+            "
+            rounded="true"
+            variant="text"
+          /> -->
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Filter Template -->
+
+  <ng-template #tableCaptionTemplate>
+    <div class="flex justify-between">
+      <div class="flex gap-4 flex-wrap">
+        <p-select
+          appendTo="body"
+          [options]="categories()"
+          optionLabel="name"
+          optionValue="id"
+          class="select-field"
+          [(ngModel)]="selectedCategory"
+        ></p-select>
+
+        <p-select
+          appendTo="body"
+          [options]="sheets()"
+          optionLabel="name"
+          optionValue="id"
+          class="select-field"
+          [(ngModel)]="selectedSheet"
+        ></p-select>
+      </div>
+      <div class="flex gap-4 flex-wrap"></div>
+    </div>
+  </ng-template>
+
+  <ng-template #noData>
+    <div class="flex flex-col items-center justify-center" style="height: calc(100vh - 250px)">
+      <i class="pi pi-inbox" style="font-size: 2rem"></i>
+      <p>No questions available.</p>
+    </div>
+  </ng-template>
+
+  <p-popover #addToSheetMenu appendTo="body" [style]="{ width: '20rem' }">
+    <h3 class="font-bold text-xl !py-4 !px-2">Add Question to Sheet</h3>
+    <form [formGroup]="addToSheetForm">
+      <div class="flex flex-col">
+        <p-select
+          appendTo="body"
+          optionLabel="title"
+          optionValue="id"
+          formControlName="categoryId"
+          placeholder="Select a sheet"
+          class="w-full"
+        ></p-select>
+      </div>
+      <button pButton type="submit" label="Save" class="p-button-primary w-full !mt-4"></button>
+    </form>
+  </p-popover>
+}

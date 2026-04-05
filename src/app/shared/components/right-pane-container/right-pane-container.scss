@@ -1,0 +1,55 @@
+.enter {
+    animation: slideInRight 0.25s ease-out;
+}
+
+.leaving {
+    animation: slideOutRight 0.25s ease-out;
+}
+
+.enterLeft {
+    animation: slideInLeft 0.25s ease-out;
+}
+
+.leavingLeft {
+    animation: slideOutLeft 0.25s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutLeft {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-100%);
+    }
+}

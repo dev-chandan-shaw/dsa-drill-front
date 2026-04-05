@@ -1,4 +1,5 @@
 export const environment = {
-  production: false,
-  apiUrl: 'https://dsadrill.duckdns.org/api',
+  production: true,
+  apiUrl: 'http://localhost:8080/api',
+  googleOAuthRedirectUrl: 'https://dsadrill.duckdns.org/oauth2/authorization/google',
 };

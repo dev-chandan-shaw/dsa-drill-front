@@ -1,0 +1,91 @@
+:host {
+    display: block;
+    height: 100%;
+}
+
+.problem-header {
+    align-items: center;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: space-between;
+    padding: 1rem 1rem 0 1rem;
+
+    h2 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin: 0;
+    }
+}
+
+.meta-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.description-section {
+    h3 {
+        font-size: 0.95rem;
+        margin: 0 0 0.5rem 0;
+    }
+
+    p {
+        line-height: 1.6;
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+}
+
+.examples-section {
+    h3 {
+        font-size: 0.95rem;
+        margin: 0;
+    }
+}
+
+.examples-header {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.examples-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.example-item {
+    p {
+        margin: 0 0 0.35rem 0;
+    }
+
+    img {
+        border: 1px solid var(--p-content-border-color);
+        border-radius: 8px;
+        display: block;
+        margin-top: 0.5rem;
+        max-width: 100%;
+    }
+
+    pre {
+        border: 1px solid var(--p-content-border-color);
+        border-radius: 8px;
+        margin: 0 0 0.75rem 0;
+        overflow-x: auto;
+        padding: 0.65rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+}
+
+.example-title {
+    font-weight: 700;
+}
+
+.empty-examples {
+    margin: 0;
+}

@@ -1,1 +1,17 @@
 /* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "primeicons/primeicons.css";
+@import "tailwindcss";
+
+* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    font-family: "Inter", sans-serif;
+}

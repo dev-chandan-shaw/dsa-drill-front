@@ -1,0 +1,71 @@
+<div class="auth-page">
+  <section class="auth-card" aria-label="Login form">
+    <header class="auth-header">
+      <h1>Welcome Back</h1>
+      <p>Sign in to your account.</p>
+    </header>
+
+    <form [formGroup]="loginForm" (ngSubmit)="submitForm()" class="auth-form">
+      <div class="form-field">
+        <p-floatlabel variant="on">
+          <input pInputText id="email" formControlName="email" style="width: 100%" />
+          <label for="email">Email</label>
+        </p-floatlabel>
+        <p class="field-error">
+          <small
+            *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+            class="error-text"
+          >
+            Email is required.
+          </small>
+        </p>
+      </div>
+
+      <div class="form-field">
+        <p-floatlabel variant="on">
+          <p-inputgroup>
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              pInputText
+              id="password"
+              formControlName="password"
+              style="width: 100%"
+            />
+            <p-inputgroup-addon>
+              <p-button
+                [icon]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"
+                severity="secondary"
+                variant="text"
+                (click)="showPassword = !showPassword"
+              />
+            </p-inputgroup-addon>
+          </p-inputgroup>
+          <label for="password">Password</label>
+        </p-floatlabel>
+        <p class="field-error">
+          <small
+            *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+            class="error-text"
+          >
+            Password is required.
+          </small>
+        </p>
+      </div>
+
+      <p class="switch-auth">
+        Don't have an account?
+        <span>
+          <a [routerLink]="['/register']">Signup</a>
+        </span>
+      </p>
+
+      <p-button
+        [label]="isLoading() ? 'Signing in...' : 'Signin'"
+        size="large"
+        type="submit"
+        styleClass="w-full"
+        [disabled]="loginForm.invalid"
+      />
+    </form>
+  </section>
+</div>
