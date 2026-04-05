@@ -51,31 +51,6 @@
 
   <!-- Filter Template -->
 
-  <ng-template #tableCaptionTemplate>
-    <div class="flex justify-between">
-      <div class="flex gap-4 flex-wrap">
-        <p-select
-          appendTo="body"
-          [options]="categories()"
-          optionLabel="name"
-          optionValue="id"
-          class="select-field"
-          [(ngModel)]="selectedCategory"
-        ></p-select>
-
-        <p-select
-          appendTo="body"
-          [options]="sheets()"
-          optionLabel="name"
-          optionValue="id"
-          class="select-field"
-          [(ngModel)]="selectedSheet"
-        ></p-select>
-      </div>
-      <div class="flex gap-4 flex-wrap"></div>
-    </div>
-  </ng-template>
-
   <ng-template #noData>
     <div class="flex flex-col items-center justify-center" style="height: calc(100vh - 250px)">
       <i class="pi pi-inbox" style="font-size: 2rem"></i>
