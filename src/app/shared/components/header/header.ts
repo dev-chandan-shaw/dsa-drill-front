@@ -36,7 +36,7 @@ export class Header {
   }
 
   navigateToHome() {
-    globalThis.location.href = '/';
+    this.router.navigateByUrl('/');
   }
 
   logout() {
