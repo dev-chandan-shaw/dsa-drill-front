@@ -4,6 +4,7 @@ import { map, Observable } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { IRegisterRequest, IUser } from '../../../shared/models/User';
 import { StorageService } from '../storage.service';
+import { IApiResponse } from '../../../shared/models/ApiResponse';
 
 @Injectable({
   providedIn: 'root',
@@ -39,7 +40,7 @@ export class AuthService {
   login(username: string, password: string): Observable<IUser> {
     return this._authApiService.login(username, password).pipe(
       map((response) => {
-        const user = response;
+        const user = this.extractUser(response);
         const token = this.resolveToken(user);
 
         if (!token) {
@@ -55,7 +56,7 @@ export class AuthService {
   register(data: IRegisterRequest): Observable<IUser> {
     return this._authApiService.register(data).pipe(
       map((response) => {
-        const user = response;
+        const user = this.extractUser(response);
         const token = this.resolveToken(user);
 
         if (!token) {
@@ -124,5 +125,17 @@ export class AuthService {
 
   private resolveToken(user: IUser & { accessToken?: string; jwt?: string }): string {
     return user.token || user.accessToken || user.jwt || '';
+  }
+
+  private extractUser(response: IUser | IApiResponse<IUser>): IUser {
+    if (this.isApiResponse(response)) {
+      return response.data;
+    }
+
+    return response;
+  }
+
+  private isApiResponse(response: IUser | IApiResponse<IUser>): response is IApiResponse<IUser> {
+    return typeof response === 'object' && response !== null && 'data' in response;
   }
 }

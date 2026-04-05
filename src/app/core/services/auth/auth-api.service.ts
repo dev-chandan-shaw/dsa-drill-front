@@ -12,14 +12,14 @@ export class AuthApiService {
   private readonly _http = inject(HttpClient);
 
   login(username: string, password: string) {
-    return this._http.post<IUser>(`${this._apiUrl}/auth/login`, {
+    return this._http.post<IApiResponse<IUser>>(`${this._apiUrl}/auth/login`, {
       email: username,
       password,
     });
   }
 
   register(data: IRegisterRequest) {
-    return this._http.post<IUser>(`${this._apiUrl}/auth/register`, data);
+    return this._http.post<IApiResponse<IUser>>(`${this._apiUrl}/auth/register`, data);
   }
 
   fetchCurrentUser(token: string) {
