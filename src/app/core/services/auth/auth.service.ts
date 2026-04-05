@@ -40,6 +40,12 @@ export class AuthService {
     return this._authApiService.login(username, password).pipe(
       map((response) => {
         const user = response;
+        const token = this.resolveToken(user);
+
+        if (!token) {
+          throw new Error('Authentication token was not returned by the server.');
+        }
+
         this.setUser(user);
         return user;
       }),
@@ -50,6 +56,12 @@ export class AuthService {
     return this._authApiService.register(data).pipe(
       map((response) => {
         const user = response;
+        const token = this.resolveToken(user);
+
+        if (!token) {
+          throw new Error('Authentication token was not returned by the server.');
+        }
+
         this.setUser(user);
         return user;
       }),
@@ -68,22 +80,25 @@ export class AuthService {
 
   setUser(user: IUser): void {
     const normalizedUser = user as IUser & { accessToken?: string; jwt?: string };
-    const token = normalizedUser.token || normalizedUser.accessToken || normalizedUser.jwt || '';
+    const token = this.resolveToken(normalizedUser);
 
-    if (token) {
-      let roles: string[] = [];
-
-      try {
-        const decodedToken: any = jwtDecode(token);
-        roles = decodedToken.roles || [];
-      } catch {
-        roles = [];
-      }
-
-      this._isAdmin.set(roles.includes('ROLE_ADMIN') || roles.includes('ROLE_SUPER_ADMIN'));
-
-      this._isLoggedIn.set(true);
+    if (!token) {
+      this.logout();
+      return;
     }
+
+    let roles: string[] = [];
+
+    try {
+      const decodedToken: any = jwtDecode(token);
+      roles = decodedToken.roles || [];
+    } catch {
+      roles = [];
+    }
+
+    this._isAdmin.set(roles.includes('ROLE_ADMIN') || roles.includes('ROLE_SUPER_ADMIN'));
+
+    this._isLoggedIn.set(true);
 
     this._storageService.set('authToken', token);
     const safeUser: IUser = {
@@ -105,5 +120,9 @@ export class AuthService {
   getRoles(token: string): string[] {
     const decodedToken: any = jwtDecode(token);
     return decodedToken.roles || [];
+  }
+
+  private resolveToken(user: IUser & { accessToken?: string; jwt?: string }): string {
+    return user.token || user.accessToken || user.jwt || '';
   }
 }

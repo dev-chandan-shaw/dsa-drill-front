@@ -1,18 +1,34 @@
+import { inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CanActivateFn, Router } from '@angular/router';
-import { AuthService } from '../services/auth/auth.service';
-import { inject } from '@angular/core';
 
 export const guestGuard: CanActivateFn = (route, state) => {
-  const authService = inject(AuthService);
+  const platformId = inject(PLATFORM_ID);
   const router = inject(Router);
 
-  const user = authService.getLoggedInUser();
+  if (!isPlatformBrowser(platformId)) {
+    return true;
+  }
 
-  if (user()) {
+  const directToken = localStorage.getItem('authToken');
+  const loggedInUserRaw = localStorage.getItem('loggedInUser');
+  let fallbackToken = '';
+
+  if (loggedInUserRaw) {
+    try {
+      const user = JSON.parse(loggedInUserRaw);
+      fallbackToken = user?.token || user?.accessToken || user?.jwt || '';
+    } catch {
+      fallbackToken = '';
+    }
+  }
+
+  const token = directToken || fallbackToken;
+
+  if (token) {
     router.navigate(['/home']);
     return false;
   }
 
-  // User not logged in — allow access
   return true;
 };
