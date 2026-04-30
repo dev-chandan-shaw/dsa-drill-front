@@ -1,0 +1,241 @@
+:host {
+    display: block;
+    height: 100%;
+}
+
+.admin-page {
+    height: 100%;
+    padding: 16px;
+    overflow: auto;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+
+    h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: var(--p-text-color);
+    }
+
+    p {
+        margin: 4px 0 0;
+        color: var(--p-surface-300);
+    }
+}
+
+.admin-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.panel {
+    background: var(--p-surface-900);
+    border: 1px solid var(--p-surface-700);
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+
+    h2 {
+        margin: 0;
+        font-size: 1.125rem;
+    }
+
+    p {
+        margin: 4px 0 0;
+        color: var(--p-surface-300);
+    }
+}
+
+.filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.quick-filters {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+.problem-list,
+.tag-list,
+.pattern-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.problem-row,
+.tag-row,
+.pattern-row {
+    display: grid;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid var(--p-surface-700);
+    border-radius: 10px;
+}
+
+.problem-row {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.tag-row,
+.pattern-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.problem-meta,
+.pattern-meta {
+    min-width: 0;
+
+    h3 {
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    p {
+        margin: 4px 0 0;
+        color: var(--p-surface-300);
+    }
+}
+
+.problem-meta h3 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.problem-stats {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.pill {
+    border: 1px solid var(--p-surface-600);
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+}
+
+.warn {
+    border-color: #f59e0b;
+    color: #fbbf24;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.field {
+    width: 100%;
+    border: 1px solid var(--p-surface-600);
+    border-radius: 8px;
+    background: var(--p-surface-950);
+    color: var(--p-text-color);
+    outline: none;
+}
+
+.field:focus {
+    border-color: var(--p-primary-color);
+}
+
+textarea.field {
+    resize: vertical;
+    min-height: 96px;
+    padding: 10px;
+}
+
+.btn {
+    border: 1px solid var(--p-surface-600);
+    background: var(--p-surface-800);
+    color: var(--p-text-color);
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.btn-primary {
+    border-color: var(--p-primary-color);
+    background: color-mix(in srgb, var(--p-primary-color) 25%, var(--p-surface-800));
+}
+
+.btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.chip {
+    border: 1px solid var(--p-surface-600);
+    border-radius: 999px;
+    padding: 4px 10px;
+    background: transparent;
+    color: var(--p-text-color);
+    cursor: pointer;
+}
+
+.chip.active {
+    border-color: var(--p-primary-color);
+    color: var(--p-primary-color);
+}
+
+.state-card {
+    border: 1px dashed var(--p-surface-600);
+    border-radius: 10px;
+    padding: 16px;
+    color: var(--p-surface-300);
+}
+
+.pane-form-wrap {
+    padding: 16px;
+}
+
+.pane-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    label {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+
+        span {
+            color: var(--p-surface-300);
+            font-size: 0.875rem;
+        }
+    }
+}
+
+@media (max-width: 1024px) {
+    .admin-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .problem-row,
+    .tag-row,
+    .pattern-row {
+        grid-template-columns: 1fr;
+    }
+}

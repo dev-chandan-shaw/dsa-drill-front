@@ -1,5 +1,5 @@
-import { NgTemplateOutlet, NgClass, isPlatformBrowser } from '@angular/common';
-import { Component, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { Component, inject, signal } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
@@ -11,15 +11,14 @@ import { MenuModule } from 'primeng/menu';
 import { PopoverModule } from 'primeng/popover';
 import { CardModule } from 'primeng/card';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ICategory } from './models/category';
 import { ISheet } from './models/sheet';
-import { CategoryService } from './services/category.service';
-import { QuestionService } from './services/question.service';
-import { IQuestion } from './models/Question';
-import { QuestionStatusApiService } from './services/question-status-api.service';
+import { ProblemTagService } from './services/question-tag.service';
+import { ProblemService } from './services/question.service';
+import { ProblemStatusApiService } from './services/question-status-api.service';
+import { ProblemPatternService } from './services/problem-pattern.service';
 import { IUserQuestionStatus, UserQuestionStatusDto } from './models/Question-status';
-import { ToastService } from '../../shared/services/toast-service';
-import { forkJoin } from 'rxjs';
+import { ProblemList } from '../../shared/components/problem-list/problem-list';
+import { Divider } from 'primeng/divider';
 
 @Component({
   selector: 'app-home',
@@ -30,7 +29,6 @@ import { forkJoin } from 'rxjs';
     RouterModule,
     ProgressBarModule,
     NgTemplateOutlet,
-    NgClass,
     DialogModule,
     Select,
     MenuModule,
@@ -38,100 +36,61 @@ import { forkJoin } from 'rxjs';
     CardModule,
     FormsModule,
     ReactiveFormsModule,
+    ProblemList,
+    Divider,
   ],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
-export class Home implements OnInit {
+export class Home {
   private readonly formBuilder = new FormBuilder();
-  private readonly categoryService = inject(CategoryService);
-  private readonly questionService = inject(QuestionService);
-  private readonly questionStatusService = inject(QuestionStatusApiService);
-  private readonly toastService = inject(ToastService);
-  private readonly platformId = inject(PLATFORM_ID);
-  isLoading = signal(true);
-
-  ngOnInit(): void {
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
-    }
-
-    this.categoryService.getCategories().subscribe((categories) => {
-      this.categories.set(categories);
-    });
-
-    forkJoin([
-      this.questionService.getQuestions(),
-      this.questionStatusService.getAllQuestionStatuses(),
-    ]).subscribe(([questions, questionStatuses]) => {
-      this.questions.set(questions);
-      this.questionStatuses = questionStatuses.reduce(
-        (acc, status) => {
-          acc[status.id] = status;
-          return acc;
-        },
-        {} as { [questionId: number]: IUserQuestionStatus },
-      );
-      this.isLoading.set(false);
-    });
-  }
+  private readonly questionTagService = inject(ProblemTagService);
+  private readonly questionService = inject(ProblemService);
+  private readonly questionStatusService = inject(ProblemStatusApiService);
+  private readonly problemPatternService = inject(ProblemPatternService);
 
   addToSheetForm = this.formBuilder.group({
     categoryId: [''],
   });
 
   isGroupedByPattern = signal(false);
-  categories = signal<ICategory[]>([]);
+  categories = this.questionTagService.problemTags;
   sheets = signal<ISheet[]>([
     {
       id: 1,
       name: 'Sheet 1',
     },
   ]);
-  questions = signal<IQuestion[]>([]);
-  questionStatuses: { [questionId: number]: IUserQuestionStatus } = {};
+  questions = this.questionService.problems;
+  questionStatuses = this.questionStatusService.problemStatuses;
   selectedSheet = signal(1);
   selectedCategory = signal(1);
   expandedGroups: { [patternId: number]: boolean } = {};
 
   toggleMarkForRevision(problemId: number) {
-    const isMarked = !this.questionStatuses[problemId]?.isMarkedForRevision;
+    const isMarked = !this.questionStatuses()[problemId]?.revision;
     const status: UserQuestionStatusDto = {
-      questionId: problemId,
-      isMarkedForRevision: isMarked,
+      problemId: problemId,
+      revision: isMarked,
     };
-    this.questionStatuses[problemId] = {
-      ...this.questionStatuses[problemId],
-      isMarkedForRevision: isMarked,
+    this.questionStatuses()[problemId] = {
+      ...this.questionStatuses()[problemId],
+      revision: isMarked,
     } as IUserQuestionStatus;
-    this.questionStatusService.updateQuestionStatus(status).subscribe({
-      next: (res) => {
-        console.log('Question marked for revision successfully');
-      },
-      error: (err) => {
-        console.error('Error marking question for revision:', err);
-      },
-    });
+    this.questionStatusService.updateProblemStatus(status).subscribe();
   }
 
   toggleSolved(problemId: number) {
-    const isSolved = !this.questionStatuses[problemId]?.isSolved;
+    const isSolved = !this.questionStatuses()[problemId]?.solved;
     const status: UserQuestionStatusDto = {
-      questionId: problemId,
-      isSolved: isSolved,
+      problemId: problemId,
+      solved: isSolved,
     };
-    this.questionStatuses[problemId] = {
-      ...this.questionStatuses[problemId],
-      isSolved: isSolved,
+    this.questionStatuses()[problemId] = {
+      ...this.questionStatuses()[problemId],
+      solved: isSolved,
     } as IUserQuestionStatus;
-    this.questionStatusService.updateQuestionStatus(status).subscribe({
-      next: (res) => {
-        console.log('Question marked for revision successfully');
-      },
-      error: (err) => {
-        console.error('Error marking question for revision:', err);
-      },
-    });
+    this.questionStatusService.updateProblemStatus(status).subscribe();
   }
 
   togglePatternGroup(patternId: number) {

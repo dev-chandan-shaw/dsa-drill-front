@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { adminGuard } from '../core/guards/admin-guard';
 
 export const routes: Routes = [
   {
@@ -14,10 +15,24 @@ export const routes: Routes = [
         path: 'home',
         loadComponent: () => import('./home/home').then((m) => m.Home),
       },
+      // {
+      //   path: 'problems/:slug',
+      //   loadComponent: () =>
+      //     import('./problem-workspace/problem-workspace').then((m) => m.ProblemWorkspace),
+      // },
       {
-        path: 'problems/:slug',
+        path: 'admin',
+        canActivate: [adminGuard],
+        loadComponent: () => import('./admin/admin').then((m) => m.Admin),
+      },
+      {
+        path: 'question-pattern',
         loadComponent: () =>
-          import('./problem-workspace/problem-workspace').then((m) => m.ProblemWorkspace),
+          import('./question-pattern/question-pattern').then((m) => m.QuestionPattern),
+      },
+      {
+        path: 'problems/:sheetId',
+        loadComponent: () => import('./problem-sheet/problem-sheet').then((m) => m.ProblemSheet),
       },
     ],
   },

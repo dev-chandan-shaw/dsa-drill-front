@@ -1,0 +1,13 @@
+<div class="flex gap-8 p-4 max-w-[1080px] m-auto">
+  <div class="w-[320px]">
+    <p-card>
+      <p>Tag id: {{ 'Array' }}</p>
+    </p-card>
+  </div>
+  <div class="flex-1">
+    <app-problem-list
+      [problems]="problems()"
+      [problemStatuses]="questionStatuses()"
+    ></app-problem-list>
+  </div>
+</div>

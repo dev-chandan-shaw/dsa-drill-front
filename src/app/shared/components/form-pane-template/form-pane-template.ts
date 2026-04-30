@@ -10,10 +10,10 @@ import { DividerModule } from 'primeng/divider';
   styleUrl: './form-pane-template.scss',
 })
 export class FormPaneTemplate {
-  @Input() title: string = 'Form Pane';
-  @Input() isEditMode: boolean = false;
-  @Input() form?: FormGroup;
-  @Input() isSaving: boolean = false;
+  @Input({ required: true }) title: string = 'Form Pane';
+  @Input({ required: true }) isEditMode: boolean = false;
+  @Input({ required: true }) form!: FormGroup;
+  @Input({ required: true }) isSaving: boolean = false;
 
   @Output() cancelForm = new EventEmitter<any>();
   @Output() saveForm = new EventEmitter<any>();

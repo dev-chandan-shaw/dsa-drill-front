@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ProblemWorkspace } from './problem-workspace';
+import { ProblemList } from './problem-list';
 
-describe('ProblemWorkspace', () => {
-  let component: ProblemWorkspace;
-  let fixture: ComponentFixture<ProblemWorkspace>;
+describe('ProblemList', () => {
+  let component: ProblemList;
+  let fixture: ComponentFixture<ProblemList>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ProblemWorkspace]
+      imports: [ProblemList]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ProblemWorkspace);
+    fixture = TestBed.createComponent(ProblemList);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

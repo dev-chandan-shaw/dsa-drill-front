@@ -1,11 +1,15 @@
 <div class="modules-wrapper">
   <app-header (toggleSidebar)="toggleSidebar()"></app-header>
   <div class="modules-container">
-    <!-- @if (showSidebar() && !isMobile()) {
+    @if (showSidebar() && !isMobile()) {
       <app-sidebar [showHeader]="false"></app-sidebar>
-    } -->
+    }
     <div class="content">
-      <router-outlet></router-outlet>
+      @if (isLoading()) {
+        <p-progressbar mode="indeterminate" [style]="{ height: '4px' }" />
+      } @else {
+        <router-outlet></router-outlet>
+      }
     </div>
   </div>
 </div>

@@ -1,0 +1,61 @@
+<div class="flex justify-between mb-2">
+  <div class="flex justify-between items-center gap-4">
+    <p-iconfield>
+      <p-inputicon class="pi pi-search" />
+      <input
+        type="text"
+        size="small"
+        pInputText
+        pSize="small"
+        rounded
+        class="!rounded-full"
+        placeholder="Search"
+      />
+    </p-iconfield>
+  </div>
+  <!-- <p-selectbutton
+  [options]="stateOptions"
+  [(ngModel)]="value"
+  (ngModelChange)="filterRevision($event)"
+  optionLabel="label"
+  size="small"
+  optionValue="value"
+  aria-labelledby="basic"
+  /> -->
+  <p-button icon="pi pi-sync" text rounded (click)="pickRandom()"></p-button>
+</div>
+@for (question of filteredProblems(); let rowIndex = $index; track question.id) {
+  <div
+    [ngClass]="{ 'bg-[var(--p-surface-900)] rounded-xl': rowIndex % 2 === 0 }"
+    class="group min-w-0 p-1 flex items-center gap-2 sm:gap-4 text-sm"
+  >
+    <p-button
+      (onClick)="toggleSolved(question.id)"
+      [icon]="problemStatuses()[question.id]?.solved ? 'pi pi-check-square' : 'pi pi-stop'"
+      rounded="true"
+      variant="text"
+    />
+    <a
+      [href]="question.link"
+      target="_blank"
+      class="flex-1 min-w-0 cursor-pointer whitespace-normal break-words"
+    >
+      {{ rowIndex + 1 }}. {{ question.title }}
+    </a>
+    <p-tag [value]="question.difficulty" />
+    <p-button
+      (onClick)="toggleMarkForRevision(question.id)"
+      [icon]="problemStatuses()[question.id]?.revision ? 'pi pi-star-fill' : 'pi pi-star'"
+      rounded="true"
+      variant="text"
+    />
+    <p-button
+      (onClick)="editNote(question.id)"
+      [icon]="problemStatuses()[question.id]?.note ? 'pi pi-file-edit' : 'pi pi-file-o'"
+      rounded="true"
+      variant="text"
+    />
+  </div>
+} @empty {
+  <p>No problems found.</p>
+}

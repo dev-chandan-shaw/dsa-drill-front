@@ -1,16 +1,13 @@
-import { IQuestion } from './Question';
-
 export interface IUserQuestionStatus {
-  id: number;
-  question: IQuestion;
-  isMarkedForRevision: boolean;
-  isSolved: boolean;
-  note: string | null;
+  problemId: number;
+  revision?: boolean;
+  solved?: boolean;
+  note?: string;
 }
 
 export interface UserQuestionStatusDto {
-  questionId: number;
-  isMarkedForRevision?: boolean;
-  isSolved?: boolean;
+  problemId: number;
+  revision?: boolean;
+  solved?: boolean;
   note?: string;
 }

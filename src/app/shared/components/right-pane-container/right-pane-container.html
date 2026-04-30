@@ -1,9 +1,6 @@
 @if (rightPaneService.isOpen) {
   <!-- Overlay -->
-  <div
-    class="fixed inset-0 bg-black/60 z-40 transition-opacity"
-    (click)="rightPaneService.close()"
-  ></div>
+  <div class="fixed inset-0 bg-black/60 z-40 transition-opacity"></div>
 
   <!-- Right Pane - From Right -->
   @if (rightPaneService.side === PaneSide.RIGHT) {

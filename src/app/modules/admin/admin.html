@@ -1,0 +1,253 @@
+<section class="admin-page">
+  <div class="admin-grid">
+    <p-card>
+      <div class="panel-header">
+        <div>
+          <h2>Problems</h2>
+          <p>{{ filteredQuestions().length }} of {{ problems().length }} shown</p>
+        </div>
+        <p-button icon="pi pi-plus" rounded (click)="openAddProblemPane()"></p-button>
+      </div>
+
+      <div class="filters">
+        <input
+          pInputText
+          #searchInput
+          type="text"
+          class="field"
+          placeholder="Search by title or slug"
+          [value]="searchTerm()"
+          (input)="setSearchTerm(searchInput.value)"
+        />
+
+        <p-select
+          [options]="difficultyFilterOptions"
+          optionLabel="label"
+          optionValue="value"
+          [formControl]="difficultyFilterControl"
+          placeholder="All difficulties"
+          styleClass="field"
+        ></p-select>
+      </div>
+
+      @if (filteredQuestions().length === 0) {
+        <div class="state-card">No problems match the current filter.</div>
+      } @else {
+        <div class="problem-list">
+          @for (question of filteredQuestions(); track trackByQuestionId($index, question)) {
+            <div class="problem-row">
+              <div class="problem-meta">
+                <h3>{{ question.title }}</h3>
+                <p>
+                  #{{ question.id }}
+                  @if (question.slug) {
+                    | {{ question.slug }}
+                  }
+                </p>
+              </div>
+              <div class="actions">
+                <p-button
+                  variant="text"
+                  icon="pi pi-pencil"
+                  rounded
+                  (click)="openEditProblemPane(question)"
+                ></p-button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </p-card>
+
+    <p-card>
+      <div class="panel-header">
+        <div>
+          <h2>Problem Tags</h2>
+          <p>{{ filteredTags().length }} of {{ tags().length }} tags</p>
+        </div>
+        <p-button icon="pi pi-plus" rounded (click)="openAddTagPane()"></p-button>
+      </div>
+
+      <div class="filters">
+        <input
+          pInputText
+          #tagSearchInput
+          type="text"
+          class="field"
+          placeholder="Search tags by name"
+          [value]="tagSearchTerm()"
+          (input)="setTagSearchTerm(tagSearchInput.value)"
+        />
+      </div>
+
+      @if (filteredTags().length === 0) {
+        <div class="state-card">No tags available yet.</div>
+      } @else {
+        <div class="tag-list">
+          @for (tag of filteredTags(); track trackByTagId($index, tag)) {
+            <div class="tag-row">
+              <div>
+                <h3>{{ tag.name }}</h3>
+                <p>#{{ tag.id }}</p>
+              </div>
+              <p-button icon="pi pi-pencil" rounded text (click)="openEditTagPane(tag)"></p-button>
+            </div>
+          }
+        </div>
+      }
+    </p-card>
+
+    <p-card>
+      <div class="panel-header">
+        <div>
+          <h2>Problem Patterns</h2>
+          <p>{{ filteredPatterns().length }} of {{ patterns().length }} patterns</p>
+        </div>
+        <p-button icon="pi pi-plus" rounded (click)="openAddPatternPane()"></p-button>
+      </div>
+
+      <div class="filters">
+        <input
+          pInputText
+          #patternSearchInput
+          type="text"
+          class="field"
+          placeholder="Search by name, explanation, or tag"
+          [value]="patternSearchTerm()"
+          (input)="setPatternSearchTerm(patternSearchInput.value)"
+        />
+      </div>
+
+      @if (filteredPatterns().length === 0) {
+        <div class="state-card">No patterns available yet.</div>
+      } @else {
+        <div class="pattern-list">
+          @for (pattern of filteredPatterns(); track trackByPatternId($index, pattern)) {
+            <div class="pattern-row">
+              <div class="pattern-meta">
+                <h3>{{ pattern.name }}</h3>
+                <p>#{{ pattern.id }} | {{ getTagNameById(pattern.tagId) }}</p>
+                <p>{{ pattern.explanation }}</p>
+              </div>
+              <p-button
+                icon="pi pi-pencil"
+                rounded
+                rouned
+                text
+                (click)="openEditPatternPane(pattern)"
+              >
+              </p-button>
+            </div>
+          }
+        </div>
+      }
+    </p-card>
+  </div>
+</section>
+
+<ng-template #problemFormTemplate>
+  <app-form-pane-template
+    [form]="problemForm"
+    [isEditMode]="editingQuestionId() !== null"
+    [isSaving]="isSavingProblem()"
+    [title]="editingQuestionId() !== null ? 'Edit Problem' : 'Create Problem'"
+    (addForm)="submitProblem()"
+    (cancelForm)="closeRightPane()"
+    (saveForm)="submitProblem()"
+  >
+    <form class="pane-form" [formGroup]="problemForm">
+      <label>
+        <span>Title</span>
+        <input pInputText class="field" type="text" formControlName="title" />
+      </label>
+
+      <label>
+        <span>Link</span>
+        <input pInputText class="field" type="text" formControlName="link" />
+      </label>
+
+      <div>
+        <label for="difficultySelect"><span>Difficulty</span></label>
+        <p-select
+          inputId="difficultySelect"
+          formControlName="difficulty"
+          [options]="difficultyOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select difficulty"
+          styleClass="field"
+        ></p-select>
+      </div>
+      <div>
+        <label for="problemTagSelect"><span>Problem Tag</span></label>
+        <p-multiselect
+          inputId="problemTagSelect"
+          formControlName="categoryIds"
+          [options]="tags()"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Select tags"
+          [maxSelectedLabels]="3"
+          display="chip"
+          styleClass="field"
+        ></p-multiselect>
+      </div>
+    </form>
+  </app-form-pane-template>
+</ng-template>
+
+<ng-template #tagFormTemplate>
+  <app-form-pane-template
+    [form]="tagForm"
+    [isSaving]="isSavingTag()"
+    [isEditMode]="editingTagId() !== null"
+    [title]="editingTagId() !== null ? 'Edit Tag' : 'Create Tag'"
+    (addForm)="submitTag()"
+    (cancelForm)="closeRightPane()"
+    (saveForm)="submitTag()"
+  >
+    <form class="pane-form" [formGroup]="tagForm">
+      <label>
+        <span>Tag Name</span>
+        <input pInputText class="field" type="text" formControlName="name" />
+      </label>
+    </form>
+  </app-form-pane-template>
+</ng-template>
+
+<ng-template #patternFormTemplate>
+  <app-form-pane-template
+    [form]="patternForm"
+    [isSaving]="isSavingPattern()"
+    [isEditMode]="editingPatternId() !== null"
+    [title]="editingPatternId() !== null ? 'Edit Pattern' : 'Create Pattern'"
+    (addForm)="submitPattern()"
+    (cancelForm)="closeRightPane()"
+    (saveForm)="submitPattern()"
+  >
+    <form class="pane-form" [formGroup]="patternForm">
+      <label>
+        <span>Pattern Name</span>
+        <input pInputText class="field" type="text" formControlName="name" />
+      </label>
+
+      <label>
+        <span>Explanation</span>
+        <textarea class="field" rows="4" formControlName="explanation"></textarea>
+      </label>
+
+      <div>
+        <label for="patternTagSelect"><span>Problem Tag</span></label>
+        <p-select
+          inputId="patternTagSelect"
+          formControlName="tagId"
+          [options]="tags()"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Select tag"
+          styleClass="field"
+        ></p-select>
+      </div>
+    </form>
+  </app-form-pane-template>
+</ng-template>

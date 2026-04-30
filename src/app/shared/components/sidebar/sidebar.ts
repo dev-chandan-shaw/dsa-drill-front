@@ -2,6 +2,7 @@ import { Component, inject, input } from '@angular/core';
 import { Router } from '@angular/router';
 import { RightPaneService } from '../../services/right-pane-service';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../core/services/auth/auth.service';
 
 interface NavItem {
   label: string;
@@ -19,14 +20,31 @@ export class Sidebar {
   showHeader = input(true);
   readonly router = inject(Router);
   private readonly rightPaneService = inject(RightPaneService);
+  private readonly authService = inject(AuthService);
+  private readonly isAdmin = this.authService.isAdmin();
 
-  navItems: NavItem[] = [
+  readonly navItems: NavItem[] = [
     {
-      label: 'Home',
+      label: 'Library',
       route: '/home',
-      icon: 'pi pi-home',
+      icon: 'pi pi-book',
+    },
+    {
+      label: 'Pattern',
+      route: '/question-pattern',
+      icon: 'pi pi-sitemap',
     },
   ];
+
+  constructor() {
+    if (this.isAdmin()) {
+      this.navItems.push({
+        label: 'Admin',
+        route: '/admin',
+        icon: 'pi pi-shield',
+      });
+    }
+  }
 
   isActive(route: string): boolean {
     return this.router.url === route;

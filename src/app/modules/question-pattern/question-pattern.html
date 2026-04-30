@@ -1,0 +1,28 @@
+@if (isLoading()) {
+  <p-progressbar mode="indeterminate" [style]="{ height: '4px' }" />
+} @else {
+  <section class="question-pattern-page">
+    <div class="tag-filter-row">
+      @for (tag of tags(); track tag.id) {
+        <p class="tag-chip">
+          <span>{{ tag.name }}</span>
+          <span class="tag-count">{{ getPatternCountByTag(tag.id) }}</span>
+        </p>
+      }
+    </div>
+
+    @if (filteredPatterns().length === 0) {
+      <div class="state-card">No question patterns available.</div>
+    } @else {
+      @for (pattern of filteredPatterns(); track trackByPatternId($index, pattern)) {
+        <p-card styleClass="mb-4">
+          <div class="pattern-meta">
+            <h3>{{ pattern.name }}</h3>
+            <p>#{{ pattern.id }} | {{ getTagNameById(pattern.tagId) }}</p>
+            <p>{{ pattern.explanation }}</p>
+          </div>
+        </p-card>
+      }
+    }
+  </section>
+}

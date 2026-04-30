@@ -1,12 +1,7 @@
 <div class="flex flex-col h-dvh">
   <div class="right-panel-header flex items-center justify-between p-4">
     <h2 class="text-lg font-semibold">{{ title }}</h2>
-    <p-button
-      icon="pi pi-times"
-      text
-      rounded
-      (click)="cancelForm.emit()"
-    ></p-button>
+    <p-button icon="pi pi-times" text rounded (click)="cancelForm.emit()"></p-button>
   </div>
   <p-divider class="!m-0"></p-divider>
   <div class="flex-1 overflow-y-auto p-4">
@@ -15,19 +10,19 @@
   <p-divider class="!m-0"></p-divider>
   <div class="right-panel-footer flex justify-end gap-4 p-4">
     @if (isEditMode) {
-    <p-button
-      [disabled]="!form?.valid"
-      [loading]="isSaving"
-      label="Save"
-      (onClick)="saveForm.emit()"
-    ></p-button>
+      <p-button
+        [disabled]="!form.valid"
+        [loading]="isSaving"
+        label="Save"
+        (onClick)="saveForm.emit()"
+      ></p-button>
     } @else {
-    <p-button
-      [disabled]="!form?.valid"
-      [loading]="isSaving"
-      label="Add"
-      (onClick)="addForm.emit()"
-    ></p-button>
+      <p-button
+        [disabled]="!form.valid"
+        [loading]="isSaving"
+        label="Add"
+        (onClick)="addForm.emit()"
+      ></p-button>
     }
     <p-button label="Cancel" outlined (click)="cancelForm.emit()"></p-button>
   </div>

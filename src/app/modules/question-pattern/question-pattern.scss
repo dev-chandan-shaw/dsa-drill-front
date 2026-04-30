@@ -1,0 +1,117 @@
+:host {
+    display: block;
+    height: 100%;
+}
+
+.question-pattern-page {
+    padding: 16px;
+    height: 100%;
+    overflow: auto;
+    max-width: 1080px;
+    margin: 0 auto;
+}
+
+.panel {
+    background: var(--p-surface-900);
+    border: 1px solid var(--p-surface-700);
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+
+    h2 {
+        margin: 0;
+        font-size: 1.125rem;
+    }
+
+    p {
+        margin: 0;
+        color: var(--p-surface-300);
+    }
+}
+
+.field {
+    width: 100%;
+    border: 1px solid var(--p-surface-600);
+    border-radius: 8px;
+    background: var(--p-surface-950);
+    color: var(--p-text-color);
+    outline: none;
+}
+
+.filters {
+    margin-bottom: 12px;
+}
+
+.tag-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.tag-chip {
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    display: inline-flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+    border: 1px solid transparent;
+}
+
+.tag-count {
+    background: var(--p-surface-800);
+    color: var(--p-surface-400);
+    padding: 0 8px;
+    border-radius: 999px;
+}
+
+.tag-chip.active {
+    border-color: var(--p-primary-color);
+    background: color-mix(in srgb, var(--p-primary-color) 15%, transparent);
+}
+
+.pattern-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pattern-row {
+    display: block;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid var(--p-surface-700);
+    border-radius: 10px;
+    background: var(--p-surface-800);
+}
+
+.pattern-meta {
+    min-width: 0;
+
+    h3 {
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    p {
+        margin: 4px 0 0;
+        color: var(--p-surface-300);
+    }
+}
+
+.state-card {
+    border: 1px dashed var(--p-surface-600);
+    border-radius: 10px;
+    padding: 16px;
+    color: var(--p-surface-300);
+}

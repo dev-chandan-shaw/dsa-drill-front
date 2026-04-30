@@ -1,26 +1,36 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { IApiResponse } from '../../../shared/models/ApiResponse';
 import { IUserQuestionStatus, UserQuestionStatusDto } from '../models/Question-status';
 
 @Injectable({
   providedIn: 'root',
 })
-export class QuestionStatusApiService {
-  private readonly _apiUrl = environment.apiUrl;
-  private readonly _questionStatusEndpoint = `${this._apiUrl}/user-question-status`;
+export class ProblemStatusApiService {
+  private readonly _problemStatusEndpoint = `${environment.apiUrl}/user-problem-status`;
   private readonly _http: HttpClient = inject(HttpClient);
 
-  getAllQuestionStatuses() {
-    // return this._http
-    //   .get<IApiResponse<IUserQuestionStatus[]>>(`${this._questionStatusEndpoint}`)
-    //   .pipe(map((res) => res.data));
-    return of<IUserQuestionStatus[]>([]);
+  // 1. Keep the state private
+  private readonly _problemStatuses = signal<Record<number, IUserQuestionStatus>>({});
+
+  // 2. Expose a read-only version for components
+  public readonly problemStatuses = this._problemStatuses.asReadonly();
+
+  fetchProblemStatuses() {
+    return this._http.get<IUserQuestionStatus[]>(`${this._problemStatusEndpoint}`).pipe(
+      tap((statuses) => {
+        this._problemStatuses.set(
+          statuses.reduce((acc: Record<number, IUserQuestionStatus>, status) => {
+            acc[status.problemId] = status;
+            return acc;
+          }, {}),
+        );
+      }),
+    );
   }
 
-  updateQuestionStatus(status: UserQuestionStatusDto): Observable<IApiResponse<null>> {
-    return this._http.patch<IApiResponse<null>>(`${this._questionStatusEndpoint}`, status);
+  updateProblemStatus(status: UserQuestionStatusDto): Observable<boolean> {
+    return this._http.post<boolean>(`${this._problemStatusEndpoint}`, status);
   }
 }
