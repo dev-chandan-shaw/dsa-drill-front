@@ -1,6 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, catchError, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { IUserQuestionStatus, UserQuestionStatusDto } from '../models/Question-status';
 
@@ -31,6 +31,30 @@ export class ProblemStatusApiService {
   }
 
   updateProblemStatus(status: UserQuestionStatusDto): Observable<boolean> {
-    return this._http.post<boolean>(`${this._problemStatusEndpoint}`, status);
+    // Store previous state for rollback
+    const previousStatuses = this._problemStatuses();
+
+    // Optimistic update - show in UI immediately
+    this._problemStatuses.update((statuses) => ({
+      ...statuses,
+      [status.problemId]: {
+        ...statuses[status.problemId],
+        ...status,
+      },
+    }));
+
+    return this._http.post<boolean>(`${this._problemStatusEndpoint}`, status).pipe(
+      tap((res) => {
+        if (!res) {
+          // Rollback if server returns false
+          this._problemStatuses.set(previousStatuses);
+        }
+      }),
+      catchError((error) => {
+        // Rollback on HTTP error
+        this._problemStatuses.set(previousStatuses);
+        return throwError(() => error);
+      }),
+    );
   }
 }

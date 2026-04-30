@@ -5,18 +5,19 @@ import { Sidebar } from '../sidebar/sidebar';
 import { StorageService } from '../../../core/services/storage.service';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-import { AuthService } from '../../../core/services/auth/auth.service';
 
 @Component({
   selector: 'app-header',
   imports: [CommonModule, Sidebar, ButtonModule],
   templateUrl: './header.html',
   styleUrl: './header.scss',
+  host: {
+    ngSkipHydration: 'true',
+  },
 })
 export class Header {
   @ViewChild('sidebarTemplate') sidebarTemplate!: TemplateRef<any>;
   readonly rightPaneService = inject(RightPaneService);
-  private readonly authService = inject(AuthService);
   private readonly storageService = inject(StorageService);
   private readonly router = inject(Router);
   @Output() toggleSidebar = new EventEmitter<void>();
@@ -37,10 +38,5 @@ export class Header {
 
   navigateToHome() {
     this.router.navigateByUrl('/');
-  }
-
-  logout() {
-    this.authService.logout();
-    this.router.navigateByUrl('/login', { replaceUrl: true });
   }
 }

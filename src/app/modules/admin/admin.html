@@ -30,33 +30,29 @@
         ></p-select>
       </div>
 
-      @if (filteredQuestions().length === 0) {
-        <div class="state-card">No problems match the current filter.</div>
-      } @else {
-        <div class="problem-list">
-          @for (question of filteredQuestions(); track trackByQuestionId($index, question)) {
-            <div class="problem-row">
-              <div class="problem-meta">
-                <h3>{{ question.title }}</h3>
-                <p>
-                  #{{ question.id }}
-                  @if (question.slug) {
-                    | {{ question.slug }}
-                  }
-                </p>
-              </div>
-              <div class="actions">
-                <p-button
-                  variant="text"
-                  icon="pi pi-pencil"
-                  rounded
-                  (click)="openEditProblemPane(question)"
-                ></p-button>
-              </div>
+      <div class="problem-list">
+        @for (question of filteredQuestions(); track trackByQuestionId($index, question)) {
+          <div class="problem-row">
+            <div class="problem-meta">
+              <h3>{{ question.title }}</h3>
+              <p>
+                #{{ question.id }}
+                @if (question.slug) {
+                  | {{ question.slug }}
+                }
+              </p>
             </div>
-          }
-        </div>
-      }
+            <div class="actions">
+              <p-button
+                variant="text"
+                icon="pi pi-pencil"
+                rounded
+                (click)="openEditProblemPane(question)"
+              ></p-button>
+            </div>
+          </div>
+        }
+      </div>
     </p-card>
 
     <p-card>
@@ -150,7 +146,7 @@
     [form]="problemForm"
     [isEditMode]="editingQuestionId() !== null"
     [isSaving]="isSavingProblem()"
-    [title]="editingQuestionId() !== null ? 'Edit Problem' : 'Create Problem'"
+    [title]="editingQuestionId() !== null ? 'Edit Problem' : 'Add Problem'"
     (addForm)="submitProblem()"
     (cancelForm)="closeRightPane()"
     (saveForm)="submitProblem()"
@@ -201,7 +197,7 @@
     [form]="tagForm"
     [isSaving]="isSavingTag()"
     [isEditMode]="editingTagId() !== null"
-    [title]="editingTagId() !== null ? 'Edit Tag' : 'Create Tag'"
+    [title]="editingTagId() !== null ? 'Edit Tag' : 'Add Tag'"
     (addForm)="submitTag()"
     (cancelForm)="closeRightPane()"
     (saveForm)="submitTag()"
@@ -220,7 +216,7 @@
     [form]="patternForm"
     [isSaving]="isSavingPattern()"
     [isEditMode]="editingPatternId() !== null"
-    [title]="editingPatternId() !== null ? 'Edit Pattern' : 'Create Pattern'"
+    [title]="editingPatternId() !== null ? 'Edit Pattern' : 'Add Pattern'"
     (addForm)="submitPattern()"
     (cancelForm)="closeRightPane()"
     (saveForm)="submitPattern()"

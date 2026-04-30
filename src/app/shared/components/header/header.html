@@ -1,7 +1,9 @@
 <header>
-  <div class="logo cursor-pointer" (click)="navigateToHome()">
-    <h1>DSA Drill</h1>
-  </div>
+  <button class="hamburger-btn" (click)="toggleSidebar.emit()">
+    <i class="pi pi-bars hamburger-icon"></i>
+  </button>
+
+  <h1 class="app-title">DSA Drill</h1>
 
   <div class="flex-1"></div>
 
@@ -9,17 +11,6 @@
     <div class="avatar" [attr.aria-label]="'User initial ' + userInitial">
       {{ userInitial }}
     </div>
-
-    <p-button
-      type="button"
-      label="Logout"
-      icon="pi pi-sign-out"
-      severity="danger"
-      [outlined]="true"
-      size="small"
-      styleClass="logout-btn"
-      (onClick)="logout()"
-    ></p-button>
   </div>
 </header>
 

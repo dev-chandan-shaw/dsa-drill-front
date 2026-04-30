@@ -28,9 +28,12 @@ import { ProgressBarModule } from 'primeng/progressbar';
 export class Modules implements OnInit {
   @ViewChild('sidebarTemplate') sidebarTemplate!: TemplateRef<any>;
   readonly rightPaneService = inject(RightPaneService);
-  readonly isMobile = signal(globalThis.innerWidth < 768);
+
+  // With this:
+  readonly isMobile = signal(globalThis?.innerWidth < 768);
+
   showSidebar = signal(true);
-  isLoading = signal(true);
+  isLoaded = signal(false);
 
   private readonly questionTagService = inject(ProblemTagService);
   private readonly questionService = inject(ProblemService);
@@ -40,7 +43,6 @@ export class Modules implements OnInit {
 
   ngOnInit(): void {
     // Load all data after user logs in
-    this.isLoading.set(true);
     forkJoin([
       this.questionTagService.fetchProblemTags(),
       this.questionService.fetchProblems(),
@@ -48,12 +50,12 @@ export class Modules implements OnInit {
       this.problemPatternService.fetchProblemPatterns(),
     ]).subscribe({
       next: () => {
-        this.isLoading.set(false);
+        this.isLoaded.set(true);
       },
       error: (err) => {
         console.error('Data loading error:', err);
-        // this.toastService.showError('Error loading data', 'Please refresh the page');
-        this.isLoading.set(false);
+        // this.toastService.showError('Failed to load data. Please refresh.');
+        // this.isLoaded.set(true); // unblock the UI so it's not frozen
       },
     });
   }

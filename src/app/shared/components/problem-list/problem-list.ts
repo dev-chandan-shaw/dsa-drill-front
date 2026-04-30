@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { ProblemStatusApiService } from '../../../modules/home/services/question-status-api.service';
 import { ProblemService } from '../../../modules/home/services/question.service';
+import { ToastService } from '../../services/toast-service';
 @Component({
   selector: 'app-problem-list',
   imports: [
@@ -39,6 +40,7 @@ export class ProblemList implements OnInit {
   private readonly problemService = inject(ProblemService);
   private readonly problemDrillService = inject(ProblemDrillService);
   private readonly questionStatusService = inject(ProblemStatusApiService);
+  private readonly toastService = inject(ToastService);
 
   problems = this.problemService.problems;
   filteredProblems = linkedSignal(() => this.problems());
@@ -71,8 +73,11 @@ export class ProblemList implements OnInit {
       problemId: problemId,
       revision: isMarked,
     };
-    this.problemStatuses()[problemId].revision = isMarked;
-    this.questionStatusService.updateProblemStatus(status).subscribe();
+    this.questionStatusService.updateProblemStatus(status).subscribe({
+      error: (error) => {
+        this.toastService.showError('Failed to update problem status', error.message);
+      },
+    });
   }
 
   toggleSolved(problemId: number) {
@@ -81,8 +86,11 @@ export class ProblemList implements OnInit {
       problemId: problemId,
       solved: isSolved,
     };
-    this.problemStatuses()[problemId].solved = isSolved;
-    this.questionStatusService.updateProblemStatus(status).subscribe();
+    this.questionStatusService.updateProblemStatus(status).subscribe({
+      error: (error) => {
+        this.toastService.showError('Failed to update problem status', error.message);
+      },
+    });
   }
 
   editNote(problemId: number) {
