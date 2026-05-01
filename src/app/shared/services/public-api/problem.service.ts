@@ -1,4 +1,4 @@
-import { inject, Injectable, signal, makeStateKey } from '@angular/core';
+import { inject, Injectable, signal, makeStateKey, TransferState } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { finalize, Observable, of, tap } from 'rxjs';
@@ -10,23 +10,42 @@ const PROBLEMS_STATE_KEY = makeStateKey<IProblem[]>('problems');
   providedIn: 'root',
 })
 export class PublicProblemService {
-  private readonly apiUrl = environment.apiUrl + '/public';
   private readonly http = inject(HttpClient);
+  private readonly transferState = inject(TransferState);
+
+  private readonly apiUrl = environment.apiUrl + '/public';
 
   private readonly problemsSignal = signal<IProblem[]>([]);
-  public isLoading = signal<boolean>(false); // Progress bar state
-  public hasLoaded = signal<boolean>(false); // Cache state
 
-  // Read-only access for components
+  public isLoading = signal(false);
+  public hasLoaded = signal(false);
+
   public problems = this.problemsSignal.asReadonly();
 
-  fetchProblems() {
-    if (this.hasLoaded()) return of([]);
+  fetchProblems(reload: boolean = false): Observable<IProblem[]> {
+    if (this.hasLoaded() && !reload) {
+      return of(this.problemsSignal());
+    }
+
+    const cached = this.transferState.get(PROBLEMS_STATE_KEY, null);
+
+    if (cached) {
+      this.problemsSignal.set(cached);
+      this.hasLoaded.set(true);
+
+      this.transferState.remove(PROBLEMS_STATE_KEY);
+
+      return of(cached);
+    }
+
     this.isLoading.set(true);
+
     return this.http.get<IProblem[]>(`${this.apiUrl}/problems`).pipe(
       tap((res) => {
         this.problemsSignal.set(res);
         this.hasLoaded.set(true);
+
+        this.transferState.set(PROBLEMS_STATE_KEY, res);
       }),
       finalize(() => this.isLoading.set(false)),
     );
@@ -37,8 +56,7 @@ export class PublicProblemService {
   }
 
   editProblem(payload: IProblem) {
-    const url = `${this.apiUrl}/problems`;
-    return this.http.put<IProblem>(url, payload);
+    return this.http.put<IProblem>(`${this.apiUrl}/problems`, payload);
   }
 
   getProblemBySlug(slug: string): Observable<IProblem> {

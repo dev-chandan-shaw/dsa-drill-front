@@ -78,6 +78,8 @@ export class ProblemList implements OnInit {
     const status: UserQuestionStatusDto = {
       problemId: problemId,
       revision: isMarked,
+      note: this.problemStatuses()[problemId]?.note,
+      solved: this.problemStatuses()[problemId]?.solved,
     };
     this.questionStatusService.updateProblemStatus(status).subscribe();
   }
@@ -87,6 +89,8 @@ export class ProblemList implements OnInit {
     const status: UserQuestionStatusDto = {
       problemId: problemId,
       solved: isSolved,
+      note: this.problemStatuses()[problemId]?.note,
+      revision: this.problemStatuses()[problemId]?.revision,
     };
     this.questionStatusService.updateProblemStatus(status).subscribe();
   }

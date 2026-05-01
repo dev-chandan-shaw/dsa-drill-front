@@ -10,7 +10,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { finalize, Observable, take } from 'rxjs';
+import { finalize, Observable, switchMap, take } from 'rxjs';
 import { IProblem, ProblemDifficulty } from '../home/models/Question';
 import { IProblemTag } from '../home/models/question-tag';
 import { IProblemPattern } from '../home/models/problem-pattern';
@@ -276,6 +276,7 @@ export class Admin {
       .pipe(
         finalize(() => this.isSavingProblem.set(false)),
         take(1),
+        switchMap(() => this.problemService.fetchProblems(true)),
       )
       .subscribe({
         next: () => {

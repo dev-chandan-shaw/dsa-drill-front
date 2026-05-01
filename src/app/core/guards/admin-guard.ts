@@ -1,15 +1,18 @@
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth/auth.service';
-import { inject } from '@angular/core';
+import { inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
-export const adminGuard: CanActivateFn = (route, state) => {
-    const authService = inject(AuthService);
-    const isAdmin = authService.isAdmin();
-    const router = inject(Router);
-    if (!isAdmin()) {
-        // Redirect to login page if not authenticated
-        router.navigate(['/']);
-        return false;
+export const adminGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  const isAdmin = authService.isAdmin();
+  const platformId = inject(PLATFORM_ID);
+
+  if (isPlatformBrowser(platformId) && !isAdmin()) {
+    return router.createUrlTree(['/']);
   }
+
   return true;
 };

@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
@@ -13,6 +13,9 @@ import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.
 import { PublicProblemService } from '../../shared/services/public-api/problem.service';
 import { ProblemList } from '../../shared/components/problem-list/problem-list';
 import { Divider } from 'primeng/divider';
+import { AuthService } from '../../core/services/auth/auth.service';
+import { ProblemStatusApiService } from './services/user/question-status-api.service';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-home',
@@ -37,6 +40,9 @@ import { Divider } from 'primeng/divider';
 export class Home implements OnInit {
   private readonly questionTagService = inject(ProblemTagService);
   private readonly questionService = inject(PublicProblemService);
+  private readonly authService = inject(AuthService);
+  private readonly questionStatusService = inject(ProblemStatusApiService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   problems = this.questionService.problems;
   tags = this.questionTagService.problemTags;
@@ -46,7 +52,10 @@ export class Home implements OnInit {
   );
 
   ngOnInit(): void {
-    this.questionTagService.fetchProblemTags().subscribe();
     this.questionService.fetchProblems().subscribe();
+    this.questionTagService.fetchProblemTags().subscribe();
+    if (isPlatformBrowser(this.platformId)) {
+      this.questionStatusService.fetchProblemStatuses().subscribe();
+    }
   }
 }
