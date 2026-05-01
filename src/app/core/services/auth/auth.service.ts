@@ -1,53 +1,46 @@
-import { inject, Injectable, Signal, signal } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID, Signal, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { AuthApiService } from './auth-api.service';
-import { map, Observable } from 'rxjs';
+import { catchError, finalize, map, Observable, of, shareReplay, tap } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { IRegisterRequest, IUser } from '../../../shared/models/User';
-import { StorageService } from '../storage.service';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private readonly _authApiService = inject(AuthApiService);
-  private readonly _storageService = inject(StorageService);
   private readonly _loggedInUser = signal<IUser | null>(null);
   private readonly _isLoggedIn = signal<boolean | null>(false);
   private readonly _isAdmin = signal<boolean | null>(false);
+  private readonly _isAuthResolved = signal<boolean>(false);
+  private readonly _isAuthLoading = signal<boolean>(false);
+  private currentUserRequest: Observable<IUser | null> | null = null;
+  private readonly router = inject(Router);
+  private readonly platformId = inject(PLATFORM_ID);
 
   isAdmin() {
-    // if (!this._isAdmin()) {
-    //   this.getLoggedInUser();
-    //   const user = this._loggedInUser();
-    //   const token = user?.token;
-    //   if (token) {
-    //     const roles = this.getRoles(token);
-    //     this._isAdmin.set(roles.includes('ROLE_ADMIN') || roles.includes('ROLE_SUPER_ADMIN'));
-    //   }
-    // }
-    // return this._isAdmin;
-    return signal(true);
+    return this._isAdmin.asReadonly();
   }
 
   getLoggedInUser(): Signal<IUser | null> {
-    if (!this._loggedInUser()) {
-      const user = this._storageService.get('loggedInUser');
-      this._loggedInUser.set(user ? JSON.parse(user) : null);
-    }
     return this._loggedInUser;
+  }
+
+  getAuthResolved(): Signal<boolean> {
+    return this._isAuthResolved;
+  }
+
+  getAuthLoading(): Signal<boolean> {
+    return this._isAuthLoading;
   }
 
   login(username: string, password: string): Observable<IUser> {
     return this._authApiService.login(username, password).pipe(
       map((response) => {
         const user = response;
-        const token = this.resolveToken(user);
-
-        if (!token) {
-          throw new Error('Authentication token was not returned by the server.');
-        }
-
-        this.setUser(user);
+        this._loggedInUser.set(user);
         return user;
       }),
     );
@@ -57,65 +50,93 @@ export class AuthService {
     return this._authApiService.register(data).pipe(
       map((response) => {
         const user = response;
-        const token = this.resolveToken(user);
+        this._loggedInUser.set(user);
+        return user;
+      }),
+    );
+  }
 
-        if (!token) {
-          throw new Error('Authentication token was not returned by the server.');
+  loadCurrentUser(): Observable<IUser | null> {
+    if (this._isAuthResolved()) {
+      return of(this._loggedInUser());
+    }
+
+    if (this.currentUserRequest) {
+      return this.currentUserRequest;
+    }
+
+    this._isAuthLoading.set(true);
+    const request$ = this._authApiService.fetchCurrentUser().pipe(
+      tap((user) => {
+        if (user) {
+          this._loggedInUser.set(user);
+          if (user.role === 'ROLE_ADMIN') {
+            this._isAdmin.set(true);
+          }
         }
+      }),
+      map((user) => user || null),
+      catchError(() => {
+        this.clearUser();
+        return of(null);
+      }),
+      finalize(() => {
+        this._isAuthResolved.set(true);
+        this._isAuthLoading.set(false);
+        this.currentUserRequest = null;
+      }),
+      shareReplay({ bufferSize: 1, refCount: false }),
+    );
 
-        this.setUser(user);
-        return user;
+    this.currentUserRequest = request$;
+    return request$;
+  }
+
+  logout() {
+    this._authApiService.logout().subscribe({
+      next: () => this.clearUser(),
+      error: (err) => console.error(err),
+      complete: () => this.router.navigate(['/login']), // Runs no matter what
+    });
+  }
+
+  ensureLoggedIn(redirectUrl?: string): Observable<boolean> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return of(true);
+    }
+
+    const cachedUser = this._loggedInUser();
+    if (cachedUser) {
+      return of(true);
+    }
+
+    return this.loadCurrentUser().pipe(
+      map((user) => {
+        if (user) {
+          return true;
+        }
+        this.redirectToLogin(redirectUrl);
+        return false;
+      }),
+      catchError(() => {
+        this.redirectToLogin(redirectUrl);
+        return of(false);
       }),
     );
   }
 
-  fetchCurrentUser(token: string): Observable<IUser> {
-    return this._authApiService.fetchCurrentUser(token).pipe(
-      map((response) => {
-        const user = response.data;
-        this.setUser(user);
-        return user;
-      }),
-    );
-  }
-
-  setUser(user: IUser): void {
-    const normalizedUser = user as IUser & { accessToken?: string; jwt?: string };
-    const token = this.resolveToken(normalizedUser);
-
-    if (!token) {
-      this.logout();
-      return;
-    }
-
-    let roles: string[] = [];
-
-    try {
-      const decodedToken: any = jwtDecode(token);
-      roles = decodedToken.roles || [];
-    } catch {
-      roles = [];
-    }
-
-    this._isAdmin.set(roles.includes('ROLE_ADMIN') || roles.includes('ROLE_SUPER_ADMIN'));
-
-    this._isLoggedIn.set(true);
-
-    this._storageService.set('authToken', token);
-    const safeUser: IUser = {
-      ...normalizedUser,
-      token,
-    };
-    this._storageService.set('loggedInUser', JSON.stringify(safeUser));
-    this._loggedInUser.set(safeUser);
-  }
-
-  logout(): void {
-    this._storageService.remove('authToken');
-    this._storageService.remove('loggedInUser');
+  private clearUser(): void {
     this._loggedInUser.set(null);
     this._isLoggedIn.set(false);
     this._isAdmin.set(false);
+    this._isAuthResolved.set(true);
+  }
+
+  private redirectToLogin(redirectUrl?: string): void {
+    const returnUrl = redirectUrl || this.router.url || '/';
+    this.router.navigate(['/login'], {
+      queryParams: { returnUrl },
+    });
   }
 
   getRoles(token: string): string[] {

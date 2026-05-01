@@ -22,8 +22,8 @@
       </div>
 
       <div class="form-field">
-        <p-floatlabel variant="on">
-          <p-inputgroup>
+        <p-inputgroup>
+          <p-floatlabel variant="on">
             <input
               [type]="showPassword ? 'text' : 'password'"
               pInputText
@@ -31,17 +31,17 @@
               formControlName="password"
               style="width: 100%"
             />
-            <p-inputgroup-addon>
-              <p-button
-                [icon]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"
-                severity="secondary"
-                variant="text"
-                (click)="showPassword = !showPassword"
-              />
-            </p-inputgroup-addon>
-          </p-inputgroup>
-          <label for="password">Password</label>
-        </p-floatlabel>
+            <label for="password">Password</label>
+          </p-floatlabel>
+          <p-inputgroup-addon>
+            <p-button
+              [icon]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"
+              severity="secondary"
+              variant="text"
+              (click)="showPassword = !showPassword"
+            />
+          </p-inputgroup-addon>
+        </p-inputgroup>
         <p class="field-error">
           <small
             *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
@@ -64,7 +64,23 @@
         size="large"
         type="submit"
         styleClass="w-full"
-        [disabled]="loginForm.invalid"
+        [loading]="isLoading()"
+        [disabled]="loginForm.invalid || isLoading() || isGoogleLoading()"
+      />
+
+      <div class="divider" aria-hidden="true"></div>
+
+      <p-button
+        [label]="isGoogleLoading() ? 'Redirecting...' : 'Continue with Google'"
+        icon="pi pi-google"
+        severity="secondary"
+        variant="outlined"
+        size="large"
+        type="button"
+        styleClass="w-full"
+        [loading]="isGoogleLoading()"
+        [disabled]="isLoading() || isGoogleLoading()"
+        (onClick)="loginWithGoogle()"
       />
     </form>
   </section>

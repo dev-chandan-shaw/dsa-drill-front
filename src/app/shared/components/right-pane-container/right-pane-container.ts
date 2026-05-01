@@ -19,8 +19,8 @@ export class RightPaneContainer {
   }
 
   get width() {
-    if (this.isMobile && this.rightPaneService.side === PaneSide.RIGHT) {
-      return '100%';
+    if (this.isMobile) {
+      return this.rightPaneService.side === PaneSide.LEFT ? '210px' : '100%';
     }
     switch (this.rightPaneService.size) {
       case RightPaneSize.MOBILE:

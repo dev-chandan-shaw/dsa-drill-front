@@ -1,22 +1,16 @@
-import { NgTemplateOutlet } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { RouterModule } from '@angular/router';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { DialogModule } from 'primeng/dialog';
-import { Select } from 'primeng/select';
 import { MenuModule } from 'primeng/menu';
 import { PopoverModule } from 'primeng/popover';
 import { CardModule } from 'primeng/card';
-import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ISheet } from './models/sheet';
-import { ProblemTagService } from './services/question-tag.service';
-import { ProblemService } from './services/question.service';
-import { ProblemStatusApiService } from './services/question-status-api.service';
-import { ProblemPatternService } from './services/problem-pattern.service';
-import { IUserQuestionStatus, UserQuestionStatusDto } from './models/Question-status';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.service';
+import { PublicProblemService } from '../../shared/services/public-api/problem.service';
 import { ProblemList } from '../../shared/components/problem-list/problem-list';
 import { Divider } from 'primeng/divider';
 
@@ -28,9 +22,7 @@ import { Divider } from 'primeng/divider';
     TooltipModule,
     RouterModule,
     ProgressBarModule,
-    NgTemplateOutlet,
     DialogModule,
-    Select,
     MenuModule,
     PopoverModule,
     CardModule,
@@ -42,58 +34,19 @@ import { Divider } from 'primeng/divider';
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
-export class Home {
-  private readonly formBuilder = new FormBuilder();
+export class Home implements OnInit {
   private readonly questionTagService = inject(ProblemTagService);
-  private readonly questionService = inject(ProblemService);
-  private readonly questionStatusService = inject(ProblemStatusApiService);
-  private readonly problemPatternService = inject(ProblemPatternService);
+  private readonly questionService = inject(PublicProblemService);
 
-  addToSheetForm = this.formBuilder.group({
-    categoryId: [''],
-  });
+  problems = this.questionService.problems;
+  tags = this.questionTagService.problemTags;
 
-  isGroupedByPattern = signal(false);
-  categories = this.questionTagService.problemTags;
-  sheets = signal<ISheet[]>([
-    {
-      id: 1,
-      name: 'Sheet 1',
-    },
-  ]);
-  questions = this.questionService.problems;
-  questionStatuses = this.questionStatusService.problemStatuses;
-  selectedSheet = signal(1);
-  selectedCategory = signal(1);
-  expandedGroups: { [patternId: number]: boolean } = {};
+  hasLoaded = computed(
+    () => this.questionService.hasLoaded() && this.questionTagService.hasLoaded(),
+  );
 
-  toggleMarkForRevision(problemId: number) {
-    const isMarked = !this.questionStatuses()[problemId]?.revision;
-    const status: UserQuestionStatusDto = {
-      problemId: problemId,
-      revision: isMarked,
-    };
-    this.questionStatuses()[problemId] = {
-      ...this.questionStatuses()[problemId],
-      revision: isMarked,
-    } as IUserQuestionStatus;
-    this.questionStatusService.updateProblemStatus(status).subscribe();
-  }
-
-  toggleSolved(problemId: number) {
-    const isSolved = !this.questionStatuses()[problemId]?.solved;
-    const status: UserQuestionStatusDto = {
-      problemId: problemId,
-      solved: isSolved,
-    };
-    this.questionStatuses()[problemId] = {
-      ...this.questionStatuses()[problemId],
-      solved: isSolved,
-    } as IUserQuestionStatus;
-    this.questionStatusService.updateProblemStatus(status).subscribe();
-  }
-
-  togglePatternGroup(patternId: number) {
-    this.expandedGroups[patternId] = !this.expandedGroups[patternId];
+  ngOnInit(): void {
+    this.questionTagService.fetchProblemTags().subscribe();
+    this.questionService.fetchProblems().subscribe();
   }
 }

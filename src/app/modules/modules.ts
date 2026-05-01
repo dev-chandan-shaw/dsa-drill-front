@@ -6,17 +6,13 @@ import {
   signal,
   TemplateRef,
   ViewChild,
+  PLATFORM_ID,
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { Header } from '../shared/components/header/header';
 import { Sidebar } from '../shared/components/sidebar/sidebar';
 import { PaneSide, RightPaneService, RightPaneSize } from '../shared/services/right-pane-service';
-import { forkJoin } from 'rxjs';
-import { ProblemTagService } from './home/services/question-tag.service';
-import { ProblemService } from './home/services/question.service';
-import { ProblemStatusApiService } from './home/services/question-status-api.service';
-import { ProblemPatternService } from './home/services/problem-pattern.service';
-import { ToastService } from '../shared/services/toast-service';
 import { ProgressBarModule } from 'primeng/progressbar';
 
 @Component({
@@ -28,36 +24,19 @@ import { ProgressBarModule } from 'primeng/progressbar';
 export class Modules implements OnInit {
   @ViewChild('sidebarTemplate') sidebarTemplate!: TemplateRef<any>;
   readonly rightPaneService = inject(RightPaneService);
+  private readonly platformId = inject(PLATFORM_ID);
 
-  // With this:
-  readonly isMobile = signal(globalThis?.innerWidth < 768);
+  // Default to desktop for SSR; update on the client once we know the width.
+  readonly isMobile = signal(false);
 
   showSidebar = signal(true);
-  isLoaded = signal(false);
-
-  private readonly questionTagService = inject(ProblemTagService);
-  private readonly questionService = inject(ProblemService);
-  private readonly questionStatusService = inject(ProblemStatusApiService);
-  private readonly problemPatternService = inject(ProblemPatternService);
-  private readonly toastService = inject(ToastService);
 
   ngOnInit(): void {
-    // Load all data after user logs in
-    forkJoin([
-      this.questionTagService.fetchProblemTags(),
-      this.questionService.fetchProblems(),
-      this.questionStatusService.fetchProblemStatuses(),
-      this.problemPatternService.fetchProblemPatterns(),
-    ]).subscribe({
-      next: () => {
-        this.isLoaded.set(true);
-      },
-      error: (err) => {
-        console.error('Data loading error:', err);
-        // this.toastService.showError('Failed to load data. Please refresh.');
-        // this.isLoaded.set(true); // unblock the UI so it's not frozen
-      },
-    });
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    this.isMobile.set(globalThis.innerWidth < 768);
   }
 
   @HostListener('window:resize')

@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { IRegisterRequest, IUser } from '../../../shared/models/User';
-import { IApiResponse } from '../../../shared/models/ApiResponse';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -22,7 +22,12 @@ export class AuthApiService {
     return this._http.post<IUser>(`${this._apiUrl}/auth/register`, data);
   }
 
-  fetchCurrentUser(token: string) {
-    return this._http.get<IApiResponse<IUser>>(`${this._apiUrl}/auth/user?token=${token}`);
+  fetchCurrentUser(token?: string) {
+    const url = token ? `${this._apiUrl}/auth/user?token=${token}` : `${this._apiUrl}/auth/user`;
+    return this._http.get<IUser>(url);
+  }
+
+  logout(): Observable<void> {
+    return this._http.post<void>(`${this._apiUrl}/auth/logout`, {});
   }
 }

@@ -5,11 +5,7 @@
       <app-sidebar [showHeader]="false"></app-sidebar>
     }
     <div class="content">
-      @if (isLoaded()) {
-        <router-outlet></router-outlet>
-      } @else {
-        <p-progressbar mode="indeterminate" [style]="{ height: '4px' }" />
-      }
+      <router-outlet></router-outlet>
     </div>
   </div>
 </div>

@@ -1,4 +1,4 @@
-import { Component, inject, linkedSignal, OnInit } from '@angular/core';
+import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { CommonModule } from '@angular/common';
@@ -10,9 +10,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ProblemDrillService } from '../../../modules/home/services/problem-drill.service';
 import { FormsModule } from '@angular/forms';
 import { SelectButtonModule } from 'primeng/selectbutton';
-import { ProblemStatusApiService } from '../../../modules/home/services/question-status-api.service';
-import { ProblemService } from '../../../modules/home/services/question.service';
-import { ToastService } from '../../services/toast-service';
+import { ProblemStatusApiService } from '../../../modules/home/services/user/question-status-api.service';
+import { IProblem } from '../../../modules/home/models/Question';
 @Component({
   selector: 'app-problem-list',
   imports: [
@@ -37,14 +36,24 @@ export class ProblemList implements OnInit {
 
   value = 'all';
 
-  private readonly problemService = inject(ProblemService);
   private readonly problemDrillService = inject(ProblemDrillService);
   private readonly questionStatusService = inject(ProblemStatusApiService);
-  private readonly toastService = inject(ToastService);
 
-  problems = this.problemService.problems;
-  filteredProblems = linkedSignal(() => this.problems());
+  problems = input.required<IProblem[]>();
+  readonly searchTerm = signal('');
   problemStatuses = this.questionStatusService.problemStatuses;
+  readonly filteredProblems = computed(() => {
+    const normalizedSearch = this.searchTerm().trim().toLowerCase();
+    const revisionOnly = this.value === 'revision';
+
+    return this.problems().filter((problem) => {
+      const matchesSearch =
+        !normalizedSearch || problem.title.toLowerCase().includes(normalizedSearch);
+      const matchesRevision = !revisionOnly || this.problemStatuses()[problem.id]?.revision;
+
+      return matchesSearch && matchesRevision;
+    });
+  });
 
   ngOnInit(): void {
     this.problemDrillService.init(this.problems());
@@ -57,14 +66,11 @@ export class ProblemList implements OnInit {
   }
 
   filterRevision(value: string) {
-    if (value === this.value) {
-      this.value = 'all';
-    }
-    if (value === 'all') this.filteredProblems.set(this.problems());
-    else
-      this.filteredProblems.set(
-        this.problems().filter((p) => this.problemStatuses()[p.id]?.revision),
-      );
+    this.value = value === this.value ? 'all' : value;
+  }
+
+  setSearchTerm(value: string) {
+    this.searchTerm.set(value);
   }
 
   toggleMarkForRevision(problemId: number) {
@@ -73,11 +79,7 @@ export class ProblemList implements OnInit {
       problemId: problemId,
       revision: isMarked,
     };
-    this.questionStatusService.updateProblemStatus(status).subscribe({
-      error: (error) => {
-        this.toastService.showError('Failed to update problem status', error.message);
-      },
-    });
+    this.questionStatusService.updateProblemStatus(status).subscribe();
   }
 
   toggleSolved(problemId: number) {
@@ -86,11 +88,7 @@ export class ProblemList implements OnInit {
       problemId: problemId,
       solved: isSolved,
     };
-    this.questionStatusService.updateProblemStatus(status).subscribe({
-      error: (error) => {
-        this.toastService.showError('Failed to update problem status', error.message);
-      },
-    });
+    this.questionStatusService.updateProblemStatus(status).subscribe();
   }
 
   editNote(problemId: number) {

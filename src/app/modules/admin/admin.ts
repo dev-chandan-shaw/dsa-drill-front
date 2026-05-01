@@ -14,9 +14,12 @@ import { finalize, Observable, take } from 'rxjs';
 import { IProblem, ProblemDifficulty } from '../home/models/Question';
 import { IProblemTag } from '../home/models/question-tag';
 import { IProblemPattern } from '../home/models/problem-pattern';
-import { ProblemService } from '../home/services/question.service';
-import { ProblemTagService } from '../home/services/question-tag.service';
-import { ProblemPatternService } from '../home/services/problem-pattern.service';
+import { PublicProblemService } from '../../shared/services/public-api/problem.service';
+import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.service';
+import { ProblemPatternService } from '../../shared/services/public-api/problem-pattern.service';
+import { AdminProblemService } from './services/admin-problem';
+import { AdminProblemTagService } from './services/admin-problem-tag';
+import { AdminProblemPatternService } from './services/admin-problem-pattern';
 import { RightPaneService, RightPaneSize } from '../../shared/services/right-pane-service';
 import { ToastService } from '../../shared/services/toast-service';
 import { FormPaneTemplate } from '../../shared/components/form-pane-template/form-pane-template';
@@ -24,7 +27,6 @@ import { SelectModule } from 'primeng/select';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
-import { ProgressBar } from 'primeng/progressbar';
 import { Card } from 'primeng/card';
 import { Button } from 'primeng/button';
 
@@ -40,7 +42,6 @@ type AdminProblemFilter = 'ALL' | 'REVIEW' | 'ARCHIVED';
     MultiSelectModule,
     InputTextModule,
     InputNumberModule,
-    ProgressBar,
     Card,
     Button,
   ],
@@ -55,9 +56,12 @@ export class Admin {
 
   private readonly fb = inject(FormBuilder);
   private readonly platformId = inject(PLATFORM_ID);
-  private readonly problemService = inject(ProblemService);
+  private readonly problemService = inject(PublicProblemService);
   private readonly problemTagService = inject(ProblemTagService);
   private readonly problemPatternService = inject(ProblemPatternService);
+  private readonly adminProblemService = inject(AdminProblemService);
+  private readonly adminProblemTagService = inject(AdminProblemTagService);
+  private readonly adminProblemPatternService = inject(AdminProblemPatternService);
   private readonly rightPaneService = inject(RightPaneService);
   private readonly toastService = inject(ToastService);
 
@@ -264,8 +268,8 @@ export class Admin {
     };
     const editingId = this.editingQuestionId();
     const request$ = editingId
-      ? this.problemService.editProblem(payload)
-      : this.problemService.addProblem(payload);
+      ? this.adminProblemService.editProblem(payload)
+      : this.adminProblemService.addProblem(payload);
 
     this.isSavingProblem.set(true);
     request$
@@ -312,8 +316,8 @@ export class Admin {
     const payload = this.tagForm.getRawValue();
     const editingId = this.editingTagId();
     const request$: Observable<unknown> = editingId
-      ? this.problemTagService.updateProblemTag(editingId, payload)
-      : this.problemTagService.addProblemTag(payload);
+      ? this.adminProblemTagService.editProblemTag(editingId, payload)
+      : this.adminProblemTagService.addProblemTag(payload);
 
     this.isSavingTag.set(true);
     request$
@@ -370,13 +374,13 @@ export class Admin {
 
     const editingId = this.editingPatternId();
     const request$: Observable<unknown> = editingId
-      ? this.problemPatternService.updateProblemPattern({
+      ? this.adminProblemPatternService.editProblemPattern({
           id: editingId,
           name: formValue.name,
           explanation: formValue.explanation,
           tagId: formValue.tagId,
         })
-      : this.problemPatternService.createProblemPattern({
+      : this.adminProblemPatternService.addProblemPattern({
           name: formValue.name,
           explanation: formValue.explanation,
           tagId: formValue.tagId,

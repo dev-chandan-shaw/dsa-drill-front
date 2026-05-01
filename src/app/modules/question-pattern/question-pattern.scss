@@ -56,6 +56,20 @@
     margin-bottom: 12px;
 }
 
+.pattern-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+    color: var(--p-surface-300);
+    font-size: 0.85rem;
+}
+
+.pattern-progress :global(.p-progressbar) {
+    height: 6px;
+    border-radius: 999px;
+}
+
 .tag-chip {
     cursor: pointer;
     padding: 4px 8px;

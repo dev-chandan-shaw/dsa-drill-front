@@ -1,25 +1,29 @@
-<div class="flex home flex-col p-4 h-full overflow-y-auto">
-  <!-- Normal List -->
-  <div class="flex flex-wrap gap-2 items-center">
-    @for (category of categories(); track $index) {
-      <p
-        [routerLink]="['/problems', category.id]"
-        class="cursor-pointer px-2 py-1 rounded-full text-sm flex gap-1 flex-wrap items-center"
-      >
-        <span>{{ category.name }}</span>
-        <span class="bg-[var(--p-surface-800)] text-[var(--p-surface-400)] px-2 rounded-full">{{
-          category.problemCount ?? 0
-        }}</span>
-      </p>
-    }
+@if (hasLoaded()) {
+  <div class="flex home flex-col p-4 h-full overflow-y-auto">
+    <!-- Normal List -->
+    <div class="flex flex-wrap gap-2 items-center">
+      @for (category of tags(); track $index) {
+        <p
+          [routerLink]="['/problems', category.id]"
+          class="cursor-pointer px-2 py-1 rounded-full text-sm flex gap-1 flex-wrap items-center"
+        >
+          <span>{{ category.name }}</span>
+          <span class="bg-[var(--p-surface-800)] text-[var(--p-surface-400)] px-2 rounded-full">{{
+            category.problemCount ?? 0
+          }}</span>
+        </p>
+      }
+    </div>
+    <p-divider styleClass="m-0"></p-divider>
+    <app-problem-list [problems]="problems()"></app-problem-list>
   </div>
-  <p-divider styleClass="m-0"></p-divider>
-  <app-problem-list></app-problem-list>
-</div>
+} @else {
+  <p-progressbar mode="indeterminate" [style]="{ height: '4px' }" />
+}
 
 <!-- Filter Template -->
 
-<p-popover #addToSheetMenu appendTo="body" [style]="{ width: '20rem' }">
+<!-- <p-popover #addToSheetMenu appendTo="body" [style]="{ width: '20rem' }">
   <h3 class="font-bold text-xl !py-4 !px-2">Add Question to Sheet</h3>
   <form [formGroup]="addToSheetForm">
     <div class="flex flex-col">
@@ -34,4 +38,4 @@
     </div>
     <button pButton type="submit" label="Save" class="p-button-primary w-full !mt-4"></button>
   </form>
-</p-popover>
+</p-popover> -->

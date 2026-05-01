@@ -1,10 +1,41 @@
-<div class="flex gap-8 p-4 max-w-[1080px] m-auto">
-  <div class="w-[320px]">
-    <p-card>
-      <p>Tag id: {{ 'Array' }}</p>
-    </p-card>
+@if (!hasLoaded()) {
+  <p-progressbar mode="indeterminate" [style]="{ height: '4px' }" />
+} @else {
+  <div class="sheet-layout">
+    <aside class="sheet-summary">
+      <p-card>
+        <div class="summary-card">
+          <div class="summary-title">{{ sheetTagName() }}</div>
+          <div class="summary-subtitle">{{ totalCount() }} problems</div>
+
+          <div class="summary-section">
+            <div class="summary-row">
+              <span>Easy</span>
+              <strong>{{ solvedEasyCount() }}/{{ easyCount() }}</strong>
+            </div>
+            <div class="summary-row">
+              <span>Medium</span>
+              <strong>{{ solvedMediumCount() }}/{{ mediumCount() }}</strong>
+            </div>
+            <div class="summary-row">
+              <span>Hard</span>
+              <strong>{{ solvedHardCount() }}/{{ hardCount() }}</strong>
+            </div>
+          </div>
+
+          <div class="summary-section">
+            <div class="summary-row">
+              <span>Solved</span>
+              <strong>{{ solvedCount() }}</strong>
+            </div>
+            <p-progressbar [value]="solvedPercent()" [showValue]="false"></p-progressbar>
+          </div>
+        </div>
+      </p-card>
+    </aside>
+
+    <div class="sheet-content">
+      <app-problem-list [problems]="problems()"></app-problem-list>
+    </div>
   </div>
-  <div class="flex-1">
-    <app-problem-list></app-problem-list>
-  </div>
-</div>
+}
