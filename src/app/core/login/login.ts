@@ -11,6 +11,7 @@ import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { AuthService } from '../services/auth/auth.service';
 import { finalize } from 'rxjs';
 import { ToastService } from '../../shared/services/toast-service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -31,6 +32,7 @@ export class Login {
   loginForm: FormGroup;
   showPassword = false;
   isLoading = signal(false);
+  isGoogleLoading = signal(false);
 
   private readonly _fb = inject(FormBuilder);
   private readonly _router = inject(Router);
@@ -68,5 +70,10 @@ export class Login {
     } else {
       this.loginForm.markAllAsTouched();
     }
+  }
+
+  loginWithGoogle(): void {
+    this.isGoogleLoading.set(true);
+    globalThis.location.href = environment.googleOAuthRedirectUrl;
   }
 }

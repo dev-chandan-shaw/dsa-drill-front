@@ -24,7 +24,6 @@ import { SelectModule } from 'primeng/select';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
-import { ProgressBar } from 'primeng/progressbar';
 import { Card } from 'primeng/card';
 import { Button } from 'primeng/button';
 
@@ -40,7 +39,6 @@ type AdminProblemFilter = 'ALL' | 'REVIEW' | 'ARCHIVED';
     MultiSelectModule,
     InputTextModule,
     InputNumberModule,
-    ProgressBar,
     Card,
     Button,
   ],

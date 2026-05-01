@@ -1,19 +1,19 @@
 import { inject, Injectable, Signal, signal } from '@angular/core';
 import { AuthApiService } from './auth-api.service';
-import { map, Observable } from 'rxjs';
+import { catchError, map, Observable, of, tap } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { IRegisterRequest, IUser } from '../../../shared/models/User';
-import { StorageService } from '../storage.service';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private readonly _authApiService = inject(AuthApiService);
-  private readonly _storageService = inject(StorageService);
   private readonly _loggedInUser = signal<IUser | null>(null);
   private readonly _isLoggedIn = signal<boolean | null>(false);
   private readonly _isAdmin = signal<boolean | null>(false);
+  private readonly router = inject(Router);
 
   isAdmin() {
     // if (!this._isAdmin()) {
@@ -30,10 +30,6 @@ export class AuthService {
   }
 
   getLoggedInUser(): Signal<IUser | null> {
-    if (!this._loggedInUser()) {
-      const user = this._storageService.get('loggedInUser');
-      this._loggedInUser.set(user ? JSON.parse(user) : null);
-    }
     return this._loggedInUser;
   }
 
@@ -41,12 +37,6 @@ export class AuthService {
     return this._authApiService.login(username, password).pipe(
       map((response) => {
         const user = response;
-        const token = this.resolveToken(user);
-
-        if (!token) {
-          throw new Error('Authentication token was not returned by the server.');
-        }
-
         this.setUser(user);
         return user;
       }),
@@ -57,24 +47,23 @@ export class AuthService {
     return this._authApiService.register(data).pipe(
       map((response) => {
         const user = response;
-        const token = this.resolveToken(user);
-
-        if (!token) {
-          throw new Error('Authentication token was not returned by the server.');
-        }
-
         this.setUser(user);
         return user;
       }),
     );
   }
 
-  fetchCurrentUser(token: string): Observable<IUser> {
-    return this._authApiService.fetchCurrentUser(token).pipe(
-      map((response) => {
-        const user = response.data;
-        this.setUser(user);
-        return user;
+  loadCurrentUser(): Observable<IUser | null> {
+    return this._authApiService.fetchCurrentUser().pipe(
+      tap((user) => {
+        if (user) {
+          this.setUser(user);
+        }
+      }),
+      map((user) => user || null),
+      catchError(() => {
+        this.clearUser();
+        return of(null);
       }),
     );
   }
@@ -83,16 +72,13 @@ export class AuthService {
     const normalizedUser = user as IUser & { accessToken?: string; jwt?: string };
     const token = this.resolveToken(normalizedUser);
 
-    if (!token) {
-      this.logout();
-      return;
-    }
-
     let roles: string[] = [];
 
     try {
-      const decodedToken: any = jwtDecode(token);
-      roles = decodedToken.roles || [];
+      if (token) {
+        const decodedToken: any = jwtDecode(token);
+        roles = decodedToken.roles || [];
+      }
     } catch {
       roles = [];
     }
@@ -101,18 +87,19 @@ export class AuthService {
 
     this._isLoggedIn.set(true);
 
-    this._storageService.set('authToken', token);
-    const safeUser: IUser = {
-      ...normalizedUser,
-      token,
-    };
-    this._storageService.set('loggedInUser', JSON.stringify(safeUser));
+    const safeUser: IUser = token ? { ...normalizedUser, token } : normalizedUser;
     this._loggedInUser.set(safeUser);
   }
 
-  logout(): void {
-    this._storageService.remove('authToken');
-    this._storageService.remove('loggedInUser');
+  logout() {
+    this._authApiService.logout().subscribe({
+      next: () => this.clearUser(),
+      error: (err) => console.error(err),
+      complete: () => this.router.navigate(['/login']), // Runs no matter what
+    });
+  }
+
+  private clearUser(): void {
     this._loggedInUser.set(null);
     this._isLoggedIn.set(false);
     this._isAdmin.set(false);

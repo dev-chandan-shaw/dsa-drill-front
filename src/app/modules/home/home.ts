@@ -1,4 +1,3 @@
-import { NgTemplateOutlet } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -28,7 +27,6 @@ import { Divider } from 'primeng/divider';
     TooltipModule,
     RouterModule,
     ProgressBarModule,
-    NgTemplateOutlet,
     DialogModule,
     Select,
     MenuModule,

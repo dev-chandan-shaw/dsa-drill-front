@@ -74,3 +74,10 @@
   align-items: center !important;
   gap: 0.5rem;
 }
+
+.divider {
+  height: 1px;
+  width: 100%;
+  background: var(--p-surface-700);
+  margin: 0.35rem 0 0.2rem;
+}

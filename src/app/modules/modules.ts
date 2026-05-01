@@ -6,7 +6,9 @@ import {
   signal,
   TemplateRef,
   ViewChild,
+  PLATFORM_ID,
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { Header } from '../shared/components/header/header';
 import { Sidebar } from '../shared/components/sidebar/sidebar';
@@ -28,7 +30,13 @@ import { ProgressBarModule } from 'primeng/progressbar';
 export class Modules implements OnInit {
   @ViewChild('sidebarTemplate') sidebarTemplate!: TemplateRef<any>;
   readonly rightPaneService = inject(RightPaneService);
-  readonly isMobile = signal(globalThis.innerWidth < 768);
+  private readonly platformId = inject(PLATFORM_ID);
+
+  // With this:
+  readonly isMobile = isPlatformBrowser(this.platformId)
+    ? signal(globalThis.innerWidth < 768)
+    : signal(true);
+
   showSidebar = signal(true);
   isLoading = signal(true);
 
@@ -39,6 +47,9 @@ export class Modules implements OnInit {
   private readonly toastService = inject(ToastService);
 
   ngOnInit(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     // Load all data after user logs in
     this.isLoading.set(true);
     forkJoin([
@@ -52,8 +63,8 @@ export class Modules implements OnInit {
       },
       error: (err) => {
         console.error('Data loading error:', err);
-        // this.toastService.showError('Error loading data', 'Please refresh the page');
-        this.isLoading.set(false);
+        this.toastService.showError('Failed to load data. Please refresh.');
+        this.isLoading.set(true);
       },
     });
   }

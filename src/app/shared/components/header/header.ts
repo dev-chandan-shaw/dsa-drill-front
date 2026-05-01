@@ -1,36 +1,49 @@
-import { Component, EventEmitter, Output, TemplateRef, ViewChild, inject } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Output,
+  TemplateRef,
+  ViewChild,
+  computed,
+  inject,
+} from '@angular/core';
 import { RightPaneService } from '../../services/right-pane-service';
 import { CommonModule } from '@angular/common';
 import { Sidebar } from '../sidebar/sidebar';
-import { StorageService } from '../../../core/services/storage.service';
+import { AuthService } from '../../../core/services/auth/auth.service';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-import { AuthService } from '../../../core/services/auth/auth.service';
+import { Menu, MenuModule } from 'primeng/menu';
 
 @Component({
   selector: 'app-header',
-  imports: [CommonModule, Sidebar, ButtonModule],
+  imports: [CommonModule, Sidebar, ButtonModule, MenuModule],
   templateUrl: './header.html',
   styleUrl: './header.scss',
 })
 export class Header {
   @ViewChild('sidebarTemplate') sidebarTemplate!: TemplateRef<any>;
+  @ViewChild('profileMenu') profileMenu!: Menu;
   readonly rightPaneService = inject(RightPaneService);
   private readonly authService = inject(AuthService);
-  private readonly storageService = inject(StorageService);
   private readonly router = inject(Router);
   @Output() toggleSidebar = new EventEmitter<void>();
+  readonly loggedInUser = this.authService.getLoggedInUser();
+
+  userFullName = computed(() => {
+    const user = this.loggedInUser();
+    if (user) {
+      const fullName = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim();
+      return fullName || user.email || 'User';
+    }
+    return 'User';
+  });
 
   get userInitial(): string {
-    const user = this.storageService.get('loggedInUser');
+    const user = this.loggedInUser();
     if (user) {
-      try {
-        const userData = JSON.parse(user);
-        const nameSource = userData.firstName || userData.name || userData.email || '';
-        return nameSource ? nameSource.charAt(0).toUpperCase() : 'U';
-      } catch {
-        return 'U';
-      }
+      const nameSource = user.firstName || user.lastName || user.email || '';
+      return nameSource ? nameSource.charAt(0).toUpperCase() : 'U';
     }
     return 'U';
   }
@@ -41,6 +54,22 @@ export class Header {
 
   logout() {
     this.authService.logout();
-    this.router.navigateByUrl('/login', { replaceUrl: true });
   }
+
+  menuitems = [
+    {
+      label: this.userFullName(),
+      disabled: true,
+    },
+    {
+      label: this.loggedInUser()?.email,
+      disabled: true,
+    },
+    { separator: true },
+    {
+      label: 'Logout',
+      icon: 'pi pi-sign-out',
+      command: () => this.logout(),
+    },
+  ];
 }

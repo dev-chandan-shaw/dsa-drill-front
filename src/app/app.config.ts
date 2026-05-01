@@ -10,13 +10,14 @@ import { providePrimeNG } from 'primeng/config';
 import { MessageService } from 'primeng/api';
 import Aura from '@primeuix/themes/aura';
 import { authInterceptor } from './core/interceptor/auth-interceptor';
+import { serverCookieInterceptor } from './core/interceptor/server-cookie-interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
-    provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([authInterceptor, serverCookieInterceptor])),
     providePrimeNG({
       theme: {
         preset: Aura,
