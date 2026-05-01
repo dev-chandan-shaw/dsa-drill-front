@@ -29,7 +29,7 @@
     }
   </div>
   @if (isLoggedIn()) {
-    <p-menu #profileMenu [popup]="true" [model]="menuitems()" styleClass="profile-menu"></p-menu>
+    <p-menu #profileMenu appendTo="body" [popup]="true" [model]="menuitems()" styleClass="profile-menu"></p-menu>
   }
 </header>
 
