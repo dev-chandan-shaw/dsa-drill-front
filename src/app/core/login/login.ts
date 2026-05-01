@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { InputTextModule } from 'primeng/inputtext';
@@ -36,6 +36,7 @@ export class Login {
 
   private readonly _fb = inject(FormBuilder);
   private readonly _router = inject(Router);
+  private readonly _route = inject(ActivatedRoute);
   private readonly _authService = inject(AuthService);
   private readonly _toastService = inject(ToastService);
 
@@ -57,7 +58,8 @@ export class Login {
         .subscribe({
           next: () => {
             this._toastService.showSuccess('Login successful', 'You have been signed in.');
-            this._router.navigateByUrl('/');
+            const returnUrl = this._route.snapshot.queryParamMap.get('returnUrl') || '/';
+            this._router.navigateByUrl(returnUrl);
           },
           error: (error) => {
             const detail =

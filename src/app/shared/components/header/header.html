@@ -10,21 +10,27 @@
   <div class="flex-1"></div>
 
   <div class="user-profile" aria-label="User profile">
-    <button type="button" class="profile-trigger" (click)="profileMenu.toggle($event)">
-      @if (loggedInUser()?.profilePictureUrl) {
-        <img
-          class="avatar-image"
-          [src]="loggedInUser()?.profilePictureUrl"
-          [alt]="userFullName()"
-        />
-      } @else {
-        <span class="avatar" [attr.aria-label]="'User initial ' + userInitial">
-          {{ userInitial }}
-        </span>
-      }
-    </button>
+    @if (isLoggedIn()) {
+      <button type="button" class="profile-trigger" (click)="profileMenu.toggle($event)">
+        @if (loggedInUser()?.profilePictureUrl) {
+          <img
+            class="avatar-image"
+            [src]="loggedInUser()?.profilePictureUrl"
+            [alt]="userFullName()"
+          />
+        } @else {
+          <span class="avatar" [attr.aria-label]="'User initial ' + userInitial">
+            {{ userInitial }}
+          </span>
+        }
+      </button>
+    } @else if (isAuthResolved() && !isAuthLoading()) {
+      <button type="button" class="login-button" (click)="navigateToLogin()">Login</button>
+    }
   </div>
-  <p-menu #profileMenu [popup]="true" [model]="menuitems" styleClass="profile-menu"></p-menu>
+  @if (isLoggedIn()) {
+    <p-menu #profileMenu [popup]="true" [model]="menuitems()" styleClass="profile-menu"></p-menu>
+  }
 </header>
 
 <ng-template #sidebarTemplate>

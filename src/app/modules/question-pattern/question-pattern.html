@@ -1,4 +1,4 @@
-@if (isLoading()) {
+@if (!hasLoaded()) {
   <p-progressbar mode="indeterminate" [style]="{ height: '4px' }" />
 } @else {
   <section class="question-pattern-page">

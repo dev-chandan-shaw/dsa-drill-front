@@ -83,6 +83,21 @@ header {
         border-radius: 50%;
         object-fit: cover;
     }
+
+    .login-button {
+        border: 1px solid var(--p-content-border-color);
+        background: transparent;
+        color: var(--p-text-color);
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-weight: 500;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+
+    .login-button:hover {
+        background: color-mix(in srgb, var(--p-surface-900) 92%, var(--p-primary-color) 8%);
+    }
 }
 
 :host ::ng-deep .profile-menu.p-menu {

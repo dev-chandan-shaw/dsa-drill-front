@@ -2,6 +2,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  OnInit,
   PLATFORM_ID,
   computed,
   inject,
@@ -9,8 +10,8 @@ import {
 } from '@angular/core';
 import { InputTextModule } from 'primeng/inputtext';
 import { IProblemPattern } from '../home/models/problem-pattern';
-import { ProblemTagService } from '../home/services/question-tag.service';
-import { ProblemPatternService } from '../home/services/problem-pattern.service';
+import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.service';
+import { ProblemPatternService } from '../../shared/services/public-api/problem-pattern.service';
 import { ToastService } from '../../shared/services/toast-service';
 import { Card } from 'primeng/card';
 import { ProgressBar } from 'primeng/progressbar';
@@ -22,7 +23,7 @@ import { ProgressBar } from 'primeng/progressbar';
   styleUrl: './question-pattern.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class QuestionPattern {
+export class QuestionPattern implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly questionTagService = inject(ProblemTagService);
   private readonly problemPatternService = inject(ProblemPatternService);
@@ -30,9 +31,21 @@ export class QuestionPattern {
 
   readonly tags = this.questionTagService.problemTags;
   readonly patterns = this.problemPatternService.problemPatterns;
-  readonly isLoading = signal(false);
+  readonly hasLoaded = computed(
+    () => this.problemPatternService.hasLoaded() && this.questionTagService.hasLoaded(),
+  );
   readonly searchTerm = signal('');
   readonly selectedTagId = signal<number | null>(null);
+  readonly totalPatternCount = computed(() => this.patterns().length);
+  readonly filteredPatternCount = computed(() => this.filteredPatterns().length);
+  readonly filterProgress = computed(() => {
+    const total = this.totalPatternCount();
+    if (!total) {
+      return 0;
+    }
+
+    return Math.round((this.filteredPatternCount() / total) * 100);
+  });
 
   readonly patternCountByTag = computed(() => {
     const counts = new Map<number, number>();
@@ -67,9 +80,13 @@ export class QuestionPattern {
 
   constructor() {
     if (!isPlatformBrowser(this.platformId)) {
-      this.isLoading.set(false);
       return;
     }
+  }
+
+  ngOnInit(): void {
+    this.questionTagService.fetchProblemTags().subscribe();
+    this.problemPatternService.fetchProblemPatterns().subscribe();
   }
 
   setSearchTerm(value: string) {

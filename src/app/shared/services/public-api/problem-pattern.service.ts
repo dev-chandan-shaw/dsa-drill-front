@@ -6,11 +6,10 @@ import {
   TransferState,
   makeStateKey,
 } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, of } from 'rxjs';
+import { Observable, tap, of, finalize } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { IProblemPattern } from '../models/problem-pattern';
+import { IProblemPattern } from '../../../modules/home/models/problem-pattern';
 
 const PATTERNS_STATE_KEY = makeStateKey<IProblemPattern[]>('problem-patterns');
 
@@ -25,30 +24,26 @@ export interface IProblemPatternDto {
   providedIn: 'root',
 })
 export class ProblemPatternService {
-  private readonly api = environment.apiUrl;
+  private readonly api = environment.apiUrl + '/public';
   private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly transferState = inject(TransferState);
 
   private readonly _problemPatterns = signal<IProblemPattern[]>([]);
+  public isLoading = signal<boolean>(false); // Progress bar state
+  public hasLoaded = signal<boolean>(false); // Cache state
   public readonly problemPatterns = this._problemPatterns.asReadonly();
 
   fetchProblemPatterns(): Observable<IProblemPattern[]> {
-    const cached = this.transferState.get(PATTERNS_STATE_KEY, null as IProblemPattern[] | null);
+    if (this.hasLoaded()) return of([]);
 
-    if (cached) {
-      if (isPlatformBrowser(this.platformId)) {
-        this.transferState.remove(PATTERNS_STATE_KEY);
-      }
-      this._problemPatterns.set(cached);
-      return of(cached);
-    }
-
+    this.isLoading.set(true);
     return this.http.get<IProblemPattern[]>(`${this.api}/problem-patterns`).pipe(
       tap((patterns) => {
         this._problemPatterns.set(patterns);
-        this.transferState.set(PATTERNS_STATE_KEY, patterns);
+        this.hasLoaded.set(true);
       }),
+      finalize(() => this.isLoading.set(false)),
     );
   }
 

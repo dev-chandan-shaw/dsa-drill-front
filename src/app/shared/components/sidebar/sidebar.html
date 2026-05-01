@@ -20,7 +20,7 @@
   }
   <nav class="sidebar-nav">
     <ul>
-      @for (item of navItems; track item.route) {
+      @for (item of navItems(); track item.route) {
         <li>
           <button
             class="nav-item"

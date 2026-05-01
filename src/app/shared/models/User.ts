@@ -3,6 +3,7 @@ export interface IUser {
   email: string;
   firstName: string;
   lastName: string;
+  role?: string;
   token?: string; // Optional token for authentication
   profilePictureUrl?: string; // Optional profile picture URL
   lastVisitDate?: string; // Optional last visit date

@@ -29,6 +29,9 @@ export class Header {
   private readonly router = inject(Router);
   @Output() toggleSidebar = new EventEmitter<void>();
   readonly loggedInUser = this.authService.getLoggedInUser();
+  readonly isLoggedIn = computed(() => !!this.loggedInUser());
+  readonly isAuthResolved = this.authService.getAuthResolved();
+  readonly isAuthLoading = this.authService.getAuthLoading();
 
   userFullName = computed(() => {
     const user = this.loggedInUser();
@@ -56,20 +59,33 @@ export class Header {
     this.authService.logout();
   }
 
-  menuitems = [
-    {
-      label: this.userFullName(),
-      disabled: true,
-    },
-    {
-      label: this.loggedInUser()?.email,
-      disabled: true,
-    },
-    { separator: true },
-    {
-      label: 'Logout',
-      icon: 'pi pi-sign-out',
-      command: () => this.logout(),
-    },
-  ];
+  readonly menuitems = computed(() => {
+    const user = this.loggedInUser();
+    if (!user) {
+      return [];
+    }
+
+    return [
+      {
+        label: this.userFullName(),
+        disabled: true,
+      },
+      {
+        label: user.email,
+        disabled: true,
+      },
+      { separator: true },
+      {
+        label: 'Logout',
+        icon: 'pi pi-sign-out',
+        command: () => this.logout(),
+      },
+    ];
+  });
+
+  navigateToLogin() {
+    this.router.navigate(['/login'], {
+      queryParams: { returnUrl: this.router.url || '/' },
+    });
+  }
 }

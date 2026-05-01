@@ -28,3 +28,9 @@
         min-height: 0;
     }
 }
+
+@media (max-width: 767px) {
+    .modules-container>app-sidebar {
+        display: none;
+    }
+}

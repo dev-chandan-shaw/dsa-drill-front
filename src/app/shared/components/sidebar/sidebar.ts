@@ -1,4 +1,4 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, effect, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { RightPaneService } from '../../services/right-pane-service';
 import { CommonModule } from '@angular/common';
@@ -23,7 +23,7 @@ export class Sidebar {
   private readonly authService = inject(AuthService);
   private readonly isAdmin = this.authService.isAdmin();
 
-  readonly navItems: NavItem[] = [
+  navItems = signal([
     {
       label: 'Library',
       route: '/home',
@@ -34,16 +34,17 @@ export class Sidebar {
       route: '/question-pattern',
       icon: 'pi pi-sitemap',
     },
-  ];
+  ]);
 
   constructor() {
-    if (this.isAdmin()) {
-      this.navItems.push({
-        label: 'Admin',
-        route: '/admin',
-        icon: 'pi pi-shield',
-      });
-    }
+    effect(() => {
+      if (this.isAdmin()) {
+        this.navItems.update((items) => [
+          ...items,
+          { label: 'Admin', route: '/admin', icon: 'pi pi-cog' },
+        ]);
+      }
+    });
   }
 
   isActive(route: string): boolean {

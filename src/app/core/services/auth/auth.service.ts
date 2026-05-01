@@ -1,6 +1,7 @@
-import { inject, Injectable, Signal, signal } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID, Signal, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { AuthApiService } from './auth-api.service';
-import { catchError, map, Observable, of, tap } from 'rxjs';
+import { catchError, finalize, map, Observable, of, shareReplay, tap } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { IRegisterRequest, IUser } from '../../../shared/models/User';
 import { Router } from '@angular/router';
@@ -13,31 +14,33 @@ export class AuthService {
   private readonly _loggedInUser = signal<IUser | null>(null);
   private readonly _isLoggedIn = signal<boolean | null>(false);
   private readonly _isAdmin = signal<boolean | null>(false);
+  private readonly _isAuthResolved = signal<boolean>(false);
+  private readonly _isAuthLoading = signal<boolean>(false);
+  private currentUserRequest: Observable<IUser | null> | null = null;
   private readonly router = inject(Router);
+  private readonly platformId = inject(PLATFORM_ID);
 
   isAdmin() {
-    // if (!this._isAdmin()) {
-    //   this.getLoggedInUser();
-    //   const user = this._loggedInUser();
-    //   const token = user?.token;
-    //   if (token) {
-    //     const roles = this.getRoles(token);
-    //     this._isAdmin.set(roles.includes('ROLE_ADMIN') || roles.includes('ROLE_SUPER_ADMIN'));
-    //   }
-    // }
-    // return this._isAdmin;
-    return signal(true);
+    return this._isAdmin.asReadonly();
   }
 
   getLoggedInUser(): Signal<IUser | null> {
     return this._loggedInUser;
   }
 
+  getAuthResolved(): Signal<boolean> {
+    return this._isAuthResolved;
+  }
+
+  getAuthLoading(): Signal<boolean> {
+    return this._isAuthLoading;
+  }
+
   login(username: string, password: string): Observable<IUser> {
     return this._authApiService.login(username, password).pipe(
       map((response) => {
         const user = response;
-        this.setUser(user);
+        this._loggedInUser.set(user);
         return user;
       }),
     );
@@ -47,17 +50,29 @@ export class AuthService {
     return this._authApiService.register(data).pipe(
       map((response) => {
         const user = response;
-        this.setUser(user);
+        this._loggedInUser.set(user);
         return user;
       }),
     );
   }
 
   loadCurrentUser(): Observable<IUser | null> {
-    return this._authApiService.fetchCurrentUser().pipe(
+    if (this._isAuthResolved()) {
+      return of(this._loggedInUser());
+    }
+
+    if (this.currentUserRequest) {
+      return this.currentUserRequest;
+    }
+
+    this._isAuthLoading.set(true);
+    const request$ = this._authApiService.fetchCurrentUser().pipe(
       tap((user) => {
         if (user) {
-          this.setUser(user);
+          this._loggedInUser.set(user);
+          if (user.role === 'ROLE_ADMIN') {
+            this._isAdmin.set(true);
+          }
         }
       }),
       map((user) => user || null),
@@ -65,30 +80,16 @@ export class AuthService {
         this.clearUser();
         return of(null);
       }),
+      finalize(() => {
+        this._isAuthResolved.set(true);
+        this._isAuthLoading.set(false);
+        this.currentUserRequest = null;
+      }),
+      shareReplay({ bufferSize: 1, refCount: false }),
     );
-  }
 
-  setUser(user: IUser): void {
-    const normalizedUser = user as IUser & { accessToken?: string; jwt?: string };
-    const token = this.resolveToken(normalizedUser);
-
-    let roles: string[] = [];
-
-    try {
-      if (token) {
-        const decodedToken: any = jwtDecode(token);
-        roles = decodedToken.roles || [];
-      }
-    } catch {
-      roles = [];
-    }
-
-    this._isAdmin.set(roles.includes('ROLE_ADMIN') || roles.includes('ROLE_SUPER_ADMIN'));
-
-    this._isLoggedIn.set(true);
-
-    const safeUser: IUser = token ? { ...normalizedUser, token } : normalizedUser;
-    this._loggedInUser.set(safeUser);
+    this.currentUserRequest = request$;
+    return request$;
   }
 
   logout() {
@@ -99,10 +100,43 @@ export class AuthService {
     });
   }
 
+  ensureLoggedIn(redirectUrl?: string): Observable<boolean> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return of(true);
+    }
+
+    const cachedUser = this._loggedInUser();
+    if (cachedUser) {
+      return of(true);
+    }
+
+    return this.loadCurrentUser().pipe(
+      map((user) => {
+        if (user) {
+          return true;
+        }
+        this.redirectToLogin(redirectUrl);
+        return false;
+      }),
+      catchError(() => {
+        this.redirectToLogin(redirectUrl);
+        return of(false);
+      }),
+    );
+  }
+
   private clearUser(): void {
     this._loggedInUser.set(null);
     this._isLoggedIn.set(false);
     this._isAdmin.set(false);
+    this._isAuthResolved.set(true);
+  }
+
+  private redirectToLogin(redirectUrl?: string): void {
+    const returnUrl = redirectUrl || this.router.url || '/';
+    this.router.navigate(['/login'], {
+      queryParams: { returnUrl },
+    });
   }
 
   getRoles(token: string): string[] {
