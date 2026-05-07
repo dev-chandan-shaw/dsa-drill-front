@@ -1,0 +1,143 @@
+.sheet-form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    height: 100%;
+    overflow-y: auto;
+
+    .form-section {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+
+            label {
+                font-weight: 500;
+                color: var(--text-color);
+            }
+
+            .form-input,
+            .form-textarea {
+                padding: 0.75rem;
+                border: 1px solid var(--surface-border);
+                border-radius: 4px;
+                font-family: inherit;
+
+                &:focus {
+                    outline: none;
+                    border-color: var(--primary-color);
+                    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.1);
+                }
+            }
+
+            .form-textarea {
+                resize: vertical;
+            }
+
+            .problem-selection {
+                display: flex;
+                gap: 1rem;
+                align-items: center;
+
+                .add-button {
+                    flex-shrink: 0;
+                }
+
+                .problem-count {
+                    color: var(--text-color-secondary);
+                    font-size: 0.9rem;
+                }
+            }
+
+            .selected-problems {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                margin-top: 0.5rem;
+
+                .problem-tag {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    padding: 0.5rem 0.75rem;
+                    background-color: var(--primary-50);
+                    border: 1px solid var(--primary-color);
+                    border-radius: 4px;
+                    font-size: 0.9rem;
+
+                    .remove-btn {
+                        background: none;
+                        border: none;
+                        cursor: pointer;
+                        font-size: 1.2rem;
+                        color: var(--primary-color);
+                        padding: 0;
+                        line-height: 1;
+
+                        &:hover {
+                            color: var(--red-600);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .filter-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        border: 1px solid var(--surface-border);
+        border-radius: 4px;
+        padding: 1rem;
+        background-color: var(--surface-50);
+        min-height: 300px;
+
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+
+            h3 {
+                margin: 0;
+                font-size: 1rem;
+            }
+
+            .close-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                font-size: 1.5rem;
+                color: var(--text-color-secondary);
+                padding: 0;
+
+                &:hover {
+                    color: var(--text-color);
+                }
+            }
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-color-secondary);
+        }
+    }
+
+    .actions {
+        flex-shrink: 0;
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+}

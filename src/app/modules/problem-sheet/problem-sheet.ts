@@ -1,4 +1,13 @@
-import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  OnInit,
+  signal,
+  TemplateRef,
+  viewChild,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ProblemList } from '../../shared/components/problem-list/problem-list';
 import { IProblem, ProblemDifficulty } from '../home/models/Question';
@@ -8,10 +17,16 @@ import { ProgressBarModule } from 'primeng/progressbar';
 import { ProblemStatusApiService } from '../home/services/user/question-status-api.service';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.service';
+import { ProblemSheetService } from '../../shared/services/public-api/problem-sheet.service';
+import { RightPaneService, RightPaneSize } from '../../shared/services/right-pane-service';
+import { TagBasedProblemList } from '../../shared/components/tag-based-problem-list/tag-based-problem-list';
+import { CommonModule } from '@angular/common';
+import { ButtonModule } from 'primeng/button';
+import { ToastService } from '../../shared/services/toast-service';
 
 @Component({
   selector: 'app-problem-sheet',
-  imports: [ProblemList, Card, ProgressBarModule],
+  imports: [CommonModule, ProblemList, Card, ProgressBarModule, ButtonModule, TagBasedProblemList],
   templateUrl: './problem-sheet.html',
   styleUrl: './problem-sheet.scss',
 })
@@ -21,8 +36,16 @@ export class ProblemSheet implements OnInit {
   private readonly tagService = inject(ProblemTagService);
   private readonly statusService = inject(ProblemStatusApiService);
   private readonly authService = inject(AuthService);
+  private readonly problemSheetService = inject(ProblemSheetService);
+  private readonly rightPaneService = inject(RightPaneService);
+  private readonly toastService = inject(ToastService);
+
+  problemSelectorTemplate = viewChild('problemSelectorTemplate', { read: TemplateRef });
+
   problems = signal<IProblem[]>([]);
+  allProblems = signal<IProblem[]>([]);
   sheetId = signal<string | null>(null);
+  sheetName = signal<string>('');
   readonly tags = this.tagService.problemTags;
   readonly problemStatuses = this.statusService.problemStatuses;
 
@@ -66,19 +89,7 @@ export class ProblemSheet implements OnInit {
 
     return Math.round((this.solvedCount() / total) * 100);
   });
-  readonly sheetTagName = computed(() => {
-    const id = this.sheetId();
-    if (!id) {
-      return '-';
-    }
 
-    const tagId = Number(id);
-    if (Number.isNaN(tagId)) {
-      return '-';
-    }
-
-    return this.tags().find((tag) => tag.id === tagId)?.name ?? '-';
-  });
   readonly isSheetLoading = signal(true);
   readonly hasLoaded = computed(() => !this.isSheetLoading() && this.tagService.hasLoaded());
   private readonly hasFetchedStatuses = signal(false);
@@ -96,17 +107,68 @@ export class ProblemSheet implements OnInit {
   ngOnInit() {
     const sheetId = this.route.snapshot.paramMap.get('sheetId');
     this.sheetId.set(sheetId);
+
+    this.tagService.fetchProblemTags().subscribe();
+    this.questionService.fetchProblems().subscribe({
+      next: () => this.allProblems.set(this.questionService.problems()),
+    });
+
     if (sheetId) {
       this.isSheetLoading.set(true);
-      this.questionService.getProblemsByTag(sheetId).subscribe({
-        next: (questions) => this.problems.set(questions),
-        error: () => this.isSheetLoading.set(false),
+      const id = Number(sheetId);
+      this.problemSheetService.getProblemSheetById(id).subscribe({
+        next: (sheet) => {
+          this.sheetName.set(sheet.title);
+          const sheetProblems = this.allProblems().filter((p) => sheet.problemIds.includes(p.id));
+          this.problems.set(sheetProblems);
+        },
+        error: () => {
+          this.toastService.showError('Failed to load sheet');
+          this.isSheetLoading.set(false);
+        },
         complete: () => this.isSheetLoading.set(false),
       });
     } else {
       this.isSheetLoading.set(false);
     }
+  }
 
-    this.tagService.fetchProblemTags().subscribe();
+  openProblemSelector() {
+    this.rightPaneService.open(this.problemSelectorTemplate()!, RightPaneSize.LARGE, {
+      title: 'Add Problems to Sheet',
+    });
+  }
+
+  onProblemsSelected(selectedProblemIds: number[]) {
+    if (!this.sheetId()) {
+      return;
+    }
+
+    const sheetId = Number(this.sheetId());
+    if (Number.isNaN(sheetId)) {
+      return;
+    }
+
+    const currentIds = this.problems().map((p) => p.id);
+    const newIds = [...new Set([...currentIds, ...selectedProblemIds])];
+
+    const sheet = {
+      id: sheetId,
+      title: this.sheetName(),
+      problemIds: newIds,
+      isPublic: false,
+    };
+
+    this.problemSheetService.updateProblemSheet(sheet).subscribe({
+      next: () => {
+        this.toastService.showSuccess('Problems added successfully');
+        const addedProblems = this.allProblems().filter((p) => selectedProblemIds.includes(p.id));
+        this.problems.update((current) => [...current, ...addedProblems]);
+        this.rightPaneService.close();
+      },
+      error: () => {
+        this.toastService.showError('Failed to add problems');
+      },
+    });
   }
 }

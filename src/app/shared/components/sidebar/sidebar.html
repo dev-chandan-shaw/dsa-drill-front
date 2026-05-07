@@ -34,5 +34,54 @@
         </li>
       }
     </ul>
+
+    <div class="accordion-section">
+      <div class="accordion-header-wrapper">
+        <button class="accordion-header" (click)="toggleSheetAccordion()" type="button">
+          <span class="accordion-icon" [class.open]="isSheetAccordionOpen()">
+            <i class="pi pi-chevron-right"></i>
+          </span>
+          <span class="accordion-label">
+            <i class="pi pi-list"></i>
+            My Lists
+          </span>
+        </button>
+        <button
+          class="add-sheet-btn"
+          (click)="openSheetForm()"
+          title="Create new sheet"
+          type="button"
+        >
+          <i class="pi pi-plus"></i>
+        </button>
+      </div>
+
+      @if (isSheetAccordionOpen()) {
+        <div class="accordion-content">
+          @if (!hasLoadedSheets()) {
+            <div class="loading">Loading sheets...</div>
+          } @else {
+            @if (problemSheets().length === 0) {
+              <div class="empty-state">No sheets yet. Create one to get started!</div>
+            } @else {
+              <ul class="sheets-list">
+                @for (sheet of problemSheets(); track sheet.id) {
+                  <li>
+                    <button class="sheet-item" (click)="navigateToSheet(sheet.id)" type="button">
+                      <span class="sheet-name">{{ sheet.title }}</span>
+                      <span class="sheet-count">{{ sheet.id }}</span>
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          }
+        </div>
+      }
+    </div>
   </nav>
 </section>
+
+<ng-template #sheetFormTemplate>
+  <app-problem-sheet-form (sheetCreated)="onSheetCreated($event)" />
+</ng-template>

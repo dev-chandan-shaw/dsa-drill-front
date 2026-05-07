@@ -5,8 +5,21 @@
     <aside class="sheet-summary">
       <p-card>
         <div class="summary-card">
-          <div class="summary-title">{{ sheetTagName() }}</div>
-          <div class="summary-subtitle">{{ totalCount() }} problems</div>
+          <div class="summary-header">
+            <div>
+              <div class="summary-title">{{ sheetName() || 'Problem Sheet' }}</div>
+              <div class="summary-subtitle">{{ totalCount() }} problems</div>
+            </div>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-plus"
+              severity="secondary"
+              (click)="openProblemSelector()"
+              title="Add problems to this sheet"
+              class="add-problems-btn"
+            ></button>
+          </div>
 
           <div class="summary-section">
             <div class="summary-row">
@@ -39,3 +52,12 @@
     </div>
   </div>
 }
+
+<ng-template #problemSelectorTemplate>
+  <app-tag-based-problem-list
+    [problems]="allProblems()"
+    [tags]="tags()"
+    selectionMode="multiple"
+    (problemsSelected)="onProblemsSelected($event)"
+  />
+</ng-template>

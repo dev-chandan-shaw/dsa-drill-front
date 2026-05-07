@@ -1,0 +1,74 @@
+<div class="tag-based-list-container">
+  <div class="search-section">
+    <input
+      pInputText
+      type="text"
+      placeholder="Search problems..."
+      [value]="searchTerm()"
+      (input)="handleSearchInput($event)"
+      class="search-input"
+    />
+  </div>
+
+  <div class="tags-section">
+    <div class="tag-label">Filter by Tag:</div>
+    <div class="tags-list">
+      <button
+        type="button"
+        class="tag-button"
+        [class.active]="selectedTagId() === null"
+        (click)="selectTag(null)"
+      >
+        All ({{ problems().length }})
+      </button>
+      @for (tag of tags(); track tag.id) {
+        <button
+          type="button"
+          class="tag-button"
+          [class.active]="selectedTagId() === tag.id"
+          (click)="selectTag(tag.id)"
+        >
+          {{ tag.name }}
+          <span class="count">({{ problemCountByTag().get(tag.id) ?? 0 }})</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="problems-section">
+    @if (filteredProblems().length === 0) {
+      <div class="empty-state">No problems found</div>
+    } @else {
+      <div class="problems-list">
+        @for (problem of filteredProblems(); track problem.id) {
+          <div class="problem-row" [class.selected]="isSelected(problem.id)">
+            @if (selectionMode() === 'multiple') {
+              <input
+                type="checkbox"
+                [checked]="isSelected(problem.id)"
+                (change)="toggleProblemSelection(problem.id)"
+                class="problem-checkbox"
+              />
+            }
+            <div class="problem-content" (click)="toggleProblemSelection(problem.id)">
+              <div class="problem-title">{{ problem.title }}</div>
+              <div class="problem-difficulty" [class]="'difficulty-' + problem.difficulty">
+                {{ problem.difficulty }}
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="actions">
+    <button
+      pButton
+      type="button"
+      label="Confirm"
+      (click)="confirmSelection()"
+      severity="success"
+    ></button>
+  </div>
+</div>

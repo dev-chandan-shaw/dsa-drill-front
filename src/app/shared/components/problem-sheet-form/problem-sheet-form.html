@@ -1,0 +1,97 @@
+<div class="sheet-form-container">
+  <div class="form-section">
+    <div class="form-group">
+      <label for="sheet-name">Sheet Name *</label>
+      <input
+        id="sheet-name"
+        pInputText
+        type="text"
+        placeholder="Enter sheet name"
+        [value]="title()"
+        (input)="handleTitleInput($event)"
+        class="form-input"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="desc">Description</label>
+      <textarea
+        id="desc"
+        placeholder="Enter sheet description"
+        [value]="description()"
+        (input)="handleDescriptionInput($event)"
+        rows="3"
+        class="form-textarea"
+      ></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="problems-label">Problems</label>
+      <div id="problems-label" class="problem-selection">
+        <button
+          pButton
+          type="button"
+          label="+ Add Problems"
+          (click)="isSelectingProblems.set(true)"
+          icon="pi pi-plus"
+          severity="secondary"
+          class="add-button"
+        ></button>
+        <span class="problem-count"> {{ getSelectedProblemCount() }} problem(s) selected </span>
+      </div>
+
+      @if (selectedProblems().length > 0) {
+        <div class="selected-problems">
+          @for (problemId of selectedProblems(); track problemId) {
+            <div class="problem-tag">
+              <span>#{{ problemId }}</span>
+              <button
+                type="button"
+                class="remove-btn"
+                (click)="removeProblem(problemId)"
+                aria-label="Remove problem"
+              >
+                ×
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (isSelectingProblems()) {
+    <div class="filter-section">
+      <div class="filter-header">
+        <h3>Select Problems</h3>
+        <button
+          type="button"
+          class="close-btn"
+          (click)="isSelectingProblems.set(false)"
+          aria-label="Close"
+        >
+          ×
+        </button>
+      </div>
+      @if (!isLoading()) {
+        <app-problem-filter
+          [problems]="allProblems()"
+          selectionMode="multiple"
+          (selectedProblems)="onProblemsSelected($event)"
+        />
+      } @else {
+        <div class="loading">Loading problems...</div>
+      }
+    </div>
+  }
+
+  <div class="actions">
+    <button
+      pButton
+      type="button"
+      label="Create Sheet"
+      (click)="createSheet()"
+      severity="success"
+    ></button>
+  </div>
+</div>
