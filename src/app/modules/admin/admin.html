@@ -1,6 +1,6 @@
 <section class="admin-page">
   <div class="admin-grid">
-    <p-card>
+    <p-card styleClass="admin-card">
       <div class="panel-header">
         <div>
           <h2>Problems</h2>
@@ -32,15 +32,12 @@
 
       <div class="problem-list">
         @for (question of filteredQuestions(); track trackByQuestionId($index, question)) {
+          @if ($index !== 0) {
+            <p-divider class="!m-0"></p-divider>
+          }
           <div class="problem-row">
             <div class="problem-meta">
-              <h3>{{ question.title }}</h3>
-              <p>
-                #{{ question.id }}
-                @if (question.slug) {
-                  | {{ question.slug }}
-                }
-              </p>
+              <h3>{{ $index + 1 }}. {{ question.title }}</h3>
             </div>
             <div class="actions">
               <p-button
@@ -55,7 +52,7 @@
       </div>
     </p-card>
 
-    <p-card>
+    <p-card styleClass="admin-card">
       <div class="panel-header">
         <div>
           <h2>Problem Tags</h2>
@@ -81,10 +78,12 @@
       } @else {
         <div class="tag-list">
           @for (tag of filteredTags(); track trackByTagId($index, tag)) {
+            @if ($index !== 0) {
+              <p-divider class="!m-0"></p-divider>
+            }
             <div class="tag-row">
               <div>
-                <h3>{{ tag.name }}</h3>
-                <p>#{{ tag.id }}</p>
+                <h3>{{ $index + 1 }}. {{ tag.name }}</h3>
               </div>
               <p-button icon="pi pi-pencil" rounded text (click)="openEditTagPane(tag)"></p-button>
             </div>
@@ -93,7 +92,7 @@
       }
     </p-card>
 
-    <p-card>
+    <p-card styleClass="admin-card">
       <div class="panel-header">
         <div>
           <h2>Problem Patterns</h2>
@@ -119,6 +118,9 @@
       } @else {
         <div class="pattern-list">
           @for (pattern of filteredPatterns(); track trackByPatternId($index, pattern)) {
+            @if ($index !== 0) {
+              <p-divider class="!m-0"></p-divider>
+            }
             <div class="pattern-row">
               <div class="pattern-meta">
                 <h3>{{ pattern.name }}</h3>

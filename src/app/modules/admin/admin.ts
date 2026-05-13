@@ -29,6 +29,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { Card } from 'primeng/card';
 import { Button } from 'primeng/button';
+import { DividerModule } from 'primeng/divider';
 
 type AdminProblemFilter = 'ALL' | 'REVIEW' | 'ARCHIVED';
 
@@ -44,6 +45,7 @@ type AdminProblemFilter = 'ALL' | 'REVIEW' | 'ARCHIVED';
     InputNumberModule,
     Card,
     Button,
+    DividerModule,
   ],
   templateUrl: './admin.html',
   styleUrl: './admin.scss',
