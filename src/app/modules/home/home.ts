@@ -54,7 +54,7 @@ export class Home implements OnInit {
   ngOnInit(): void {
     this.questionService.fetchProblems().subscribe();
     this.questionTagService.fetchProblemTags().subscribe();
-    if (isPlatformBrowser(this.platformId)) {
+    if (isPlatformBrowser(this.platformId) && this.authService.isLoggedIn()) {
       this.questionStatusService.fetchProblemStatuses().subscribe();
     }
   }

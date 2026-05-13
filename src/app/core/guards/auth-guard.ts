@@ -1,26 +1,23 @@
 import { inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth/auth.service';
-import { catchError, map, of } from 'rxjs';
+import { isPlatformServer } from '@angular/common';
 
-export const authGuard: CanActivateFn = (route, state) => {
-  const platformId = inject(PLATFORM_ID);
-  const router = inject(Router);
+export const adminGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
+  const router = inject(Router);
+  const platformId = inject(PLATFORM_ID);
 
-  if (!isPlatformBrowser(platformId)) {
-    // On the server, allow rendering to proceed without redirect
+  // Server: always allow through, client will re-guard
+  if (isPlatformServer(platformId)) {
     return true;
   }
 
-  const cachedUser = authService.getLoggedInUser()();
-  if (cachedUser) {
-    return true;
-  }
+  // Browser: check admin status
+  const isAdmin = authService.isAdmin(); // call once, store result
+  if (!isAdmin) {
+    return router.createUrlTree(['/home']); // ← redirect to /home not '/'
+  } //   avoids triggering root redirect loop
 
-  return authService.loadCurrentUser().pipe(
-    map((user) => (user ? true : router.createUrlTree(['/login']))),
-    catchError(() => of(router.createUrlTree(['/login']))),
-  );
+  return true;
 };
