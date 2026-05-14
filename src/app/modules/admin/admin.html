@@ -1,6 +1,6 @@
 <section class="admin-page">
   <div class="admin-grid">
-    <p-card>
+    <p-card styleClass="admin-card">
       <div class="panel-header">
         <div>
           <h2>Problems</h2>
@@ -30,36 +30,29 @@
         ></p-select>
       </div>
 
-      @if (filteredQuestions().length === 0) {
-        <div class="state-card">No problems match the current filter.</div>
-      } @else {
-        <div class="problem-list">
-          @for (question of filteredQuestions(); track trackByQuestionId($index, question)) {
-            <div class="problem-row">
-              <div class="problem-meta">
-                <h3>{{ question.title }}</h3>
-                <p>
-                  #{{ question.id }}
-                  @if (question.slug) {
-                    | {{ question.slug }}
-                  }
-                </p>
-              </div>
-              <div class="actions">
-                <p-button
-                  variant="text"
-                  icon="pi pi-pencil"
-                  rounded
-                  (click)="openEditProblemPane(question)"
-                ></p-button>
-              </div>
-            </div>
+      <div class="problem-list">
+        @for (question of filteredQuestions(); track trackByQuestionId($index, question)) {
+          @if ($index !== 0) {
+            <p-divider class="!m-0"></p-divider>
           }
-        </div>
-      }
+          <div class="problem-row">
+            <div class="problem-meta">
+              <h3>{{ $index + 1 }}. {{ question.title }}</h3>
+            </div>
+            <div class="actions">
+              <p-button
+                variant="text"
+                icon="pi pi-pencil"
+                rounded
+                (click)="openEditProblemPane(question)"
+              ></p-button>
+            </div>
+          </div>
+        }
+      </div>
     </p-card>
 
-    <p-card>
+    <p-card styleClass="admin-card">
       <div class="panel-header">
         <div>
           <h2>Problem Tags</h2>
@@ -85,10 +78,12 @@
       } @else {
         <div class="tag-list">
           @for (tag of filteredTags(); track trackByTagId($index, tag)) {
+            @if ($index !== 0) {
+              <p-divider class="!m-0"></p-divider>
+            }
             <div class="tag-row">
               <div>
-                <h3>{{ tag.name }}</h3>
-                <p>#{{ tag.id }}</p>
+                <h3>{{ $index + 1 }}. {{ tag.name }}</h3>
               </div>
               <p-button icon="pi pi-pencil" rounded text (click)="openEditTagPane(tag)"></p-button>
             </div>
@@ -97,7 +92,7 @@
       }
     </p-card>
 
-    <p-card>
+    <p-card styleClass="admin-card">
       <div class="panel-header">
         <div>
           <h2>Problem Patterns</h2>
@@ -123,6 +118,9 @@
       } @else {
         <div class="pattern-list">
           @for (pattern of filteredPatterns(); track trackByPatternId($index, pattern)) {
+            @if ($index !== 0) {
+              <p-divider class="!m-0"></p-divider>
+            }
             <div class="pattern-row">
               <div class="pattern-meta">
                 <h3>{{ pattern.name }}</h3>
@@ -150,7 +148,7 @@
     [form]="problemForm"
     [isEditMode]="editingQuestionId() !== null"
     [isSaving]="isSavingProblem()"
-    [title]="editingQuestionId() !== null ? 'Edit Problem' : 'Create Problem'"
+    [title]="editingQuestionId() !== null ? 'Edit Problem' : 'Add Problem'"
     (addForm)="submitProblem()"
     (cancelForm)="closeRightPane()"
     (saveForm)="submitProblem()"
@@ -201,7 +199,7 @@
     [form]="tagForm"
     [isSaving]="isSavingTag()"
     [isEditMode]="editingTagId() !== null"
-    [title]="editingTagId() !== null ? 'Edit Tag' : 'Create Tag'"
+    [title]="editingTagId() !== null ? 'Edit Tag' : 'Add Tag'"
     (addForm)="submitTag()"
     (cancelForm)="closeRightPane()"
     (saveForm)="submitTag()"
@@ -220,7 +218,7 @@
     [form]="patternForm"
     [isSaving]="isSavingPattern()"
     [isEditMode]="editingPatternId() !== null"
-    [title]="editingPatternId() !== null ? 'Edit Pattern' : 'Create Pattern'"
+    [title]="editingPatternId() !== null ? 'Edit Pattern' : 'Add Pattern'"
     (addForm)="submitPattern()"
     (cancelForm)="closeRightPane()"
     (saveForm)="submitPattern()"

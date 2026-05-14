@@ -103,3 +103,17 @@ header {
 :host ::ng-deep .profile-menu.p-menu {
     min-width: 220px;
 }
+
+/* Mobile adjustments: ensure the appended menu stays within viewport */
+@media (max-width: 600px) {
+    :host ::ng-deep .profile-menu.p-menu {
+        right: 8px !important;
+        left: auto !important;
+        max-width: calc(100% - 16px) !important;
+        box-sizing: border-box;
+    }
+
+    :host ::ng-deep .profile-menu.p-menu .p-menu-list {
+        padding: 0.25rem 0 !important;
+    }
+}

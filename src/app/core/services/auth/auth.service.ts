@@ -20,6 +20,10 @@ export class AuthService {
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
 
+  isLoggedIn() {
+    return this._isLoggedIn.asReadonly();
+  }
+
   isAdmin() {
     return this._isAdmin.asReadonly();
   }
@@ -73,6 +77,7 @@ export class AuthService {
           if (user.role === 'ROLE_ADMIN') {
             this._isAdmin.set(true);
           }
+          this._isLoggedIn.set(true);
         }
       }),
       map((user) => user || null),

@@ -10,7 +10,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { finalize, Observable, take } from 'rxjs';
+import { finalize, Observable, switchMap, take } from 'rxjs';
 import { IProblem, ProblemDifficulty } from '../home/models/Question';
 import { IProblemTag } from '../home/models/question-tag';
 import { IProblemPattern } from '../home/models/problem-pattern';
@@ -29,6 +29,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { Card } from 'primeng/card';
 import { Button } from 'primeng/button';
+import { DividerModule } from 'primeng/divider';
 
 type AdminProblemFilter = 'ALL' | 'REVIEW' | 'ARCHIVED';
 
@@ -44,6 +45,7 @@ type AdminProblemFilter = 'ALL' | 'REVIEW' | 'ARCHIVED';
     InputNumberModule,
     Card,
     Button,
+    DividerModule,
   ],
   templateUrl: './admin.html',
   styleUrl: './admin.scss',
@@ -276,6 +278,7 @@ export class Admin {
       .pipe(
         finalize(() => this.isSavingProblem.set(false)),
         take(1),
+        switchMap(() => this.problemService.fetchProblems(true)),
       )
       .subscribe({
         next: () => {
