@@ -1,4 +1,13 @@
-import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  input,
+  OnInit,
+  signal,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { CommonModule } from '@angular/common';
@@ -8,10 +17,13 @@ import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
 import { ProblemDrillService } from '../../../modules/home/services/problem-drill.service';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { ProblemStatusApiService } from '../../../modules/home/services/user/question-status-api.service';
 import { IProblem } from '../../../modules/home/models/Question';
+import { FormPaneTemplate } from '../form-pane-template/form-pane-template';
+import { RightPaneService, RightPaneSize } from '../../services/right-pane-service';
+import { finalize } from 'rxjs';
 @Component({
   selector: 'app-problem-list',
   imports: [
@@ -24,20 +36,31 @@ import { IProblem } from '../../../modules/home/models/Question';
     TooltipModule,
     FormsModule,
     SelectButtonModule,
+    FormPaneTemplate,
+    ReactiveFormsModule,
   ],
   templateUrl: './problem-list.html',
   styleUrl: './problem-list.scss',
 })
 export class ProblemList implements OnInit {
+  @ViewChild('noteTemplate') noteTemplate!: TemplateRef<any>;
+
   stateOptions = [
     { label: 'All', value: 'all' },
     { label: 'Revision', value: 'revision' },
   ];
 
   value = 'all';
+  isNoteSaved = signal(false);
 
   private readonly problemDrillService = inject(ProblemDrillService);
   private readonly questionStatusService = inject(ProblemStatusApiService);
+  private readonly fb = inject(FormBuilder);
+  readonly rightPaneService = inject(RightPaneService);
+  public selectedProblemId: number | null = null;
+  noteForm = this.fb.group({
+    note: this.fb.control(''),
+  });
 
   problems = input.required<IProblem[]>();
   readonly searchTerm = signal('');
@@ -81,7 +104,10 @@ export class ProblemList implements OnInit {
       note: this.problemStatuses()[problemId]?.note,
       solved: this.problemStatuses()[problemId]?.solved,
     };
-    this.questionStatusService.updateProblemStatus(status).subscribe();
+    this.questionStatusService.updateProblemStatus(status).subscribe(() => {
+      this.rightPaneService.close();
+      this.clearSelectedProblem();
+    });
   }
 
   toggleSolved(problemId: number) {
@@ -95,8 +121,53 @@ export class ProblemList implements OnInit {
     this.questionStatusService.updateProblemStatus(status).subscribe();
   }
 
+  updateNote() {
+    const problemId = this.selectedProblemId;
+    if (problemId === null) return;
+    this.isNoteSaved.set(true);
+    const status: UserQuestionStatusDto = {
+      problemId: problemId,
+      revision: this.problemStatuses()[problemId]?.revision,
+      note: this.noteForm.value.note ?? '',
+      solved: this.problemStatuses()[problemId]?.solved,
+    };
+    this.questionStatusService
+      .updateProblemStatus(status)
+      .pipe(finalize(() => this.isNoteSaved.set(false)))
+      .subscribe(() => {
+        this.rightPaneService.close();
+        this.clearSelectedProblem();
+      });
+  }
+
   editNote(problemId: number) {
-    // TODO: Implement note editing functionality
-    console.log('Edit note for problem:', problemId);
+    this.selectedProblemId = problemId;
+    this.isNoteSaved.set(false);
+    this.noteForm.reset({
+      note: this.problemStatuses()[problemId]?.note ?? '',
+    });
+    this.rightPaneService.open(this.noteTemplate, RightPaneSize.MEDIUM, {
+      title: 'Edit Note',
+      context: {
+        problemId: problemId,
+        note: this.problemStatuses()[problemId]?.note,
+      },
+    });
+  }
+
+  clearSelectedProblem() {
+    this.rightPaneService.close();
+    this.selectedProblemId = null;
+    this.isNoteSaved.set(false);
+    this.noteForm.reset({ note: '' });
+  }
+
+  getSelectedProblemId() {
+    return this.selectedProblemId;
+  }
+
+  getNoteTitle() {
+    const problem = this.problems().find((problem) => problem.id === this.selectedProblemId);
+    return problem?.title ?? '';
   }
 }

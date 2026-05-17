@@ -1,0 +1,79 @@
+@if (!hasLoaded()) {
+  <p-progressbar mode="indeterminate" [style]="{ height: '4px' }" />
+} @else {
+  <div class="sheet-layout">
+    <aside class="sheet-summary">
+      <p-card>
+        <div class="summary-card">
+          <div class="summary-header">
+            <div>
+              <div class="summary-title">{{ sheetName() || 'Custom Sheet' }}</div>
+              <div class="summary-subtitle">{{ totalCount() }} problems</div>
+            </div>
+            @if (isOwner()) {
+              <button
+                pButton
+                type="button"
+                icon="pi pi-plus"
+                severity="secondary"
+                (click)="openProblemSelector()"
+                title="Add problems to this sheet"
+                class="add-problems-btn"
+              ></button>
+            } @else {
+              <button
+                pButton
+                type="button"
+                [icon]="isProblemSheetSaved() ? 'pi pi-bookmark-fill ' : 'pi pi-bookmark'"
+                severity="secondary"
+                (click)="toggleSavedSheet()"
+                title="Add problems to this sheet"
+                class="add-problems-btn"
+              ></button>
+            }
+          </div>
+
+          <div class="summary-section">
+            <div class="summary-row">
+              <span>Easy</span>
+              <strong>{{ solvedEasyCount() }}/{{ easyCount() }}</strong>
+            </div>
+            <div class="summary-row">
+              <span>Medium</span>
+              <strong>{{ solvedMediumCount() }}/{{ mediumCount() }}</strong>
+            </div>
+            <div class="summary-row">
+              <span>Hard</span>
+              <strong>{{ solvedHardCount() }}/{{ hardCount() }}</strong>
+            </div>
+          </div>
+
+          <div class="summary-section">
+            <div class="summary-row">
+              <span>Solved</span>
+              <strong>{{ solvedCount() }}</strong>
+            </div>
+            <p-progressbar [value]="solvedPercent()" [showValue]="false"></p-progressbar>
+          </div>
+        </div>
+      </p-card>
+    </aside>
+
+    <div class="sheet-content">
+      <app-problem-list [problems]="problems()"></app-problem-list>
+    </div>
+  </div>
+}
+
+<ng-template #problemSelectorTemplate>
+  <app-form-pane-template
+    [form]="selectionForm"
+    [isSaving]="isSelectionSaving()"
+    [isEditMode]="false"
+    [title]="'Add Questions'"
+    (addForm)="applyProblemSelection()"
+    (cancelForm)="closeProblemSelector()"
+  >
+    <app-tag-based-problem-list [selectedControl]="selectionForm.controls.problemIds" />
+  </app-form-pane-template>
+</ng-template>

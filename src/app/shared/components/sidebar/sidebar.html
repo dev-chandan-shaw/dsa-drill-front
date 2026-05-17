@@ -34,5 +34,114 @@
         </li>
       }
     </ul>
+
+    @if (isLoggedIn()) {
+      <div class="accordion-section">
+        <div class="accordion-header-wrapper">
+          <button class="accordion-header" (click)="toggleSheetAccordion()" type="button">
+            <span class="accordion-icon" [class.open]="isSheetAccordionOpen()">
+              <i class="pi pi-chevron-right"></i>
+            </span>
+            <span class="accordion-label">
+              <i class="pi pi-list"></i>
+              My Lists
+            </span>
+          </button>
+          <button
+            class="add-sheet-btn"
+            (click)="openSheetForm()"
+            title="Create new sheet"
+            type="button"
+          >
+            <i class="pi pi-plus"></i>
+          </button>
+        </div>
+
+        @if (isSheetAccordionOpen()) {
+          <div class="accordion-content">
+            @if (!hasLoadedSheets()) {
+              <div class="loading">Loading sheets...</div>
+            } @else {
+              @if (problemSheets().length === 0) {
+                <div class="empty-state">No sheets yet. Create one to get started!</div>
+              } @else {
+                <ul class="sheets-list">
+                  @for (sheet of problemSheets(); track sheet.id) {
+                    <li>
+                      <button
+                        class="sheet-item"
+                        [class.active]="isSheetActive(sheet.id)"
+                        (click)="navigateToSheet(sheet.id)"
+                        type="button"
+                      >
+                        <span class="sheet-name">{{ sheet.title }}</span>
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
+            }
+          </div>
+        }
+      </div>
+      <div class="accordion-section">
+        <div class="accordion-header-wrapper">
+          <button class="accordion-header" (click)="toggleSavedAccordion()" type="button">
+            <span class="accordion-icon" [class.open]="isSavedAccordionOpen()">
+              <i class="pi pi-chevron-right"></i>
+            </span>
+            <span class="accordion-label">
+              <i class="pi pi-bookmark"></i>
+              Saved Lists
+            </span>
+          </button>
+        </div>
+
+        @if (isSavedAccordionOpen()) {
+          <div class="accordion-content">
+            @if (!hasLoadedSavedSheets()) {
+              <div class="loading">Loading saved lists...</div>
+            } @else {
+              @if (savedProblemSheets().length === 0) {
+                <div class="empty-state">No saved lists yet.</div>
+              } @else {
+                <ul class="sheets-list">
+                  @for (sheet of savedProblemSheets(); track sheet.id) {
+                    <li>
+                      <button
+                        class="sheet-item"
+                        [class.active]="isSavedSheetActive(sheet.id)"
+                        (click)="navigateToSavedSheet(sheet.id)"
+                        type="button"
+                      >
+                        <span class="sheet-name">{{ sheet.title }}</span>
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
+            }
+          </div>
+        }
+      </div>
+    }
   </nav>
 </section>
+
+<ng-template #sheetFormTemplate>
+  <app-form-pane-template
+    [form]="sheetForm"
+    [isSaving]="isSheetSaving()"
+    [isEditMode]="false"
+    [title]="'Add Sheet'"
+    (addForm)="onSheetCreated()"
+    (cancelForm)="closeSidebar()"
+  >
+    <form class="pane-form" [formGroup]="sheetForm">
+      <label>
+        <span>Sheet Name</span>
+        <input pInputText class="field" type="text" formControlName="name" />
+      </label>
+    </form>
+  </app-form-pane-template>
+</ng-template>

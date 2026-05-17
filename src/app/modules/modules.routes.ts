@@ -29,6 +29,11 @@ export const routes: Routes = [
         path: 'problems/:sheetId',
         loadComponent: () => import('./problem-sheet/problem-sheet').then((m) => m.ProblemSheet),
       },
+      {
+        path: 'problems-sheet/:sheetId',
+        loadComponent: () =>
+          import('./custom-problem-sheet/custom-problem-sheet').then((m) => m.CustomProblemSheet),
+      },
     ],
   },
 ];

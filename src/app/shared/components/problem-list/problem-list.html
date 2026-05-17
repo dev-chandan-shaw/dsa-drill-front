@@ -65,3 +65,22 @@
     <div class="empty-subtitle">Try a different keyword or clear the search.</div>
   </div>
 }
+
+<ng-template #noteTemplate>
+  <app-form-pane-template
+    [form]="noteForm"
+    [isSaving]="isNoteSaved()"
+    [isEditMode]="selectedProblemId !== null"
+    [title]="getNoteTitle()"
+    (addForm)="updateNote()"
+    (cancelForm)="clearSelectedProblem()"
+    (saveForm)="updateNote()"
+  >
+    <form class="pane-form" [formGroup]="noteForm">
+      <label>
+        <span>Note</span>
+        <textarea pTextarea rows="6" class="field" formControlName="note"></textarea>
+      </label>
+    </form>
+  </app-form-pane-template>
+</ng-template>

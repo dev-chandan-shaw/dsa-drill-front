@@ -1,4 +1,4 @@
-import { inject, Injectable, PLATFORM_ID, Signal, signal } from '@angular/core';
+import { computed, inject, Injectable, PLATFORM_ID, Signal, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { AuthApiService } from './auth-api.service';
 import { catchError, finalize, map, Observable, of, shareReplay, tap } from 'rxjs';
@@ -12,7 +12,7 @@ import { Router } from '@angular/router';
 export class AuthService {
   private readonly _authApiService = inject(AuthApiService);
   private readonly _loggedInUser = signal<IUser | null>(null);
-  private readonly _isLoggedIn = signal<boolean | null>(false);
+  private readonly _isLoggedIn = computed(() => this._loggedInUser() !== null);
   private readonly _isAdmin = signal<boolean | null>(false);
   private readonly _isAuthResolved = signal<boolean>(false);
   private readonly _isAuthLoading = signal<boolean>(false);
@@ -21,7 +21,7 @@ export class AuthService {
   private readonly platformId = inject(PLATFORM_ID);
 
   isLoggedIn() {
-    return this._isLoggedIn.asReadonly();
+    return this._isLoggedIn;
   }
 
   isAdmin() {
@@ -77,7 +77,6 @@ export class AuthService {
           if (user.role === 'ROLE_ADMIN') {
             this._isAdmin.set(true);
           }
-          this._isLoggedIn.set(true);
         }
       }),
       map((user) => user || null),
@@ -132,7 +131,6 @@ export class AuthService {
 
   private clearUser(): void {
     this._loggedInUser.set(null);
-    this._isLoggedIn.set(false);
     this._isAdmin.set(false);
     this._isAuthResolved.set(true);
   }

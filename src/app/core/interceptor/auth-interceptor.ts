@@ -9,7 +9,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const platformId = inject(PLATFORM_ID);
 
   // 1. Define URLs that should NOT trigger a redirect on 401
-  const bypassUrls = ['/api/auth/login', '/api/auth/register', '/api/auth/user'];
+  const bypassUrls = [
+    '/api/auth/login',
+    '/api/auth/register',
+    '/api/auth/user',
+    'api/user-problem-status',
+  ];
   const isBypassUrl = bypassUrls.some((url) => req.url.includes(url));
 
   req = req.clone({ withCredentials: true });
