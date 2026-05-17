@@ -21,7 +21,7 @@ export class ProblemSheetService {
     return this.http.get<IProblemSheetSummary[]>(this.baseUrl);
   }
 
-  getProblemSheetById(id: number) {
+  getProblemSheetById(id: string) {
     return this.http.get<IProblemSheetDetails>(`${this.publicBaseUrl}/${id}`);
   }
 

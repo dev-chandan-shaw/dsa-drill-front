@@ -14,7 +14,7 @@ export class SavedProblemSheetService {
   readonly problemSheets = signal<IProblemSheetSummary[]>([]);
   readonly hasLoaded = signal(false);
 
-  isProblemSheetSaved(id: number) {
+  isProblemSheetSaved(id: string) {
     return this.problemSheets().some((sheet) => sheet.id === id);
   }
 
@@ -22,13 +22,13 @@ export class SavedProblemSheetService {
     return this.http.get<IProblemSheetSummary[]>(this.baseUrl);
   }
 
-  saveProblemSheet(id: number) {
+  saveProblemSheet(id: string) {
     return this.http
       .post<IProblemSheetSummary>(`${this.baseUrl}/${id}`, {})
       .pipe(tap(() => this.fetchProblemSheets()));
   }
 
-  unsaveProblemSheet(id: number) {
+  unsaveProblemSheet(id: string) {
     return this.http
       .delete<IProblemSheetSummary>(`${this.baseUrl}/${id}`)
       .pipe(tap(() => this.fetchProblemSheets()));

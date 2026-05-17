@@ -15,7 +15,7 @@ export class AuthService {
   private readonly _isLoggedIn = computed(() => this._loggedInUser() !== null);
   private readonly _isAdmin = signal<boolean | null>(false);
   private readonly _isAuthResolved = signal<boolean>(false);
-  private readonly _isAuthLoading = signal<boolean>(false);
+  readonly _isAuthLoading = signal<boolean>(false);
   private currentUserRequest: Observable<IUser | null> | null = null;
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);

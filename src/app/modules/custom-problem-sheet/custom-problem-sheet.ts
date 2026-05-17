@@ -148,7 +148,7 @@ export class CustomProblemSheet implements OnInit {
       });
 
       if (sheetId) {
-        const id = Number(sheetId);
+        const id = sheetId;
         this.problemSheetService
           .getProblemSheetById(id)
           .pipe(
@@ -190,17 +190,17 @@ export class CustomProblemSheet implements OnInit {
 
   saveProblemSheet() {
     if (this.sheetId()) {
-      this.savedProblemSheetService.saveProblemSheet(Number(this.sheetId())).subscribe();
+      this.savedProblemSheetService.saveProblemSheet(this.sheetId() ?? '').subscribe();
     }
   }
 
-  unsaveProblemSheet(id: number) {
+  unsaveProblemSheet(id: string) {
     this.savedProblemSheetService.unsaveProblemSheet(id).subscribe();
   }
 
   toggleSavedSheet() {
     if (this.isProblemSheetSaved()) {
-      this.unsaveProblemSheet(Number(this.sheetId()));
+      this.unsaveProblemSheet(this.sheetId() ?? '');
       this.isProblemSheetSaved.set(false);
     } else {
       this.saveProblemSheet();
@@ -222,13 +222,8 @@ export class CustomProblemSheet implements OnInit {
       return;
     }
 
-    const sheetId = Number(this.sheetId());
-    if (Number.isNaN(sheetId)) {
-      return;
-    }
-
     const sheet = {
-      id: sheetId,
+      id: this.sheetId() ?? '',
       title: this.sheetName(),
       problemIds: selectedProblemIds,
       isPublic: false,

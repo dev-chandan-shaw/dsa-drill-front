@@ -24,6 +24,8 @@ import { IProblem } from '../../../modules/home/models/Question';
 import { FormPaneTemplate } from '../form-pane-template/form-pane-template';
 import { RightPaneService, RightPaneSize } from '../../services/right-pane-service';
 import { finalize } from 'rxjs';
+import { AuthService } from '../../../core/services/auth/auth.service';
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-problem-list',
   imports: [
@@ -55,8 +57,10 @@ export class ProblemList implements OnInit {
 
   private readonly problemDrillService = inject(ProblemDrillService);
   private readonly questionStatusService = inject(ProblemStatusApiService);
+  private readonly authService = inject(AuthService);
   private readonly fb = inject(FormBuilder);
   readonly rightPaneService = inject(RightPaneService);
+  private readonly router = inject(Router);
   public selectedProblemId: number | null = null;
   noteForm = this.fb.group({
     note: this.fb.control(''),
@@ -141,18 +145,22 @@ export class ProblemList implements OnInit {
   }
 
   editNote(problemId: number) {
-    this.selectedProblemId = problemId;
-    this.isNoteSaved.set(false);
-    this.noteForm.reset({
-      note: this.problemStatuses()[problemId]?.note ?? '',
-    });
-    this.rightPaneService.open(this.noteTemplate, RightPaneSize.MEDIUM, {
-      title: 'Edit Note',
-      context: {
-        problemId: problemId,
-        note: this.problemStatuses()[problemId]?.note,
-      },
-    });
+    if (!this.authService.isLoggedIn()()) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+    } else {
+      this.selectedProblemId = problemId;
+      this.isNoteSaved.set(false);
+      this.noteForm.reset({
+        note: this.problemStatuses()[problemId]?.note ?? '',
+      });
+      this.rightPaneService.open(this.noteTemplate, RightPaneSize.MEDIUM, {
+        title: 'Edit Note',
+        context: {
+          problemId: problemId,
+          note: this.problemStatuses()[problemId]?.note,
+        },
+      });
+    }
   }
 
   clearSelectedProblem() {

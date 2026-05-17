@@ -11,7 +11,6 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { InputTextModule } from 'primeng/inputtext';
 import { concatMap, finalize } from 'rxjs';
 import { ProblemSheetService } from '../../services/public-api/problem-sheet.service';
-import { Divider } from 'primeng/divider';
 
 interface NavItem {
   label: string;
@@ -21,7 +20,7 @@ interface NavItem {
 
 @Component({
   selector: 'app-sidebar',
-  imports: [CommonModule, ReactiveFormsModule, InputTextModule, FormPaneTemplate, Divider],
+  imports: [CommonModule, ReactiveFormsModule, InputTextModule, FormPaneTemplate],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.scss',
 })
@@ -113,23 +112,23 @@ export class Sidebar {
     this.rightPaneService.open(this.sheetFormTemplate);
   }
 
-  navigateToSheet(sheetId: number) {
+  navigateToSheet(sheetId: string) {
     this.isSheetAccordionOpen.set(true);
     this.router.navigate(['/problems-sheet', sheetId]);
     this.rightPaneService.close();
   }
 
-  navigateToSavedSheet(sheetId: number) {
+  navigateToSavedSheet(sheetId: string) {
     this.isSavedAccordionOpen.set(true);
     this.router.navigate(['/problems-sheet', sheetId]);
     this.rightPaneService.close();
   }
 
-  isSheetActive(sheetId: number): boolean {
+  isSheetActive(sheetId: string): boolean {
     return this.router.url === `/problems-sheet/${sheetId}`;
   }
 
-  isSavedSheetActive(sheetId: number): boolean {
+  isSavedSheetActive(sheetId: string): boolean {
     return this.router.url.startsWith(`/problems-sheet/${sheetId}`);
   }
 
@@ -143,7 +142,7 @@ export class Sidebar {
       problemIds: [],
       isPublic: false,
       isOwner: true,
-      id: 0,
+      id: '',
     };
     this.problemSheetService
       .createProblemSheet(sheet)

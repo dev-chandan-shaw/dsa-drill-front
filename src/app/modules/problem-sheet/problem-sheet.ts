@@ -72,12 +72,7 @@ export class ProblemSheet implements OnInit {
       return '-';
     }
 
-    const tagId = Number(id);
-    if (Number.isNaN(tagId)) {
-      return '-';
-    }
-
-    return this.tags().find((tag) => tag.id === tagId)?.name ?? '-';
+    return this.tags().find((tag) => tag.slug === id)?.name ?? '-';
   });
   readonly isSheetLoading = signal(true);
   readonly hasLoaded = computed(() => !this.isSheetLoading() && this.tagService.hasLoaded());

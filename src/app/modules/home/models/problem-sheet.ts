@@ -1,10 +1,10 @@
 export interface IProblemSheetSummary {
-  id: number;
+  id: string;
   title: string;
 }
 
 export interface IProblemSheetDetails {
-  id: number;
+  id: string;
   title: string;
   problemIds: number[];
   isPublic: boolean;
