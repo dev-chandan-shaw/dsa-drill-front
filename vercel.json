@@ -3,6 +3,10 @@
     {
       "source": "/api/:path*",
       "destination": "https://dsa-drill.duckdns.org/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
     }
   ]
 }
