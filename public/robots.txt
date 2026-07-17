@@ -5,4 +5,4 @@ Disallow: /admin
 Disallow: /api/
 
 # Sitemap location
-Sitemap: https://dsa-drill.duckdns.org/sitemap.xml
+Sitemap: https://dsa-drill.vercel.app/sitemap.xml
