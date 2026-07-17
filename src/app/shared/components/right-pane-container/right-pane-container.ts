@@ -1,6 +1,6 @@
-import { Component, HostListener, inject } from '@angular/core';
+import { Component, HostListener, inject, PLATFORM_ID } from '@angular/core';
 import { RightPaneService, RightPaneSize, PaneSide } from '../../services/right-pane-service';
-import { NgTemplateOutlet } from '@angular/common';
+import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 
 @Component({
   selector: 'app-right-pane-container',
@@ -9,13 +9,22 @@ import { NgTemplateOutlet } from '@angular/common';
   styleUrl: './right-pane-container.scss',
 })
 export class RightPaneContainer {
-  isMobile = globalThis.innerWidth < 768;
+  isMobile = false;
   readonly rightPaneService = inject(RightPaneService);
   readonly PaneSide = PaneSide;
+  private readonly platformId = inject(PLATFORM_ID);
+
+  constructor() {
+    if (isPlatformBrowser(this.platformId)) {
+      this.isMobile = globalThis.innerWidth < 768;
+    }
+  }
 
   @HostListener('window:resize')
   onResize() {
-    this.isMobile = globalThis.innerWidth < 768;
+    if (isPlatformBrowser(this.platformId)) {
+      this.isMobile = globalThis.innerWidth < 768;
+    }
   }
 
   get width() {

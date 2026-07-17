@@ -4,11 +4,12 @@
     @if (showSidebar() && !isMobile()) {
       <app-sidebar [showHeader]="false"></app-sidebar>
     }
-    <div class="content">
+    <main class="content">
       <router-outlet></router-outlet>
-    </div>
+    </main>
   </div>
 </div>
+
 
 <ng-template #sidebarTemplate>
   <app-sidebar></app-sidebar>

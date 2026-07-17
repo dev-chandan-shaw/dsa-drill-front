@@ -1,5 +1,5 @@
 @if (!hasLoaded()) {
-  <p-progressbar mode="indeterminate" [style]="{ height: '4px' }" />
+  <p-progressbar mode="indeterminate" aria-label="Loading problems list" [style]="{ height: '4px' }" />
 } @else {
   <div class="sheet-layout">
     <aside class="sheet-summary">
@@ -28,7 +28,7 @@
               <span>Solved</span>
               <strong>{{ solvedCount() }}</strong>
             </div>
-            <p-progressbar [value]="solvedPercent()" [showValue]="false"></p-progressbar>
+            <p-progressbar [value]="solvedPercent()" [showValue]="false" [attr.aria-label]="solvedPercent() + '% of problems solved'"></p-progressbar>
           </div>
         </div>
       </p-card>

@@ -1,0 +1,8 @@
+# robots.txt for dsa-drill
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://dsa-drill.duckdns.org/sitemap.xml

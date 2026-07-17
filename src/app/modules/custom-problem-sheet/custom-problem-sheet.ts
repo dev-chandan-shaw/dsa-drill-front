@@ -11,6 +11,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Title, Meta } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { Card } from 'primeng/card';
 import { ProgressBarModule } from 'primeng/progressbar';
@@ -58,6 +59,8 @@ export class CustomProblemSheet implements OnInit {
 
   private readonly rightPaneService = inject(RightPaneService);
   private readonly toastService = inject(ToastService);
+  private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
 
   private readonly destroyRef = inject(DestroyRef);
 
@@ -74,6 +77,17 @@ export class CustomProblemSheet implements OnInit {
   isProblemSheetSaved = signal(false);
   readonly tags = this.tagService.problemTags;
   readonly problemStatuses = this.statusService.problemStatuses;
+
+  private readonly seoEffect = effect(() => {
+    const sheetName = this.sheetName();
+    if (sheetName) {
+      this.titleService.setTitle(`${sheetName} - DSA Drill`);
+      this.metaService.updateTag({
+        name: 'description',
+        content: `Practice the custom problem sheet "${sheetName}" on DSA Drill. Solve curated coding challenges, track status, and study efficiently.`,
+      });
+    }
+  });
 
   readonly totalCount = computed(() => this.problems().length);
   readonly easyCount = computed(

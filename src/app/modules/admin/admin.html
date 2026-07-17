@@ -6,7 +6,7 @@
           <h2>Problems</h2>
           <p>{{ filteredQuestions().length }} of {{ problems().length }} shown</p>
         </div>
-        <p-button icon="pi pi-plus" rounded (click)="openAddProblemPane()"></p-button>
+        <p-button icon="pi pi-plus" rounded (click)="openAddProblemPane()" aria-label="Add new problem"></p-button>
       </div>
 
       <div class="filters">
@@ -44,6 +44,7 @@
                 variant="text"
                 icon="pi pi-pencil"
                 rounded
+                [attr.aria-label]="'Edit problem: ' + question.title"
                 (click)="openEditProblemPane(question)"
               ></p-button>
             </div>
@@ -58,7 +59,7 @@
           <h2>Problem Tags</h2>
           <p>{{ filteredTags().length }} of {{ tags().length }} tags</p>
         </div>
-        <p-button icon="pi pi-plus" rounded (click)="openAddTagPane()"></p-button>
+        <p-button icon="pi pi-plus" rounded (click)="openAddTagPane()" aria-label="Add new tag"></p-button>
       </div>
 
       <div class="filters">
@@ -85,7 +86,7 @@
               <div>
                 <h3>{{ $index + 1 }}. {{ tag.name }}</h3>
               </div>
-              <p-button icon="pi pi-pencil" rounded text (click)="openEditTagPane(tag)"></p-button>
+              <p-button icon="pi pi-pencil" rounded text [attr.aria-label]="'Edit tag: ' + tag.name" (click)="openEditTagPane(tag)"></p-button>
             </div>
           }
         </div>
@@ -98,7 +99,7 @@
           <h2>Problem Patterns</h2>
           <p>{{ filteredPatterns().length }} of {{ patterns().length }} patterns</p>
         </div>
-        <p-button icon="pi pi-plus" rounded (click)="openAddPatternPane()"></p-button>
+        <p-button icon="pi pi-plus" rounded (click)="openAddPatternPane()" aria-label="Add new pattern"></p-button>
       </div>
 
       <div class="filters">
@@ -130,8 +131,8 @@
               <p-button
                 icon="pi pi-pencil"
                 rounded
-                rouned
                 text
+                [attr.aria-label]="'Edit pattern: ' + pattern.name"
                 (click)="openEditPatternPane(pattern)"
               >
               </p-button>

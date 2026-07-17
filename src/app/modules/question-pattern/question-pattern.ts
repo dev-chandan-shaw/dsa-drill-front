@@ -8,6 +8,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { Title, Meta } from '@angular/platform-browser';
 import { InputTextModule } from 'primeng/inputtext';
 import { IProblemPattern } from '../home/models/problem-pattern';
 import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.service';
@@ -28,6 +29,8 @@ export class QuestionPattern implements OnInit {
   private readonly questionTagService = inject(ProblemTagService);
   private readonly problemPatternService = inject(ProblemPatternService);
   private readonly toastService = inject(ToastService);
+  private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
 
   readonly tags = this.questionTagService.problemTags;
   readonly patterns = this.problemPatternService.problemPatterns;
@@ -85,6 +88,11 @@ export class QuestionPattern implements OnInit {
   }
 
   ngOnInit(): void {
+    this.titleService.setTitle('Question Patterns - DSA Drill');
+    this.metaService.updateTag({
+      name: 'description',
+      content: 'Explore common algorithmic patterns, structure logic, and learn strategies to solve complex DSA problems effectively.',
+    });
     this.questionTagService.fetchProblemTags().subscribe();
     this.problemPatternService.fetchProblemPatterns().subscribe();
   }

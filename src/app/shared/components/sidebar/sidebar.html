@@ -1,7 +1,7 @@
-<section class="sidebar">
+<aside class="sidebar" role="complementary">
   @if (showHeader()) {
     <div class="sidebar-header">
-      <button class="hamburger-btn" (click)="closeSidebar()" aria-label="Close menu">
+      <button class="hamburger-btn" (click)="closeSidebar()" aria-label="Close sidebar menu">
         <svg
           class="hamburger-icon"
           viewBox="0 0 24 24"
@@ -38,12 +38,18 @@
     @if (isLoggedIn()) {
       <div class="accordion-section">
         <div class="accordion-header-wrapper">
-          <button class="accordion-header" (click)="toggleSheetAccordion()" type="button">
+          <button 
+            class="accordion-header" 
+            (click)="toggleSheetAccordion()" 
+            type="button"
+            [attr.aria-expanded]="isSheetAccordionOpen()"
+            aria-controls="sheet-accordion-content"
+          >
             <span class="accordion-icon" [class.open]="isSheetAccordionOpen()">
-              <i class="pi pi-chevron-right"></i>
+              <i class="pi pi-chevron-right" aria-hidden="true"></i>
             </span>
             <span class="accordion-label">
-              <i class="pi pi-list"></i>
+              <i class="pi pi-list" aria-hidden="true"></i>
               My Lists
             </span>
           </button>
@@ -51,14 +57,15 @@
             class="add-sheet-btn"
             (click)="openSheetForm()"
             title="Create new sheet"
+            aria-label="Create new sheet"
             type="button"
           >
-            <i class="pi pi-plus"></i>
+            <i class="pi pi-plus" aria-hidden="true"></i>
           </button>
         </div>
 
         @if (isSheetAccordionOpen()) {
-          <div class="accordion-content">
+          <div class="accordion-content" id="sheet-accordion-content">
             @if (!hasLoadedSheets()) {
               <div class="loading">Loading sheets...</div>
             } @else {
@@ -86,19 +93,25 @@
       </div>
       <div class="accordion-section">
         <div class="accordion-header-wrapper">
-          <button class="accordion-header" (click)="toggleSavedAccordion()" type="button">
+          <button 
+            class="accordion-header" 
+            (click)="toggleSavedAccordion()" 
+            type="button"
+            [attr.aria-expanded]="isSavedAccordionOpen()"
+            aria-controls="saved-accordion-content"
+          >
             <span class="accordion-icon" [class.open]="isSavedAccordionOpen()">
-              <i class="pi pi-chevron-right"></i>
+              <i class="pi pi-chevron-right" aria-hidden="true"></i>
             </span>
             <span class="accordion-label">
-              <i class="pi pi-bookmark"></i>
+              <i class="pi pi-bookmark" aria-hidden="true"></i>
               Saved Lists
             </span>
           </button>
         </div>
 
         @if (isSavedAccordionOpen()) {
-          <div class="accordion-content">
+          <div class="accordion-content" id="saved-accordion-content">
             @if (!hasLoadedSavedSheets()) {
               <div class="loading">Loading saved lists...</div>
             } @else {
@@ -126,7 +139,7 @@
       </div>
     }
   </nav>
-</section>
+</aside>
 
 <ng-template #sheetFormTemplate>
   <app-form-pane-template
@@ -138,10 +151,10 @@
     (cancelForm)="closeSidebar()"
   >
     <form class="pane-form" [formGroup]="sheetForm">
-      <label>
-        <span>Sheet Name</span>
-        <input pInputText class="field" type="text" formControlName="name" />
-      </label>
+      <div class="field-container">
+        <label for="newSheetName">Sheet Name</label>
+        <input id="newSheetName" pInputText class="field" type="text" formControlName="name" />
+      </div>
     </form>
   </app-form-pane-template>
 </ng-template>

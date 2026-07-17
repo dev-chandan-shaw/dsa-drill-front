@@ -18,7 +18,7 @@
     <app-problem-list [problems]="problems()"></app-problem-list>
   </div>
 } @else {
-  <p-progressbar mode="indeterminate" [style]="{ height: '4px' }" />
+  <p-progressbar mode="indeterminate" aria-label="Loading library problems" [style]="{ height: '4px' }" />
 }
 
 <!-- Filter Template -->

@@ -3,15 +3,28 @@
     <i class="pi pi-bars hamburger-icon"></i>
   </button>
 
-  <div class="logo cursor-pointer" (click)="navigateToHome()">
+  <div 
+    class="logo cursor-pointer" 
+    (click)="navigateToHome()" 
+    (keydown.enter)="navigateToHome()"
+    role="button" 
+    tabindex="0" 
+    aria-label="DSA Drill homepage"
+  >
     <h1>DSA Drill</h1>
   </div>
 
   <div class="flex-1"></div>
 
-  <div class="user-profile" aria-label="User profile">
+  <div class="user-profile">
     @if (isLoggedIn()) {
-      <button type="button" class="profile-trigger" (click)="profileMenu.toggle($event)">
+      <button 
+        type="button" 
+        class="profile-trigger" 
+        (click)="profileMenu.toggle($event)"
+        aria-haspopup="true"
+        aria-label="Open user profile menu"
+      >
         @if (loggedInUser()?.profilePictureUrl) {
           <img
             class="avatar-image"
@@ -19,7 +32,7 @@
             [alt]="userFullName()"
           />
         } @else {
-          <span class="avatar" [attr.aria-label]="'User initial ' + userInitial">
+          <span class="avatar" role="img" [attr.aria-label]="'User initial ' + userInitial">
             {{ userInitial }}
           </span>
         }

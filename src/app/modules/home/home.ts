@@ -1,4 +1,5 @@
 import { Component, computed, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Title, Meta } from '@angular/platform-browser';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
@@ -43,6 +44,8 @@ export class Home implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly questionStatusService = inject(ProblemStatusApiService);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
 
   problems = this.questionService.problems;
   tags = this.questionTagService.problemTags;
@@ -52,9 +55,14 @@ export class Home implements OnInit {
   );
 
   ngOnInit(): void {
+    this.titleService.setTitle('Library - DSA Drill');
+    this.metaService.updateTag({
+      name: 'description',
+      content: 'Browse the complete library of DSA problems, organized by category, topic, and difficulty. Track your progress and patterns.',
+    });
     this.questionService.fetchProblems().subscribe();
     this.questionTagService.fetchProblemTags().subscribe();
-    if (isPlatformBrowser(this.platformId) && this.authService.isLoggedIn()) {
+    if (isPlatformBrowser(this.platformId) && this.authService.isLoggedIn()()) {
       this.questionStatusService.fetchProblemStatuses().subscribe();
     }
   }

@@ -1,5 +1,6 @@
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Title, Meta } from '@angular/platform-browser';
 import { ProblemList } from '../../shared/components/problem-list/problem-list';
 import { IProblem, ProblemDifficulty } from '../home/models/Question';
 import { PublicProblemService } from '../../shared/services/public-api/problem.service';
@@ -21,10 +22,23 @@ export class ProblemSheet implements OnInit {
   private readonly tagService = inject(ProblemTagService);
   private readonly statusService = inject(ProblemStatusApiService);
   private readonly authService = inject(AuthService);
+  private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
   problems = signal<IProblem[]>([]);
   sheetId = signal<string | null>(null);
   readonly tags = this.tagService.problemTags;
   readonly problemStatuses = this.statusService.problemStatuses;
+
+  private readonly seoEffect = effect(() => {
+    const tagName = this.sheetTagName();
+    if (tagName && tagName !== '-') {
+      this.titleService.setTitle(`${tagName} Problems - DSA Drill`);
+      this.metaService.updateTag({
+        name: 'description',
+        content: `Practice handpicked ${tagName} coding questions on DSA Drill. Track your solved questions and prepare for coding interviews.`,
+      });
+    }
+  });
 
   readonly totalCount = computed(() => this.problems().length);
   readonly easyCount = computed(

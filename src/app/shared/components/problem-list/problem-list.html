@@ -10,6 +10,7 @@
         rounded
         class="!rounded-full"
         placeholder="Search"
+        aria-label="Search problems"
         [value]="searchTerm()"
         (input)="setSearchTerm($any($event.target).value)"
       />
@@ -24,7 +25,7 @@
   optionValue="value"
   aria-labelledby="basic"
   /> -->
-  <p-button icon="pi pi-sync" text rounded (click)="pickRandom()"></p-button>
+  <p-button icon="pi pi-sync" text rounded (click)="pickRandom()" ariaLabel="Pick a random problem"></p-button>
 </div>
 @for (question of filteredProblems(); let rowIndex = $index; track question.id) {
   <div
@@ -36,6 +37,7 @@
       [icon]="problemStatuses()[question.id]?.solved ? 'pi pi-check-square' : 'pi pi-stop'"
       rounded="true"
       variant="text"
+      [ariaLabel]="(problemStatuses()[question.id]?.solved ? 'Mark unsolved: ' : 'Mark solved: ') + question.title"
     />
     <a
       [href]="question.link"
@@ -50,12 +52,14 @@
       [icon]="problemStatuses()[question.id]?.revision ? 'pi pi-star-fill' : 'pi pi-star'"
       rounded="true"
       variant="text"
+      [ariaLabel]="(problemStatuses()[question.id]?.revision ? 'Remove revision mark for ' : 'Mark for revision: ') + question.title"
     />
     <p-button
       (onClick)="editNote(question.id)"
       [icon]="problemStatuses()[question.id]?.note ? 'pi pi-file-edit' : 'pi pi-file-o'"
       rounded="true"
       variant="text"
+      [ariaLabel]="(problemStatuses()[question.id]?.note ? 'Edit note for ' : 'Add note for ') + question.title"
     />
   </div>
 } @empty {
@@ -77,10 +81,10 @@
     (saveForm)="updateNote()"
   >
     <form class="pane-form" [formGroup]="noteForm">
-      <label>
-        <span>Note</span>
-        <textarea pTextarea rows="6" class="field" formControlName="note"></textarea>
-      </label>
+      <div class="field-container">
+        <label for="problemNoteTextArea">Note</label>
+        <textarea id="problemNoteTextArea" pTextarea rows="6" class="field" formControlName="note"></textarea>
+      </div>
     </form>
   </app-form-pane-template>
 </ng-template>

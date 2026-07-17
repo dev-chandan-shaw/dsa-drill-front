@@ -4,7 +4,6 @@ import { ButtonModule } from 'primeng/button';
 import { Toast } from 'primeng/toast';
 import { RightPaneContainer } from './shared/components/right-pane-container/right-pane-container';
 import { AuthService } from './core/services/auth/auth.service';
-import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-root',
@@ -18,10 +17,6 @@ export class App implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
 
   ngOnInit(): void {
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
-    }
-
     this.authService.loadCurrentUser().subscribe();
   }
 }

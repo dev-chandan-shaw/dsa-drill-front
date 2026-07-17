@@ -11,6 +11,7 @@
           rounded
           class="!rounded-full"
           placeholder="Search"
+          aria-label="Search problems to select"
           [value]="searchTerm()"
           (input)="handleSearchInput($event)"
         />
@@ -27,24 +28,20 @@
       </div>
     } @else {
       @for (problem of filteredProblems(); let rowIndex = $index; track problem.id) {
-        <div
+        <label
           [ngClass]="{ 'bg-[var(--p-surface-800)] rounded-lg': rowIndex % 2 === 0 }"
-          class="group min-w-0 p-3 flex items-center gap-4 text-sm"
+          class="group min-w-0 p-3 flex items-center gap-4 text-sm cursor-pointer"
         >
           <input
             type="checkbox"
-            class="problem-checkbox cursor-pointer"
+            class="problem-checkbox"
             [checked]="isSelected(problem.id)"
             (change)="toggleProblemSelection(problem.id)"
           />
-          <button
-            type="button"
-            class="flex-1 min-w-0 cursor-pointer whitespace-normal break-words text-left"
-            (click)="toggleProblemSelection(problem.id)"
-          >
+          <span class="flex-1 min-w-0 whitespace-normal break-words">
             {{ problem.title }}
-          </button>
-        </div>
+          </span>
+        </label>
       }
     }
   </div>

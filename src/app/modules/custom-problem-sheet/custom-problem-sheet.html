@@ -1,5 +1,5 @@
 @if (!hasLoaded()) {
-  <p-progressbar mode="indeterminate" [style]="{ height: '4px' }" />
+  <p-progressbar mode="indeterminate" aria-label="Loading custom problems list" [style]="{ height: '4px' }" />
 } @else {
   <div class="sheet-layout">
     <aside class="sheet-summary">
@@ -18,6 +18,7 @@
                 severity="secondary"
                 (click)="openProblemSelector()"
                 title="Add problems to this sheet"
+                aria-label="Add problems to this sheet"
                 class="add-problems-btn"
               ></button>
             } @else {
@@ -27,7 +28,8 @@
                 [icon]="isProblemSheetSaved() ? 'pi pi-bookmark-fill ' : 'pi pi-bookmark'"
                 severity="secondary"
                 (click)="toggleSavedSheet()"
-                title="Add problems to this sheet"
+                [title]="isProblemSheetSaved() ? 'Unsave problem sheet' : 'Save problem sheet'"
+                [attr.aria-label]="isProblemSheetSaved() ? 'Unsave problem sheet' : 'Save problem sheet'"
                 class="add-problems-btn"
               ></button>
             }
@@ -53,7 +55,7 @@
               <span>Solved</span>
               <strong>{{ solvedCount() }}</strong>
             </div>
-            <p-progressbar [value]="solvedPercent()" [showValue]="false"></p-progressbar>
+            <p-progressbar [value]="solvedPercent()" [showValue]="false" [attr.aria-label]="solvedPercent() + '% of problems solved'"></p-progressbar>
           </div>
         </div>
       </p-card>

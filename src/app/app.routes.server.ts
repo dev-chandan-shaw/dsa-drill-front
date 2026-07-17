@@ -3,11 +3,15 @@ import { RenderMode, ServerRoute } from '@angular/ssr';
 export const serverRoutes: ServerRoute[] = [
   {
     path: '',
-    renderMode: RenderMode.Server, // handles the root redirect
+    renderMode: RenderMode.Server, 
   },
   {
-    path: 'problems/:slug',
-    renderMode: RenderMode.Server, // Tell Angular: "Don't try to build this at compile time"
+    path: 'problems/:sheetId',
+    renderMode: RenderMode.Server, 
+  },
+  {
+    path: 'problems-sheet/:sheetId',
+    renderMode: RenderMode.Server,
   },
   {
     path: 'home',
