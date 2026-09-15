@@ -88,11 +88,9 @@ export class QuestionPattern implements OnInit {
     this.questionTagService
       .fetchProblemTags()
       .subscribe({ error: () => this.fail('Unable to load tags') });
-    this.questionTagService.refreshProblemTagsInBackground();
     this.problemPatternService
       .fetchProblemPatterns()
       .subscribe({ error: () => this.fail('Unable to load patterns') });
-    this.problemPatternService.refreshProblemPatternsInBackground();
   }
 
   private fail(message: string): void {

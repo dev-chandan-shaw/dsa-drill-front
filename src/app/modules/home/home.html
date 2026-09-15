@@ -1,16 +1,28 @@
 @if (hasLoaded()) {
   <div class="page-shell home" aria-busy="false">
-    @if (tags().length > 0) {
-      <nav class="tag-row" aria-label="Problem categories">
-        @for (category of tags(); track category.slug) {
-          <a class="tag-link" [routerLink]="['/problems', category.slug]">
-            <span>{{ category.name }}</span>
-            <span class="tag-count">{{ category.problemCount ?? 0 }}</span>
-          </a>
-        }
-      </nav>
+    @defer (hydrate on idle) {
+      @if (tags().length > 0) {
+        <nav class="tag-row" aria-label="Problem categories">
+          @for (category of tags(); track category.slug) {
+            <a class="tag-link" [routerLink]="['/problems', category.slug]">
+              <span>{{ category.name }}</span>
+              <span class="tag-count">{{ category.problemCount ?? 0 }}</span>
+            </a>
+          }
+        </nav>
+      }
+    } @placeholder {
+      <nav class="tag-row" aria-hidden="true"></nav>
     }
-    <app-problem-list [problems]="problems()"></app-problem-list>
+    @defer (hydrate on viewport) {
+      <app-problem-list [problems]="problems()"></app-problem-list>
+    } @placeholder {
+      <div class="skeleton-list" aria-hidden="true">
+        @for (_ of skeletonRows; track $index) {
+          <div class="skeleton-row"></div>
+        }
+      </div>
+    }
   </div>
 } @else if (loadError()) {
   <div class="load-error" role="alert">

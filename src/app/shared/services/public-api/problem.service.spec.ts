@@ -78,44 +78,6 @@ describe('PublicProblemService freshness', () => {
     expect(service.hasLoaded()).toBe(true);
   });
 
-  it('should patch the signal in the background without resetting hasLoaded', () => {
-    setup();
-    service.fetchProblems().subscribe();
-    httpMock.expectOne(API).flush(LIST_A);
-    expect(service.hasLoaded()).toBe(true);
-
-    service.refreshProblemsInBackground();
-
-    httpMock.expectOne(API).flush(LIST_B);
-    expect(service.problems()).toEqual(LIST_B);
-    // Template gate never toggles: no skeleton flash on silent updates.
-    expect(service.hasLoaded()).toBe(true);
-  });
-
-  it('should fire exactly one background request per call', () => {
-    setup();
-    service.fetchProblems().subscribe();
-    httpMock.expectOne(API).flush(LIST_A);
-
-    service.refreshProblemsInBackground();
-    service.refreshProblemsInBackground();
-
-    const pending = httpMock.match(API);
-    expect(pending.length).toBe(2);
-    pending.forEach((req) => req.flush(LIST_B));
-    expect(service.problems()).toEqual(LIST_B);
-  });
-
-  it('should no-op the background refresh when nothing is loaded yet', () => {
-    setup();
-
-    service.refreshProblemsInBackground();
-
-    httpMock.expectNone(API);
-    expect(service.hasLoaded()).toBe(false);
-    expect(service.problems()).toEqual([]);
-  });
-
   it('should bypass the snapshot on forced reload', () => {
     setup();
     service.fetchProblems().subscribe();
@@ -126,17 +88,5 @@ describe('PublicProblemService freshness', () => {
 
     httpMock.expectOne(API).flush(LIST_B);
     expect(reloaded).toEqual(LIST_B);
-  });
-
-  it('should keep showing the snapshot when the background refresh fails', () => {
-    setup();
-    service.fetchProblems().subscribe();
-    httpMock.expectOne(API).flush(LIST_A);
-
-    service.refreshProblemsInBackground();
-    httpMock.expectOne(API).flush('error', { status: 500, statusText: 'Error' });
-
-    expect(service.problems()).toEqual(LIST_A);
-    expect(service.hasLoaded()).toBe(true);
   });
 });

@@ -54,24 +54,6 @@ export class ProblemPatternService {
     );
   }
 
-  /**
-   * Silent freshness pass (stale-while-revalidate), mirroring
-   * PublicProblemService.refreshProblemsInBackground: re-hit the network when
-   * pattern data is already present and patch the signal on arrival, without
-   * touching `hasLoaded` — the list updates in place instead of flashing.
-   * No-ops when nothing is loaded yet so cold boots never double-fire.
-   */
-  refreshProblemPatternsInBackground(): void {
-    if (!this.hasLoaded()) {
-      return;
-    }
-    this.http.get<IProblemPattern[]>(`${this.api}/problem-patterns`).subscribe({
-      next: (patterns) => this._problemPatterns.set(patterns),
-      // Freshness is best-effort: keep showing the snapshot on failure.
-      error: () => undefined,
-    });
-  }
-
   createProblemPattern(payload: Omit<IProblemPatternDto, 'id'>): Observable<IProblemPattern> {
     return this.http.post<IProblemPattern>(`${this.api}/problem-patterns`, payload);
   }

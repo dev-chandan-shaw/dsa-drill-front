@@ -60,24 +60,6 @@ export class ProblemTagService {
     );
   }
 
-  /**
-   * Silent freshness pass (stale-while-revalidate), mirroring
-   * PublicProblemService.refreshProblemsInBackground: re-hit the network when
-   * tag data is already present and patch the signal on arrival, without
-   * touching `hasLoaded` — the tag strip updates in place instead of flashing.
-   * No-ops when nothing is loaded yet so cold boots never double-fire.
-   */
-  refreshProblemTagsInBackground(): void {
-    if (!this.hasLoaded()) {
-      return;
-    }
-    this.http.get<IProblemTag[]>(`${this.api}/problem-tags`).subscribe({
-      next: (res) => this._problemTags.set(res),
-      // Freshness is best-effort: keep showing the snapshot on failure.
-      error: () => undefined,
-    });
-  }
-
   addProblemTag(payload: IQuestionTagDto) {
     return this.http.post<IProblemTag>(`${this.api}/problem-tags`, null, {
       params: { tagName: payload.name },

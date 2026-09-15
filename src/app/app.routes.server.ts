@@ -28,15 +28,16 @@ async function getProblemTagParams(): Promise<{ sheetId: string }[]> {
 }
 
 export const serverRoutes: ServerRoute[] = [
-  // Root renders Home (see modules.routes): prerendered for first paint/SEO
-  // and doubles as the SPA fallback shell content.
+  // Root renders Home (see modules.routes): server-rendered per request so
+  // the question + tag lists are always fresh. TransferState carries the
+  // server payload to the client — no background refetch needed.
   {
     path: '',
-    renderMode: RenderMode.Prerender,
+    renderMode: RenderMode.Server,
   },
   {
     path: 'home',
-    renderMode: RenderMode.Prerender,
+    renderMode: RenderMode.Server,
   },
   {
     path: 'question-pattern',

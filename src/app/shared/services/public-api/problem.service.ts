@@ -61,25 +61,6 @@ export class PublicProblemService {
     );
   }
 
-  /**
-   * Silent freshness pass (stale-while-revalidate): when list data is already
-   * present (TransferState snapshot or an earlier fetch), re-hit the network in
-   * the background and patch the signal on arrival. Never touches `hasLoaded`,
-   * so the template cannot flash back to skeleton — rows just update in place.
-   * No-ops when nothing is loaded yet: the regular `fetchProblems()` call owns
-   * the first paint, avoiding a double-fire on cold boots.
-   */
-  refreshProblemsInBackground(): void {
-    if (!this.hasLoaded()) {
-      return;
-    }
-    this.http.get<IProblem[]>(`${this.apiUrl}/problems`).subscribe({
-      next: (res) => this.problemsSignal.set(res),
-      // Freshness is best-effort: keep showing the snapshot on failure.
-      error: () => undefined,
-    });
-  }
-
   addProblem(payload: IProblem) {
     return this.http.post<IProblem>(`${this.apiUrl}/problems`, payload);
   }

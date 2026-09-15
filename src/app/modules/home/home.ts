@@ -59,18 +59,15 @@ export class Home implements OnInit {
 
   private load(): void {
     this.loadError.set(false);
+    // Server-only fetch: runs on the server during SSR and serializes via
+    // TransferState. The client consumes the snapshot with no extra network
+    // call — no background refresh needed for fresh first paint.
     this.questionService
       .fetchProblems()
       .subscribe({ error: () => this.loadError.set(true) });
-    // Silent freshness: instant paint from cache first, then reconcile with the
-    // server in the background (no-ops on cold boots where fetchProblems owns
-    // the first paint, so no double-fire and no skeleton flash).
-    this.questionService.refreshProblemsInBackground();
     this.questionTagService
       .fetchProblemTags()
       .subscribe({ error: () => this.loadError.set(true) });
-    // Same silent treatment for the tag strip.
-    this.questionTagService.refreshProblemTagsInBackground();
     if (isPlatformBrowser(this.platformId)) {
       // Personal statuses ride the auth-resolution event, not a synchronous
       // login check: on cold boots auth is still unresolved at init, and the

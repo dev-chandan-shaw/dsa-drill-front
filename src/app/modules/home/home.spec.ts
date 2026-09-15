@@ -54,7 +54,7 @@ describe('Home', () => {
   let fixture: ComponentFixture<Home>;
   let httpMock: HttpTestingController;
 
-  function setup(seed: Record<string, string> = {}): void {
+  async function setup(seed: Record<string, string> = {}): Promise<void> {
     const memory = createMemoryStorage(seed);
     TestBed.configureTestingModule({
       imports: [Home, NoopAnimationsModule],
@@ -75,6 +75,9 @@ describe('Home', () => {
         { provide: MatSnackBar, useValue: { open: () => undefined } },
       ],
     });
+    // Required once Home uses @defer blocks (incremental hydration):
+    // deferrable views have external compilation metadata.
+    await TestBed.compileComponents();
     httpMock = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(Home);
     component = fixture.componentInstance;
@@ -84,14 +87,14 @@ describe('Home', () => {
     httpMock.verify();
   });
 
-  it('should create', () => {
-    setup();
+  it('should create', async () => {
+    await setup();
     expect(component).toBeTruthy();
     httpMock.expectNone(PROBLEMS_URL);
   });
 
-  it('should fetch statuses after auth resolves on a cold boot (no snapshot)', () => {
-    setup();
+  it('should fetch statuses after auth resolves on a cold boot (no snapshot)', async () => {
+    await setup();
     fixture.detectChanges();
 
     // Init wave: public data + auth revalidation, but no statuses yet.
@@ -108,8 +111,8 @@ describe('Home', () => {
     expect(component.hasLoaded()).toBe(true);
   });
 
-  it('should never fetch statuses when auth resolves logged-out', () => {
-    setup();
+  it('should never fetch statuses when auth resolves logged-out', async () => {
+    await setup();
     fixture.detectChanges();
 
     httpMock.expectOne(PROBLEMS_URL).flush(PROBLEMS);
@@ -124,8 +127,8 @@ describe('Home', () => {
     expect(TestBed.inject(AuthService).isLoggedIn()()).toBe(false);
   });
 
-  it('should fetch statuses in the init wave on a warm boot (snapshot present)', () => {
-    setup({ [SNAPSHOT_KEY]: JSON.stringify(USER) });
+  it('should fetch statuses in the init wave on a warm boot (snapshot present)', async () => {
+    await setup({ [SNAPSHOT_KEY]: JSON.stringify(USER) });
     fixture.detectChanges();
 
     httpMock.expectOne(PROBLEMS_URL).flush(PROBLEMS);
