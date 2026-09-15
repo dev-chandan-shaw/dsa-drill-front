@@ -27,16 +27,22 @@ export class PublicProblemService {
       return of(this.problemsSignal());
     }
 
-    const cached = this.transferState.get(PROBLEMS_STATE_KEY, null);
+    if (!reload) {
+      const cached = this.transferState.get(PROBLEMS_STATE_KEY, null);
 
-    if (cached) {
-      this.problemsSignal.set(cached);
-      this.hasLoaded.set(true);
+      if (cached) {
+        this.problemsSignal.set(cached);
+        this.hasLoaded.set(true);
 
-      this.transferState.remove(PROBLEMS_STATE_KEY);
+        this.transferState.remove(PROBLEMS_STATE_KEY);
 
-      return of(cached);
+        return of(cached);
+      }
     }
+
+    // A forced reload always hits the network so post-save refreshes
+    // never resolve with stale SSR TransferState data.
+    this.transferState.remove(PROBLEMS_STATE_KEY);
 
     this.isLoading.set(true);
 
@@ -65,5 +71,21 @@ export class PublicProblemService {
 
   getProblemsByTag(tagId: string): Observable<IProblem[]> {
     return this.http.get<IProblem[]>(`${this.apiUrl}/problems/tag/${tagId}`);
+  }
+
+  upsertProblemSignal(problem: IProblem): void {
+    const current = this.problemsSignal();
+    const index = current.findIndex((item) => item.id === problem.id);
+
+    if (index === -1) {
+      this.problemsSignal.set([...current, problem]);
+    } else {
+      this.problemsSignal.set(current.map((item) => (item.id === problem.id ? problem : item)));
+    }
+    this.hasLoaded.set(true);
+  }
+
+  removeProblemSignal(problemId: number): void {
+    this.problemsSignal.set(this.problemsSignal().filter((item) => item.id !== problemId));
   }
 }

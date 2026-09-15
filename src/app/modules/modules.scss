@@ -18,9 +18,21 @@
     overflow: hidden;
     width: 100%;
 
-    app-sidebar {
+    app-sidebar.desktop-sidebar {
         height: 100%;
         min-height: 0;
+        flex: 0 0 auto;
+        width: 220px;
+        overflow: hidden;
+        opacity: 1;
+        transition:
+            width 0.25s ease,
+            opacity 0.2s ease;
+
+        &.collapsed {
+            width: 0;
+            opacity: 0;
+        }
     }
 
     .content {
@@ -30,7 +42,7 @@
 }
 
 @media (max-width: 767px) {
-    .modules-container>app-sidebar {
+    .modules-container>app-sidebar.desktop-sidebar {
         display: none;
     }
 }

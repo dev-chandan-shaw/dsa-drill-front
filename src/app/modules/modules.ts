@@ -13,11 +13,10 @@ import { RouterOutlet } from '@angular/router';
 import { Header } from '../shared/components/header/header';
 import { Sidebar } from '../shared/components/sidebar/sidebar';
 import { PaneSide, RightPaneService, RightPaneSize } from '../shared/services/right-pane-service';
-import { ProgressBarModule } from 'primeng/progressbar';
 
 @Component({
   selector: 'app-modules',
-  imports: [RouterOutlet, Header, Sidebar, ProgressBarModule],
+  imports: [RouterOutlet, Header, Sidebar],
   templateUrl: './modules.html',
   styleUrl: './modules.scss',
 })

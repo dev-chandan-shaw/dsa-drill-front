@@ -6,21 +6,40 @@ export class StorageService {
   private platformId = inject(PLATFORM_ID);
 
   set(key: string, value: string): void {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem(key, value);
+    try {
+      this.storage()?.setItem(key, value);
+    } catch {
+      // Storage unavailable (SSR, private mode, restricted envs): ignore.
     }
   }
 
   get(key: string): string | null {
-    if (isPlatformBrowser(this.platformId)) {
-      return localStorage.getItem(key);
+    try {
+      return this.storage()?.getItem(key) ?? null;
+    } catch {
+      return null;
     }
-    return null;
   }
 
   remove(key: string): void {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem(key);
+    try {
+      this.storage()?.removeItem(key);
+    } catch {
+      // Ignore when storage is unavailable.
+    }
+  }
+
+  // isPlatformBrowser alone is not enough: some browser-like environments
+  // (unit tests, restricted webviews) have no localStorage object, and
+  // private modes can throw on access.
+  private storage(): Storage | null {
+    if (!isPlatformBrowser(this.platformId)) {
+      return null;
+    }
+    try {
+      return typeof localStorage === 'undefined' ? null : localStorage;
+    } catch {
+      return null;
     }
   }
 }

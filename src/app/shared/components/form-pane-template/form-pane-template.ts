@@ -1,11 +1,12 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
-import { DividerModule } from 'primeng/divider';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-form-pane-template',
-  imports: [ButtonModule, DividerModule],
+  imports: [MatButtonModule, MatDividerModule, MatIconModule],
   templateUrl: './form-pane-template.html',
   styleUrl: './form-pane-template.scss',
 })

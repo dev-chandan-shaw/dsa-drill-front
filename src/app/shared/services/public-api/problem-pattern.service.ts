@@ -34,8 +34,8 @@ export class ProblemPatternService {
   public hasLoaded = signal<boolean>(false); // Cache state
   public readonly problemPatterns = this._problemPatterns.asReadonly();
 
-  fetchProblemPatterns(): Observable<IProblemPattern[]> {
-    if (this.hasLoaded()) return of([]);
+  fetchProblemPatterns(force: boolean = false): Observable<IProblemPattern[]> {
+    if (this.hasLoaded() && !force) return of(this._problemPatterns());
 
     this.isLoading.set(true);
     return this.http.get<IProblemPattern[]>(`${this.api}/problem-patterns`).pipe(
@@ -53,5 +53,21 @@ export class ProblemPatternService {
 
   updateProblemPattern(payload: IProblemPatternDto): Observable<IProblemPattern> {
     return this.http.post<IProblemPattern>(`${this.api}/problem-patterns`, payload);
+  }
+
+  upsertPatternSignal(pattern: IProblemPattern): void {
+    const current = this._problemPatterns();
+    const index = current.findIndex((item) => item.id === pattern.id);
+
+    if (index === -1) {
+      this._problemPatterns.set([...current, pattern]);
+    } else {
+      this._problemPatterns.set(current.map((item) => (item.id === pattern.id ? pattern : item)));
+    }
+    this.hasLoaded.set(true);
+  }
+
+  removePatternSignal(patternId: number): void {
+    this._problemPatterns.set(this._problemPatterns().filter((item) => item.id !== patternId));
   }
 }

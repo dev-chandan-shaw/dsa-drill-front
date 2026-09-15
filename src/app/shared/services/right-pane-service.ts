@@ -45,8 +45,21 @@ export class RightPaneService {
     this.side = options?.side ?? PaneSide.RIGHT;
   }
 
+  /**
+   * Starts closing the pane. Presentation state (template, side, title) is
+   * deliberately kept so the slide-out animation runs from the correct edge
+   * with its content intact. The host calls {@link completeClose} once the
+   * animation finishes.
+   */
   close(): void {
     this.isOpen = false;
+  }
+
+  /** Clears pane state after the close animation completes. Safe to call twice. */
+  completeClose(): void {
+    if (this.isOpen) {
+      return;
+    }
     this.template = undefined;
     this.context = undefined;
     this.title = '';

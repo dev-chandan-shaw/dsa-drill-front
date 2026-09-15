@@ -1,14 +1,14 @@
 <header>
-  <button class="hamburger-btn" (click)="toggleSidebar.emit()" aria-label="Toggle sidebar">
-    <i class="pi pi-bars hamburger-icon"></i>
+  <button mat-icon-button (click)="toggleSidebar.emit()" aria-label="Toggle sidebar">
+    <mat-icon>menu</mat-icon>
   </button>
 
-  <div 
-    class="logo cursor-pointer" 
-    (click)="navigateToHome()" 
+  <div
+    class="logo cursor-pointer"
+    (click)="navigateToHome()"
     (keydown.enter)="navigateToHome()"
-    role="button" 
-    tabindex="0" 
+    role="button"
+    tabindex="0"
     aria-label="DSA Drill homepage"
   >
     <h1>DSA Drill</h1>
@@ -16,13 +16,24 @@
 
   <div class="flex-1"></div>
 
+  @if (isAuthResolved() && !isAuthLoading() && !isLoggedIn()) {
+    <button
+      mat-icon-button
+      type="button"
+      (click)="theme.toggle()"
+      [attr.aria-label]="theme.isDark() ? 'Switch to light theme' : 'Switch to dark theme'"
+      [attr.aria-pressed]="theme.isDark()"
+    >
+      <mat-icon>{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+    </button>
+  }
+
   <div class="user-profile">
     @if (isLoggedIn()) {
-      <button 
-        type="button" 
-        class="profile-trigger" 
-        (click)="profileMenu.toggle($event)"
-        aria-haspopup="true"
+      <button
+        type="button"
+        class="profile-trigger"
+        [matMenuTriggerFor]="profileMenu"
         aria-label="Open user profile menu"
       >
         @if (loggedInUser()?.profilePictureUrl) {
@@ -38,13 +49,35 @@
         }
       </button>
     } @else if (isAuthResolved() && !isAuthLoading()) {
-      <button type="button" class="login-button" (click)="navigateToLogin()">Login</button>
+      <button mat-button type="button" class="login-button" (click)="navigateToLogin()">
+        Login
+      </button>
     }
   </div>
-  @if (isLoggedIn()) {
-    <p-menu #profileMenu appendTo="body" [popup]="true" [model]="menuitems()" styleClass="profile-menu"></p-menu>
-  }
 </header>
+
+<mat-menu #profileMenu="matMenu" class="profile-menu" xPosition="before">
+  <div class="profile-menu-head" aria-hidden="true">
+    <div class="profile-menu-name">{{ userFullName() }}</div>
+    <div class="profile-menu-email">{{ loggedInUser()?.email }}</div>
+  </div>
+  <mat-divider></mat-divider>
+  <button
+    mat-menu-item
+    type="button"
+    role="menuitemcheckbox"
+    [attr.aria-checked]="theme.isDark()"
+    (click)="theme.toggle()"
+  >
+    <mat-icon>{{ theme.isDark() ? 'dark_mode' : 'light_mode' }}</mat-icon>
+    <span>Dark mode</span>
+  </button>
+  <mat-divider></mat-divider>
+  <button mat-menu-item type="button" (click)="logout()">
+    <mat-icon>logout</mat-icon>
+    <span>Logout</span>
+  </button>
+</mat-menu>
 
 <ng-template #sidebarTemplate>
   <app-sidebar></app-sidebar>

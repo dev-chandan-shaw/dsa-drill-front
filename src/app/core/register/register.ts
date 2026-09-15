@@ -2,11 +2,12 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { FloatLabelModule } from 'primeng/floatlabel';
-import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
-import { InputGroupModule } from 'primeng/inputgroup';
-import { InputTextModule } from 'primeng/inputtext';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { AuthService } from '../services/auth/auth.service';
 import { IRegisterRequest } from '../../shared/models/User';
 import { finalize } from 'rxjs';
@@ -16,13 +17,14 @@ import { ToastService } from '../../shared/services/toast-service';
   selector: 'app-register',
   imports: [
     ReactiveFormsModule,
-    ButtonModule,
-    FloatLabelModule,
     CommonModule,
-    InputTextModule,
     RouterModule,
-    InputGroupModule,
-    InputGroupAddonModule,
+    MatButtonModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatProgressBarModule,
   ],
   templateUrl: './register.html',
   styleUrl: './register.scss',

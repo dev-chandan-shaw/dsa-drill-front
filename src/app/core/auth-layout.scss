@@ -1,0 +1,80 @@
+// Shared auth layout for login + register. Imported via `@use` from each
+// component stylesheet so the two pages can never drift apart again.
+// All colors are theme tokens (light paper / dark editor).
+
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 1.5rem;
+  background: radial-gradient(
+    circle at top,
+    var(--mat-sys-surface-container-high),
+    var(--mat-sys-surface)
+  );
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 520px;
+  padding: 1.75rem;
+}
+
+.auth-header {
+  margin-bottom: 1.25rem;
+
+  h1 {
+    font-family: 'Sora', Inter, system-ui, sans-serif;
+    letter-spacing: -0.02em;
+    font-size: 1.9rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  p {
+    color: var(--mat-sys-on-surface-variant);
+    margin: 0.4rem 0 0 0;
+  }
+}
+
+.auth-progress {
+  margin-bottom: 1rem;
+}
+
+.auth-form {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.auth-field {
+  width: 100%;
+}
+
+.switch-auth {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.9rem;
+  margin: 0.4rem 0;
+  text-align: right;
+
+  a {
+    color: var(--mat-sys-primary);
+    font-weight: 600;
+    text-decoration: none;
+  }
+}
+
+.auth-submit {
+  width: 100%;
+  min-height: 48px;
+}
+
+@media (max-width: 480px) {
+  .auth-page {
+    padding: 1rem;
+  }
+
+  .auth-card {
+    padding: 1.25rem;
+  }
+}

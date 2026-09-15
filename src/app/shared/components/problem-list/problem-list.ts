@@ -8,17 +8,17 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
-import { ButtonModule } from 'primeng/button';
-import { TagModule } from 'primeng/tag';
 import { CommonModule } from '@angular/common';
 import { UserQuestionStatusDto } from '../../../modules/home/models/Question-status';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
-import { InputTextModule } from 'primeng/inputtext';
-import { TooltipModule } from 'primeng/tooltip';
+import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ProblemDrillService } from '../../../modules/home/services/problem-drill.service';
-import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { SelectButtonModule } from 'primeng/selectbutton';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ProblemStatusApiService } from '../../../modules/home/services/user/question-status-api.service';
 import { IProblem } from '../../../modules/home/models/Question';
 import { FormPaneTemplate } from '../form-pane-template/form-pane-template';
@@ -29,15 +29,14 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-problem-list',
   imports: [
-    ButtonModule,
-    TagModule,
+    MatButtonModule,
+    MatButtonToggleModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatSelectModule,
+    MatTooltipModule,
     CommonModule,
-    IconFieldModule,
-    InputIconModule,
-    InputTextModule,
-    TooltipModule,
-    FormsModule,
-    SelectButtonModule,
     FormPaneTemplate,
     ReactiveFormsModule,
   ],
@@ -47,13 +46,7 @@ import { Router } from '@angular/router';
 export class ProblemList implements OnInit {
   @ViewChild('noteTemplate') noteTemplate!: TemplateRef<any>;
 
-  stateOptions = [
-    { label: 'All', value: 'all' },
-    { label: 'Revision', value: 'revision' },
-  ];
-
-  value = 'all';
-  isNoteSaved = signal(false);
+  isNoteSaving = signal(false);
 
   private readonly problemDrillService = inject(ProblemDrillService);
   private readonly questionStatusService = inject(ProblemStatusApiService);
@@ -68,17 +61,28 @@ export class ProblemList implements OnInit {
 
   problems = input.required<IProblem[]>();
   readonly searchTerm = signal('');
+  readonly revisionOnly = signal(false);
+  readonly selectedDifficulty = signal<'ALL' | IProblem['difficulty']>('ALL');
+  readonly difficultyOptions = [
+    { label: 'All difficulties', value: 'ALL' as const },
+    { label: 'Easy', value: 'EASY' as const },
+    { label: 'Medium', value: 'MED' as const },
+    { label: 'Hard', value: 'HARD' as const },
+  ];
   problemStatuses = this.questionStatusService.problemStatuses;
   readonly filteredProblems = computed(() => {
     const normalizedSearch = this.searchTerm().trim().toLowerCase();
-    const revisionOnly = this.value === 'revision';
+    const revisionOnly = this.revisionOnly();
+    const selectedDifficulty = this.selectedDifficulty();
 
     return this.problems().filter((problem) => {
       const matchesSearch =
         !normalizedSearch || problem.title.toLowerCase().includes(normalizedSearch);
-      const matchesRevision = !revisionOnly || this.problemStatuses()[problem.id]?.revision;
+      const matchesRevision = !revisionOnly || !!this.problemStatuses()[problem.id]?.revision;
+      const matchesDifficulty =
+        selectedDifficulty === 'ALL' || problem.difficulty === selectedDifficulty;
 
-      return matchesSearch && matchesRevision;
+      return matchesSearch && matchesRevision && matchesDifficulty;
     });
   });
 
@@ -92,12 +96,28 @@ export class ProblemList implements OnInit {
     globalThis.open(problem.link, '_blank');
   }
 
-  filterRevision(value: string) {
-    this.value = value === this.value ? 'all' : value;
-  }
-
   setSearchTerm(value: string) {
     this.searchTerm.set(value);
+  }
+
+  setRevisionFilter(revisionOnly: boolean) {
+    this.revisionOnly.set(revisionOnly);
+  }
+
+  setDifficultyFilter(difficulty: 'ALL' | IProblem['difficulty']) {
+    this.selectedDifficulty.set(difficulty);
+  }
+
+  clearListFilters() {
+    this.searchTerm.set('');
+    this.revisionOnly.set(false);
+    this.selectedDifficulty.set('ALL');
+  }
+
+  get hasActiveFilters(): boolean {
+    return (
+      this.searchTerm().trim() !== '' || this.revisionOnly() || this.selectedDifficulty() !== 'ALL'
+    );
   }
 
   toggleMarkForRevision(problemId: number) {
@@ -128,7 +148,7 @@ export class ProblemList implements OnInit {
   updateNote() {
     const problemId = this.selectedProblemId;
     if (problemId === null) return;
-    this.isNoteSaved.set(true);
+    this.isNoteSaving.set(true);
     const status: UserQuestionStatusDto = {
       problemId: problemId,
       revision: this.problemStatuses()[problemId]?.revision,
@@ -137,7 +157,7 @@ export class ProblemList implements OnInit {
     };
     this.questionStatusService
       .updateProblemStatus(status)
-      .pipe(finalize(() => this.isNoteSaved.set(false)))
+      .pipe(finalize(() => this.isNoteSaving.set(false)))
       .subscribe(() => {
         this.rightPaneService.close();
         this.clearSelectedProblem();
@@ -149,7 +169,7 @@ export class ProblemList implements OnInit {
       this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
     } else {
       this.selectedProblemId = problemId;
-      this.isNoteSaved.set(false);
+      this.isNoteSaving.set(false);
       this.noteForm.reset({
         note: this.problemStatuses()[problemId]?.note ?? '',
       });
@@ -166,7 +186,7 @@ export class ProblemList implements OnInit {
   clearSelectedProblem() {
     this.rightPaneService.close();
     this.selectedProblemId = null;
-    this.isNoteSaved.set(false);
+    this.isNoteSaving.set(false);
     this.noteForm.reset({ note: '' });
   }
 
@@ -177,5 +197,18 @@ export class ProblemList implements OnInit {
   getNoteTitle() {
     const problem = this.problems().find((problem) => problem.id === this.selectedProblemId);
     return problem?.title ?? '';
+  }
+
+  difficultyLabel(difficulty: IProblem['difficulty']): string {
+    switch (difficulty) {
+      case 'EASY':
+        return 'Easy';
+      case 'MED':
+        return 'Medium';
+      case 'HARD':
+        return 'Hard';
+      default:
+        return String(difficulty);
+    }
   }
 }

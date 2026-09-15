@@ -9,10 +9,10 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { InputTextModule } from 'primeng/inputtext';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
-import { ButtonModule } from 'primeng/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { FormControl, FormsModule } from '@angular/forms';
 import { PublicProblemService } from '../../services/public-api/problem.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -21,10 +21,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   selector: 'app-tag-based-problem-list',
   imports: [
     CommonModule,
-    InputTextModule,
-    IconFieldModule,
-    InputIconModule,
-    ButtonModule,
+    MatCheckboxModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
     FormsModule,
   ],
   templateUrl: './tag-based-problem-list.html',
@@ -91,8 +91,8 @@ export class TagBasedProblemList implements OnInit {
     this.problemsSelected.emit(Array.from(this.selectedProblemIds()));
   }
 
-  handleSearchInput(event: any) {
-    this.searchTerm.set(event.target?.value || '');
+  setSearchTerm(value: string) {
+    this.searchTerm.set(value ?? '');
   }
 
   private syncSelectedIds(ids: number[]) {

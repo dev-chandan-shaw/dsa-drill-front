@@ -1,103 +1,94 @@
 <main class="auth-page">
-  <section class="auth-card" aria-label="Signup form">
+  <mat-card class="auth-card">
     <header class="auth-header">
-      <h1>Create Account</h1>
+      <h1>Create account</h1>
       <p>Sign up to start solving problems.</p>
     </header>
 
-    <form [formGroup]="registerForm" (ngSubmit)="submitForm()" class="auth-form">
-      <div class="form-field">
-        <p-floatlabel variant="on">
-          <input pInputText id="firstName" formControlName="firstName" style="width: 100%" />
-          <label for="firstName">First Name</label>
-        </p-floatlabel>
-        <p class="field-error">
-          <small
-            *ngIf="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched"
-            class="error-text"
-          >
-            First name is required.
-          </small>
-        </p>
-      </div>
+    @if (isLoading()) {
+      <mat-progress-bar mode="indeterminate" class="auth-progress"></mat-progress-bar>
+    }
 
-      <div class="form-field">
-        <p-floatlabel variant="on">
-          <input pInputText id="lastName" formControlName="lastName" style="width: 100%" />
-          <label for="lastName">Last Name</label>
-        </p-floatlabel>
-        <p class="field-error">
-          <small
-            *ngIf="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched"
-            class="error-text"
-          >
-            Last name is required.
-          </small>
-        </p>
-      </div>
+    <form
+      [formGroup]="registerForm"
+      (ngSubmit)="submitForm()"
+      class="auth-form"
+      aria-label="Signup form"
+    >
+      <mat-form-field appearance="outline" class="auth-field">
+        <mat-label>First name</mat-label>
+        <input matInput id="firstName" formControlName="firstName" autocomplete="given-name" required />
+        @if (registerForm.get('firstName')?.invalid) {
+          <mat-error>First name is required.</mat-error>
+        }
+      </mat-form-field>
 
-      <div class="form-field">
-        <p-floatlabel variant="on">
-          <input pInputText id="email" formControlName="email" style="width: 100%" />
-          <label for="email">Email</label>
-        </p-floatlabel>
-        <p class="field-error">
-          <small
-            *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
-            class="error-text"
-          >
-            Valid email is required.
-          </small>
-        </p>
-      </div>
+      <mat-form-field appearance="outline" class="auth-field">
+        <mat-label>Last name</mat-label>
+        <input matInput id="lastName" formControlName="lastName" autocomplete="family-name" required />
+        @if (registerForm.get('lastName')?.invalid) {
+          <mat-error>Last name is required.</mat-error>
+        }
+      </mat-form-field>
 
-      <div class="form-field">
-        <p-inputgroup>
-          <p-floatlabel variant="on">
-            <input
-              [type]="showPassword ? 'text' : 'password'"
-              pInputText
-              id="password"
-              formControlName="password"
-              style="width: 100%"
-            />
-            <label for="password">Password</label>
-          </p-floatlabel>
-          <p-inputgroup-addon>
-            <p-button
-              [icon]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"
-              severity="secondary"
-              variant="text"
-              [ariaLabel]="showPassword ? 'Hide password' : 'Show password'"
-              (click)="showPassword = !showPassword"
-            />
-          </p-inputgroup-addon>
-        </p-inputgroup>
-        <p class="field-error">
-          <small
-            *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
-            class="error-text"
-          >
-            Password must be at least 8 characters.
-          </small>
-        </p>
-      </div>
+      <mat-form-field appearance="outline" class="auth-field">
+        <mat-label>Email</mat-label>
+        <input
+          matInput
+          id="email"
+          type="email"
+          formControlName="email"
+          autocomplete="email"
+          required
+        />
+        @if (registerForm.get('email')?.hasError('required')) {
+          <mat-error>Email is required.</mat-error>
+        } @else if (registerForm.get('email')?.hasError('email')) {
+          <mat-error>Enter a valid email address.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="auth-field">
+        <mat-label>Password</mat-label>
+        <input
+          matInput
+          id="password"
+          [type]="showPassword ? 'text' : 'password'"
+          formControlName="password"
+          autocomplete="new-password"
+          required
+          minlength="8"
+        />
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="showPassword = !showPassword"
+          [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+          [attr.aria-pressed]="showPassword"
+        >
+          <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        @if (registerForm.get('password')?.hasError('required')) {
+          <mat-error>Password is required.</mat-error>
+        } @else if (registerForm.get('password')?.hasError('minlength')) {
+          <mat-error>Password must be at least 8 characters.</mat-error>
+        }
+      </mat-form-field>
 
       <p class="switch-auth">
         Already have an account?
-        <span>
-          <a [routerLink]="['/login']">Signin</a>
-        </span>
+        <a [routerLink]="['/login']">Sign in</a>
       </p>
 
-      <p-button
-        [label]="isLoading() ? 'Signing up...' : 'Signup'"
-        size="large"
+      <button
+        mat-flat-button
+        class="auth-submit"
         type="submit"
-        styleClass="w-full"
-        [loading]="isLoading()"
         [disabled]="registerForm.invalid || isLoading()"
-      />
+      >
+        {{ isLoading() ? 'Signing up…' : 'Sign up' }}
+      </button>
     </form>
-  </section>
+  </mat-card>
 </main>

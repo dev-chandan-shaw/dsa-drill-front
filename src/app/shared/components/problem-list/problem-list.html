@@ -1,79 +1,97 @@
-<div class="flex justify-between mb-2">
-  <div class="flex justify-between items-center gap-4">
-    <p-iconfield>
-      <p-inputicon class="pi pi-search" />
-      <input
-        type="text"
-        size="small"
-        pInputText
-        pSize="small"
-        rounded
-        class="!rounded-full"
-        placeholder="Search"
-        aria-label="Search problems"
-        [value]="searchTerm()"
-        (input)="setSearchTerm($any($event.target).value)"
-      />
-    </p-iconfield>
-  </div>
-  <!-- <p-selectbutton
-  [options]="stateOptions"
-  [(ngModel)]="value"
-  (ngModelChange)="filterRevision($event)"
-  optionLabel="label"
-  size="small"
-  optionValue="value"
-  aria-labelledby="basic"
-  /> -->
-  <p-button icon="pi pi-sync" text rounded (click)="pickRandom()" ariaLabel="Pick a random problem"></p-button>
+<div class="list-toolbar">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+    <mat-icon matPrefix aria-hidden="true">search</mat-icon>
+    <mat-label>Search problems</mat-label>
+    <input
+      matInput
+      type="text"
+      [value]="searchTerm()"
+      (input)="setSearchTerm($any($event.target).value)"
+    />
+  </mat-form-field>
+  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="difficulty-field">
+    <mat-label>Difficulty</mat-label>
+    <mat-select
+      [value]="selectedDifficulty()"
+      (selectionChange)="setDifficultyFilter($event.value)"
+    >
+      @for (option of difficultyOptions; track option.value) {
+        <mat-option [value]="option.value">{{ option.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  <mat-button-toggle-group
+    hideSingleSelectionIndicator
+    [value]="revisionOnly() ? 'revision' : 'all'"
+    (change)="setRevisionFilter($event.value === 'revision')"
+    aria-label="Revision filter"
+  >
+    <mat-button-toggle value="all">All</mat-button-toggle>
+    <mat-button-toggle value="revision">Revision</mat-button-toggle>
+  </mat-button-toggle-group>
+  <button
+    mat-icon-button
+    type="button"
+    class="toolbar-end"
+    (click)="pickRandom()"
+    matTooltip="Pick a random problem"
+    aria-label="Pick a random problem"
+  >
+    <mat-icon>shuffle</mat-icon>
+  </button>
 </div>
 @for (question of filteredProblems(); let rowIndex = $index; track question.id) {
-  <div
-    [ngClass]="{ 'bg-[var(--p-surface-900)] rounded-xl': rowIndex % 2 === 0 }"
-    class="group min-w-0 p-1 flex items-center gap-2 sm:gap-4 text-sm"
-  >
-    <p-button
-      (onClick)="toggleSolved(question.id)"
-      [icon]="problemStatuses()[question.id]?.solved ? 'pi pi-check-square' : 'pi pi-stop'"
-      rounded="true"
-      variant="text"
-      [ariaLabel]="(problemStatuses()[question.id]?.solved ? 'Mark unsolved: ' : 'Mark solved: ') + question.title"
-    />
-    <a
-      [href]="question.link"
-      target="_blank"
-      class="flex-1 min-w-0 cursor-pointer whitespace-normal break-words"
+  <div class="problem-row" [class.zebra]="rowIndex % 2 === 0">
+    <button
+      mat-icon-button
+      type="button"
+      (click)="toggleSolved(question.id)"
+      [attr.aria-pressed]="!!problemStatuses()[question.id]?.solved"
+      [attr.aria-label]="(problemStatuses()[question.id]?.solved ? 'Mark unsolved: ' : 'Mark solved: ') + question.title"
     >
+      <mat-icon>{{
+        problemStatuses()[question.id]?.solved ? 'check_box' : 'check_box_outline_blank'
+      }}</mat-icon>
+    </button>
+    <a [href]="question.link" target="_blank" rel="noopener" class="problem-title">
       {{ rowIndex + 1 }}. {{ question.title }}
     </a>
-    <p-tag [value]="question.difficulty" />
-    <p-button
-      (onClick)="toggleMarkForRevision(question.id)"
-      [icon]="problemStatuses()[question.id]?.revision ? 'pi pi-star-fill' : 'pi pi-star'"
-      rounded="true"
-      variant="text"
-      [ariaLabel]="(problemStatuses()[question.id]?.revision ? 'Remove revision mark for ' : 'Mark for revision: ') + question.title"
-    />
-    <p-button
-      (onClick)="editNote(question.id)"
-      [icon]="problemStatuses()[question.id]?.note ? 'pi pi-file-edit' : 'pi pi-file-o'"
-      rounded="true"
-      variant="text"
-      [ariaLabel]="(problemStatuses()[question.id]?.note ? 'Edit note for ' : 'Add note for ') + question.title"
-    />
+    <span class="difficulty-badge difficulty-{{ question.difficulty.toLowerCase() }}">
+      {{ difficultyLabel(question.difficulty) }}
+    </span>
+    <button
+      mat-icon-button
+      type="button"
+      (click)="toggleMarkForRevision(question.id)"
+      [attr.aria-pressed]="!!problemStatuses()[question.id]?.revision"
+      [attr.aria-label]="(problemStatuses()[question.id]?.revision ? 'Remove revision mark for ' : 'Mark for revision: ') + question.title"
+    >
+      <mat-icon>{{ problemStatuses()[question.id]?.revision ? 'star' : 'star_border' }}</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      type="button"
+      (click)="editNote(question.id)"
+      [attr.aria-label]="(problemStatuses()[question.id]?.note ? 'Edit note for ' : 'Add note for ') + question.title"
+    >
+      <mat-icon>{{ problemStatuses()[question.id]?.note ? 'edit_note' : 'note_add' }}</mat-icon>
+    </button>
   </div>
 } @empty {
   <div class="empty-state">
-    <i class="pi pi-search empty-icon" aria-hidden="true"></i>
+    <mat-icon class="empty-icon" aria-hidden="true">search</mat-icon>
     <div class="empty-title">No problems found</div>
     <div class="empty-subtitle">Try a different keyword or clear the search.</div>
+    @if (hasActiveFilters) {
+      <button mat-button type="button" (click)="clearListFilters()">Clear filters</button>
+    }
   </div>
 }
 
 <ng-template #noteTemplate>
   <app-form-pane-template
     [form]="noteForm"
-    [isSaving]="isNoteSaved()"
+    [isSaving]="isNoteSaving()"
     [isEditMode]="selectedProblemId !== null"
     [title]="getNoteTitle()"
     (addForm)="updateNote()"
@@ -81,10 +99,15 @@
     (saveForm)="updateNote()"
   >
     <form class="pane-form" [formGroup]="noteForm">
-      <div class="field-container">
-        <label for="problemNoteTextArea">Note</label>
-        <textarea id="problemNoteTextArea" pTextarea rows="6" class="field" formControlName="note"></textarea>
-      </div>
+      <mat-form-field appearance="outline" class="note-field">
+        <mat-label>Note</mat-label>
+        <textarea
+          matInput
+          id="problemNoteTextArea"
+          rows="6"
+          formControlName="note"
+        ></textarea>
+      </mat-form-field>
     </form>
   </app-form-pane-template>
 </ng-template>

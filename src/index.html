@@ -1,18 +1,42 @@
 <!doctype html>
-<html lang="en" class="my-app-dark">
+<html lang="en" class="dark">
   <head>
     <meta charset="utf-8" />
     <title>DSA Drill</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Icons+Outlined&display=swap"
       rel="stylesheet"
     />
     <link rel="icon" type="image/png" href="dsadrilllogo.png" />
     <meta name="google-site-verification" content="9j56z9pK3K_I9nl1N3mYP-xDFcYREfo1PdEX3_nIjL0" />
+    <script>
+      // Pre-paint theme: same rule as ThemeService (stored pref > OS > dark).
+      // Runs before first paint to avoid any flash.
+      (function () {
+        try {
+          var stored = localStorage.getItem('dsa-drill-theme');
+          var dark =
+            stored === 'dark'
+              ? true
+              : stored === 'light'
+                ? false
+                : !window.matchMedia('(prefers-color-scheme: light)').matches;
+          document.documentElement.classList.toggle('dark', dark);
+          document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+        } catch (e) {
+          /* keep server-rendered default */
+        }
+      })();
+    </script>
   </head>
   <body>
     <app-root></app-root>

@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { AdminProblemTag } from './admin-problem-tag';
+import { AdminProblemTagService } from './admin-problem-tag';
 
-describe('AdminProblemTag', () => {
-  let service: AdminProblemTag;
+describe('AdminProblemTagService', () => {
+  let service: AdminProblemTagService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(AdminProblemTag);
+    service = TestBed.inject(AdminProblemTagService);
   });
 
   it('should be created', () => {

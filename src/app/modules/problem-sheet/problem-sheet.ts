@@ -4,15 +4,17 @@ import { Title, Meta } from '@angular/platform-browser';
 import { ProblemList } from '../../shared/components/problem-list/problem-list';
 import { IProblem, ProblemDifficulty } from '../home/models/Question';
 import { PublicProblemService } from '../../shared/services/public-api/problem.service';
-import { Card } from 'primeng/card';
-import { ProgressBarModule } from 'primeng/progressbar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ProblemStatusApiService } from '../home/services/user/question-status-api.service';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.service';
 
 @Component({
   selector: 'app-problem-sheet',
-  imports: [ProblemList, Card, ProgressBarModule],
+  imports: [ProblemList, MatButtonModule, MatCardModule, MatIconModule, MatProgressBarModule],
   templateUrl: './problem-sheet.html',
   styleUrl: './problem-sheet.scss',
 })
@@ -89,6 +91,8 @@ export class ProblemSheet implements OnInit {
     return this.tags().find((tag) => tag.slug === id)?.name ?? '-';
   });
   readonly isSheetLoading = signal(true);
+  readonly loadError = signal(false);
+  readonly skeletonRows = Array.from({ length: 6 });
   readonly hasLoaded = computed(() => !this.isSheetLoading() && this.tagService.hasLoaded());
   private readonly hasFetchedStatuses = signal(false);
   private readonly loadStatusesEffect = effect(() => {
@@ -103,19 +107,33 @@ export class ProblemSheet implements OnInit {
   });
 
   ngOnInit() {
+    this.load();
+  }
+
+  retry() {
+    this.load();
+  }
+
+  private load() {
     const sheetId = this.route.snapshot.paramMap.get('sheetId');
     this.sheetId.set(sheetId);
+    this.loadError.set(false);
     if (sheetId) {
       this.isSheetLoading.set(true);
       this.questionService.getProblemsByTag(sheetId).subscribe({
         next: (questions) => this.problems.set(questions),
-        error: () => this.isSheetLoading.set(false),
+        error: () => {
+          this.loadError.set(true);
+          this.isSheetLoading.set(false);
+        },
         complete: () => this.isSheetLoading.set(false),
       });
     } else {
       this.isSheetLoading.set(false);
     }
 
-    this.tagService.fetchProblemTags().subscribe();
+    this.tagService
+      .fetchProblemTags()
+      .subscribe({ error: () => this.loadError.set(true) });
   }
 }

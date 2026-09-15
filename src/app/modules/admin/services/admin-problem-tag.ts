@@ -27,4 +27,8 @@ export class AdminProblemTagService {
       },
     );
   }
+
+  deleteProblemTag(tagId: number) {
+    return this.http.delete<void>(`${this.api}/problem-tags/${tagId}`);
+  }
 }

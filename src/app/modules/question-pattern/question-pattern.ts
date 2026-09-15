@@ -9,17 +9,24 @@ import {
   signal,
 } from '@angular/core';
 import { Title, Meta } from '@angular/platform-browser';
-import { InputTextModule } from 'primeng/inputtext';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { IProblemPattern } from '../home/models/problem-pattern';
 import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.service';
 import { ProblemPatternService } from '../../shared/services/public-api/problem-pattern.service';
 import { ToastService } from '../../shared/services/toast-service';
-import { Card } from 'primeng/card';
-import { ProgressBar } from 'primeng/progressbar';
 
 @Component({
   selector: 'app-question-pattern',
-  imports: [CommonModule, InputTextModule, Card, ProgressBar],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatCardModule,
+    MatIconModule,
+    MatProgressBarModule,
+  ],
   templateUrl: './question-pattern.html',
   styleUrl: './question-pattern.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,18 +44,9 @@ export class QuestionPattern implements OnInit {
   readonly hasLoaded = computed(
     () => this.problemPatternService.hasLoaded() && this.questionTagService.hasLoaded(),
   );
-  readonly searchTerm = signal('');
   readonly selectedTagId = signal<number | null>(null);
-  readonly totalPatternCount = computed(() => this.patterns().length);
-  readonly filteredPatternCount = computed(() => this.filteredPatterns().length);
-  readonly filterProgress = computed(() => {
-    const total = this.totalPatternCount();
-    if (!total) {
-      return 0;
-    }
-
-    return Math.round((this.filteredPatternCount() / total) * 100);
-  });
+  readonly loadError = signal(false);
+  readonly skeletonRows = Array.from({ length: 5 });
 
   readonly patternCountByTag = computed(() => {
     const counts = new Map<number, number>();
@@ -59,25 +57,10 @@ export class QuestionPattern implements OnInit {
   });
 
   readonly filteredPatterns = computed(() => {
-    const normalizedSearch = this.searchTerm().toLowerCase().trim();
     const selectedTagId = this.selectedTagId();
 
     return this.patterns().filter((pattern) => {
-      const matchesTag = selectedTagId === null || pattern.tagId === selectedTagId;
-      if (!matchesTag) {
-        return false;
-      }
-
-      if (!normalizedSearch) {
-        return true;
-      }
-
-      const tagName = this.getTagNameById(pattern.tagId).toLowerCase();
-      return (
-        pattern.name.toLowerCase().includes(normalizedSearch) ||
-        pattern.explanation.toLowerCase().includes(normalizedSearch) ||
-        tagName.includes(normalizedSearch)
-      );
+      return selectedTagId === null || pattern.tagId === selectedTagId;
     });
   });
 
@@ -93,16 +76,34 @@ export class QuestionPattern implements OnInit {
       name: 'description',
       content: 'Explore common algorithmic patterns, structure logic, and learn strategies to solve complex DSA problems effectively.',
     });
-    this.questionTagService.fetchProblemTags().subscribe();
-    this.problemPatternService.fetchProblemPatterns().subscribe();
+    this.load();
   }
 
-  setSearchTerm(value: string) {
-    this.searchTerm.set(value);
+  retry(): void {
+    this.load();
+  }
+
+  private load(): void {
+    this.loadError.set(false);
+    this.questionTagService
+      .fetchProblemTags()
+      .subscribe({ error: () => this.fail('Unable to load tags') });
+    this.problemPatternService
+      .fetchProblemPatterns()
+      .subscribe({ error: () => this.fail('Unable to load patterns') });
+  }
+
+  private fail(message: string): void {
+    this.loadError.set(true);
+    this.toastService.showError(message);
   }
 
   setSelectedTagId(tagId: number | null) {
-    this.selectedTagId.set(tagId);
+    this.selectedTagId.set(this.selectedTagId() === tagId ? null : tagId);
+  }
+
+  clearFilters() {
+    this.selectedTagId.set(null);
   }
 
   getTagNameById(tagId: number) {

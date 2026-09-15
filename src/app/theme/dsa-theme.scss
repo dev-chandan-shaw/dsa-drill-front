@@ -1,0 +1,166 @@
+// DSA Drill custom Material 3 theme.
+//
+// Identity: fresh emerald (#34d399) primary on warm paper (light) / deep
+// editor ink (dark). Green/amber/red are reserved for Easy/Medium/Hard
+// difficulty semantics only.
+//
+// Usage: light theme is the default; `html.dark` switches to dark.
+// Component styles should consume `--mat-sys-*` system variables and the
+// `--dsa-*` custom tokens below so they follow the active theme for free.
+
+@use 'sass:color';
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+// Primary seed. M3 derives per-mode tones from the ramp below: light mode
+// uses tone 40 (deeper emerald) and dark mode tone 80 (lighter emerald),
+// so the exact seed shows at its natural tone with AA on-colors in both.
+$dsa-seed: #34d399;
+
+// Every tonal step referenced by M3 roles. Primary/secondary ramps use the
+// base 16 (matching Material's own palettes, which palette validation
+// enforces); neutral ramps additionally carry the extended surface steps.
+$dsa-tones: (0, 10, 20, 25, 30, 35, 40, 50, 60, 70, 80, 90, 95, 98, 99, 100);
+$dsa-neutral-tones: (
+  0, 4, 6, 10, 12, 17, 20, 22, 24, 25, 30, 35, 40, 50, 60, 70, 80, 87, 90, 92, 94, 95, 96, 98, 99, 100
+);
+
+// Builds one M3 tonal ramp from a seed: same hue, given saturation,
+// lightness tracking the tone number (endpoints pinned to black/white).
+@function _dsa-ramp($base, $saturation, $tones: $dsa-tones) {
+  $hue: color.channel($base, 'hue', $space: hsl);
+  $ramp: ();
+  @each $tone in $tones {
+    $value: #000000;
+    @if $tone == 100 {
+      $value: #ffffff;
+    } @else if $tone != 0 {
+      $value: color.change($base, $hue: $hue, $saturation: $saturation, $lightness: $tone * 1%);
+    }
+    $ramp: map.set($ramp, $tone, $value);
+  }
+  @return $ramp;
+}
+
+$dsa-emerald-palette: map.merge(
+  _dsa-ramp($dsa-seed, color.channel($dsa-seed, 'saturation', $space: hsl)),
+  (
+    secondary: _dsa-ramp($dsa-seed, 30%),
+    neutral: _dsa-ramp($dsa-seed, 9%, $dsa-neutral-tones),
+    neutral-variant: _dsa-ramp($dsa-seed, 16%),
+    // M3 baseline error ramp (same values Material patches into its palettes).
+    error: (
+      0: #000000,
+      10: #410002,
+      20: #690005,
+      25: #7e0007,
+      30: #93000a,
+      35: #a80710,
+      40: #ba1a1a,
+      50: #de3730,
+      60: #ff5449,
+      70: #ff897d,
+      80: #ffb4ab,
+      90: #ffdad6,
+      95: #ffedea,
+      98: #fff8f7,
+      99: #fffbff,
+      100: #ffffff,
+    ),
+  )
+);
+
+$dsa-light-theme: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: $dsa-emerald-palette,
+    ),
+    typography: (
+      plain-family: 'Inter, system-ui, -apple-system, sans-serif',
+      brand-family: '"Sora", Inter, system-ui, sans-serif',
+      bold-weight: 700,
+      medium-weight: 500,
+      regular-weight: 400,
+    ),
+    density: (
+      scale: 0,
+    ),
+  )
+);
+
+$dsa-dark-theme: mat.define-theme(
+  (
+    color: (
+      theme-type: dark,
+      primary: $dsa-emerald-palette,
+    ),
+  )
+);
+
+html {
+  color-scheme: light;
+
+  @include mat.all-component-themes($dsa-light-theme);
+  @include mat.strong-focus-indicators();
+
+  // Emits the --mat-sys-* application variables for the light scheme.
+  // (all-component-themes only emits per-component literals, so without this
+  // every var(--mat-sys-*) reference in custom styles is undefined.)
+  @include mat.theme(
+    (
+      color: (
+        theme-type: light,
+        primary: $dsa-emerald-palette,
+      ),
+    )
+  );
+
+  // DSA custom tokens (light):
+  --dsa-difficulty-easy: #2e7d32;
+  --dsa-difficulty-medium: #9a6200;
+  --dsa-difficulty-hard: #c62828;
+  --dsa-difficulty-easy-bg: rgba(46, 125, 50, 0.12);
+  --dsa-difficulty-medium-bg: rgba(154, 98, 0, 0.14);
+  --dsa-difficulty-hard-bg: rgba(198, 40, 40, 0.12);
+  --dsa-muted-text: rgba(20, 18, 12, 0.62);
+  --dsa-overlay: rgba(20, 18, 12, 0.5);
+}
+
+html.dark {
+  color-scheme: dark;
+
+  @include mat.all-component-colors($dsa-dark-theme);
+
+  // Emits the --mat-sys-* application variables for the dark scheme.
+  @include mat.theme(
+    (
+      color: (
+        theme-type: dark,
+        primary: $dsa-emerald-palette,
+      ),
+    )
+  );
+
+  // DSA custom tokens (dark):
+  --dsa-difficulty-easy: #81c784;
+  --dsa-difficulty-medium: #ffb74d;
+  --dsa-difficulty-hard: #e57373;
+  --dsa-difficulty-easy-bg: rgba(129, 199, 132, 0.14);
+  --dsa-difficulty-medium-bg: rgba(255, 183, 77, 0.16);
+  --dsa-difficulty-hard-bg: rgba(229, 115, 115, 0.14);
+  --dsa-muted-text: rgba(240, 235, 225, 0.62);
+  --dsa-overlay: rgba(0, 0, 0, 0.6);
+}
+
+// Display type uses the brand family; body/components use the plain family.
+.dsa-display,
+h1.dsa-display,
+h2.dsa-display {
+  font-family: 'Sora', Inter, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.dsa-mono {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}

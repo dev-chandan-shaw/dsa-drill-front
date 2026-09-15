@@ -1,44 +1,71 @@
 .tag-based-list-container {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.list-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.search-field {
+  flex: 1;
+  min-width: 200px;
+  max-width: 360px;
 }
 
 .problems-section {
-    flex: 1;
-    overflow-y: auto;
+  flex: 1;
+  overflow-y: auto;
 }
 
-.problem-checkbox {
-    width: 16px;
-    height: 16px;
-    accent-color: var(--p-primary-color);
+.problem-row {
+  padding: 6px 12px;
+  border-radius: 8px;
+
+  &.zebra {
+    background-color: color-mix(in srgb, var(--mat-sys-on-surface) 4%, transparent);
+  }
+}
+
+.problem-title {
+  overflow-wrap: break-word;
+  white-space: normal;
 }
 
 .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 24px 12px;
-    border: 1px dashed var(--p-surface-700);
-    border-radius: 12px;
-    color: var(--p-surface-300);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 24px 12px;
+  border: 1px dashed var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .empty-icon {
-    font-size: 20px;
-    color: var(--p-surface-400);
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
 }
 
 .empty-title {
-    font-weight: 600;
-    color: var(--p-text-color);
+  font-weight: 600;
+  color: var(--mat-sys-on-surface);
 }
 
 .empty-subtitle {
-    font-size: 0.85rem;
-    color: var(--p-surface-400);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .search-field {
+    max-width: none;
+  }
 }

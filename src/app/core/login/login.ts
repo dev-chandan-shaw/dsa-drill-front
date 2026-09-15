@@ -1,29 +1,29 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { FloatLabelModule } from 'primeng/floatlabel';
-import { InputTextModule } from 'primeng/inputtext';
-import { InputGroupModule } from 'primeng/inputgroup';
-import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { AuthService } from '../services/auth/auth.service';
 import { finalize } from 'rxjs';
 import { ToastService } from '../../shared/services/toast-service';
-import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-login',
   imports: [
     ReactiveFormsModule,
-    ButtonModule,
-    FloatLabelModule,
     CommonModule,
-    InputTextModule,
     RouterModule,
-    InputGroupModule,
-    InputGroupAddonModule,
+    MatButtonModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatProgressBarModule,
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss',
@@ -32,7 +32,6 @@ export class Login {
   loginForm: FormGroup;
   showPassword = false;
   isLoading = signal(false);
-  isGoogleLoading = signal(false);
 
   private readonly _fb = inject(FormBuilder);
   private readonly _router = inject(Router);
@@ -72,10 +71,5 @@ export class Login {
     } else {
       this.loginForm.markAllAsTouched();
     }
-  }
-
-  loginWithGoogle(): void {
-    this.isGoogleLoading.set(true);
-    globalThis.location.href = environment.googleOAuthRedirectUrl;
   }
 }

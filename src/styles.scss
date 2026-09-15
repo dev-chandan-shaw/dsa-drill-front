@@ -1,17 +1,89 @@
-/* You can add global styles to this file, and also import other style files */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+// Global styles: Material 3 DSA theme + Tailwind v4 utilities.
+// Component styles must use --mat-sys-* / --dsa-* tokens (theme-aware).
 
-@import "primeicons/primeicons.css";
-@import "tailwindcss";
+@use './app/theme/dsa-theme';
+
+@import 'tailwindcss';
 
 * {
-    box-sizing: border-box;
-    padding: 0;
-    margin: 0;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 
 body {
-    font-family: "Inter", sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+}
+
+// Visible keyboard focus everywhere (some components remove outlines locally).
+:focus-visible {
+  outline: 2px solid var(--mat-sys-primary);
+  outline-offset: 2px;
+}
+
+// Icon buttons center via symmetric padding (inline-block), so the inherited
+// line-height (1.5 from Tailwind) drags the glyph below center through strut
+// baseline alignment. Flexbox makes centering exact on both axes regardless
+// of line-height or icon-font metrics.
+.mat-mdc-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// Compact inputs app-wide: single-line fields render ~44px tall (mirrors the
+// official M3 density −3 field metrics). Set as component tokens so MDC's own
+// rules pick them up — no specificity battles. Textareas are unaffected: they
+// size from rows + their own min-height and grow the wrapper naturally.
+:root {
+  --mat-form-field-container-height: 44px;
+  --mat-form-field-container-vertical-padding: 10px;
+}
+
+// Snackbar variants (panelClass is applied outside component encapsulation).
+.dsa-snackbar {
+  &.dsa-snackbar-success {
+    --mdc-snackbar-container-color: var(--mat-sys-primary-container);
+    --mdc-snackbar-supporting-text-color: var(--mat-sys-on-primary-container);
+  }
+
+  &.dsa-snackbar-error {
+    --mdc-snackbar-container-color: var(--mat-sys-error-container);
+    --mdc-snackbar-supporting-text-color: var(--mat-sys-on-error-container);
+  }
+
+  &.dsa-snackbar-info {
+    --mdc-snackbar-container-color: var(--mat-sys-secondary-container);
+    --mdc-snackbar-supporting-text-color: var(--mat-sys-on-secondary-container);
+  }
+}
+
+// Profile menu renders in the CDK overlay (outside any component view),
+// so its content styles must live here, not in header.scss.
+.profile-menu {
+  .profile-menu-head {
+    padding: 12px 16px 8px;
+  }
+
+  .profile-menu-name {
+    font-weight: 600;
+    color: var(--mat-sys-on-surface);
+  }
+
+  .profile-menu-email {
+    font-size: 0.8rem;
+    color: var(--mat-sys-on-surface-variant);
+  }
 }

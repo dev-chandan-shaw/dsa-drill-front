@@ -1,38 +1,24 @@
-@if (rightPaneService.isOpen) {
-  <!-- Overlay -->
-  <div class="fixed inset-0 bg-black/60 z-40 transition-opacity"></div>
+<mat-sidenav-container class="dsa-shell" [hasBackdrop]="hasContent">
+  <mat-sidenav-content>
+    <ng-content></ng-content>
+  </mat-sidenav-content>
 
-  <!-- Right Pane - From Right -->
-  @if (rightPaneService.side === PaneSide.RIGHT) {
-    <div
-      animate.enter="enter"
-      animate.leave="leaving"
-      [style.width]="width"
-      [style.height]="'100dvh'"
-      class="fixed top-0 right-0 flex flex-col bg-white shadow-lg z-50 !bg-[var(--p-surface-900)]"
-    >
-      <div class="overflow-y-auto flex-1">
+  <mat-sidenav
+    class="dsa-pane"
+    mode="over"
+    [position]="position"
+    [opened]="rightPaneService.isOpen"
+    (openedChange)="onOpenedChange($event)"
+    (closed)="onClosed()"
+    [style.width]="width"
+    [attr.aria-label]="rightPaneService.title || 'Details panel'"
+  >
+    @if (hasContent) {
+      <div class="dsa-pane-body">
         <ng-container
           *ngTemplateOutlet="rightPaneService.template; context: rightPaneService.context"
         ></ng-container>
       </div>
-    </div>
-  }
-
-  <!-- Left Pane - From Left -->
-  @if (rightPaneService.side === PaneSide.LEFT) {
-    <div
-      animate.enter="enterLeft"
-      animate.leave="leavingLeft"
-      [style.width]="width"
-      [style.height]="'100dvh'"
-      class="fixed top-0 left-0 flex flex-col bg-white shadow-lg z-50 !bg-[var(--p-surface-900)]"
-    >
-      <div class="overflow-y-auto flex-1">
-        <ng-container
-          *ngTemplateOutlet="rightPaneService.template; context: rightPaneService.context"
-        ></ng-container>
-      </div>
-    </div>
-  }
-}
+    }
+  </mat-sidenav>
+</mat-sidenav-container>

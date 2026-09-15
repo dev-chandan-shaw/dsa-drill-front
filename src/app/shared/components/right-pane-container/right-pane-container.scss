@@ -1,55 +1,15 @@
-.enter {
-    animation: slideInRight 0.25s ease-out;
+// MatSidenav owns the slide animation; only sizing/guard rails live here.
+.dsa-shell {
+  height: 100dvh;
 }
 
-.leaving {
-    animation: slideOutRight 0.25s ease-out;
+.dsa-pane {
+  max-width: 100dvw;
+  background-color: var(--mat-sys-surface-container-low);
+  color: var(--mat-sys-on-surface);
 }
 
-.enterLeft {
-    animation: slideInLeft 0.25s ease-out;
-}
-
-.leavingLeft {
-    animation: slideOutLeft 0.25s ease-out;
-}
-
-@keyframes slideInRight {
-    from {
-        transform: translateX(100%);
-    }
-
-    to {
-        transform: translateX(0);
-    }
-}
-
-@keyframes slideOutRight {
-    from {
-        transform: translateX(0);
-    }
-
-    to {
-        transform: translateX(100%);
-    }
-}
-
-@keyframes slideInLeft {
-    from {
-        transform: translateX(-100%);
-    }
-
-    to {
-        transform: translateX(0);
-    }
-}
-
-@keyframes slideOutLeft {
-    from {
-        transform: translateX(0);
-    }
-
-    to {
-        transform: translateX(-100%);
-    }
+.dsa-pane-body {
+  height: 100%;
+  overflow-y: auto;
 }

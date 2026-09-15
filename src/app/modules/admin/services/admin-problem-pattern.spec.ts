@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { AdminProblemPattern } from './admin-problem-pattern';
+import { AdminProblemPatternService } from './admin-problem-pattern';
 
-describe('AdminProblemPattern', () => {
-  let service: AdminProblemPattern;
+describe('AdminProblemPatternService', () => {
+  let service: AdminProblemPatternService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(AdminProblemPattern);
+    service = TestBed.inject(AdminProblemPatternService);
   });
 
   it('should be created', () => {

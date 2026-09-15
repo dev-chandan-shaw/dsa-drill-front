@@ -1,24 +1,15 @@
-<aside class="sidebar" role="complementary">
+<nav class="sidebar" aria-label="Primary">
   @if (showHeader()) {
     <div class="sidebar-header">
-      <button class="hamburger-btn" (click)="closeSidebar()" aria-label="Close sidebar menu">
-        <svg
-          class="hamburger-icon"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-          <line x1="6" y1="18" x2="18" y2="6"></line>
-        </svg>
+      <button mat-icon-button (click)="closeSidebar()" aria-label="Close sidebar menu">
+        <mat-icon>close</mat-icon>
       </button>
       <div class="logo">
         <h1>DSA Drill</h1>
       </div>
     </div>
   }
-  <nav class="sidebar-nav">
+  <div class="sidebar-nav">
     <ul>
       @for (item of navItems(); track item.route) {
         <li>
@@ -28,7 +19,7 @@
             (click)="navigate(item.route)"
             type="button"
           >
-            <span class="nav-icon" [class]="item.icon"></span>
+            <mat-icon class="nav-icon" aria-hidden="true">{{ item.icon }}</mat-icon>
             <span class="nav-label">{{ item.label }}</span>
           </button>
         </li>
@@ -38,39 +29,49 @@
     @if (isLoggedIn()) {
       <div class="accordion-section">
         <div class="accordion-header-wrapper">
-          <button 
-            class="accordion-header" 
-            (click)="toggleSheetAccordion()" 
+          <button
+            class="accordion-header"
+            (click)="toggleSheetAccordion()"
             type="button"
             [attr.aria-expanded]="isSheetAccordionOpen()"
             aria-controls="sheet-accordion-content"
           >
-            <span class="accordion-icon" [class.open]="isSheetAccordionOpen()">
-              <i class="pi pi-chevron-right" aria-hidden="true"></i>
-            </span>
+            <mat-icon class="accordion-icon" [class.open]="isSheetAccordionOpen()" aria-hidden="true">
+              chevron_right
+            </mat-icon>
             <span class="accordion-label">
-              <i class="pi pi-list" aria-hidden="true"></i>
+              <mat-icon aria-hidden="true">list</mat-icon>
               My Lists
             </span>
           </button>
           <button
+            mat-icon-button
             class="add-sheet-btn"
             (click)="openSheetForm()"
-            title="Create new sheet"
             aria-label="Create new sheet"
             type="button"
           >
-            <i class="pi pi-plus" aria-hidden="true"></i>
+            <mat-icon aria-hidden="true">add</mat-icon>
           </button>
         </div>
 
-        @if (isSheetAccordionOpen()) {
-          <div class="accordion-content" id="sheet-accordion-content">
+        <div
+          class="accordion-content"
+          [class.open]="isSheetAccordionOpen()"
+          [attr.inert]="!isSheetAccordionOpen() ? '' : null"
+          id="sheet-accordion-content"
+        >
+          <div class="accordion-inner">
             @if (!hasLoadedSheets()) {
-              <div class="loading">Loading sheets...</div>
+              <div class="loading" role="status">Loading sheets…</div>
             } @else {
               @if (problemSheets().length === 0) {
-                <div class="empty-state">No sheets yet. Create one to get started!</div>
+                <div class="empty-state">
+                  No sheets yet.
+                  <button type="button" class="link" (click)="openSheetForm()">
+                    Create one to get started
+                  </button>
+                </div>
               } @else {
                 <ul class="sheets-list">
                   @for (sheet of problemSheets(); track sheet.id) {
@@ -89,31 +90,36 @@
               }
             }
           </div>
-        }
+        </div>
       </div>
       <div class="accordion-section">
         <div class="accordion-header-wrapper">
-          <button 
-            class="accordion-header" 
-            (click)="toggleSavedAccordion()" 
+          <button
+            class="accordion-header"
+            (click)="toggleSavedAccordion()"
             type="button"
             [attr.aria-expanded]="isSavedAccordionOpen()"
             aria-controls="saved-accordion-content"
           >
-            <span class="accordion-icon" [class.open]="isSavedAccordionOpen()">
-              <i class="pi pi-chevron-right" aria-hidden="true"></i>
-            </span>
+            <mat-icon class="accordion-icon" [class.open]="isSavedAccordionOpen()" aria-hidden="true">
+              chevron_right
+            </mat-icon>
             <span class="accordion-label">
-              <i class="pi pi-bookmark" aria-hidden="true"></i>
+              <mat-icon aria-hidden="true">bookmark</mat-icon>
               Saved Lists
             </span>
           </button>
         </div>
 
-        @if (isSavedAccordionOpen()) {
-          <div class="accordion-content" id="saved-accordion-content">
+        <div
+          class="accordion-content"
+          [class.open]="isSavedAccordionOpen()"
+          [attr.inert]="!isSavedAccordionOpen() ? '' : null"
+          id="saved-accordion-content"
+        >
+          <div class="accordion-inner">
             @if (!hasLoadedSavedSheets()) {
-              <div class="loading">Loading saved lists...</div>
+              <div class="loading" role="status">Loading saved lists…</div>
             } @else {
               @if (savedProblemSheets().length === 0) {
                 <div class="empty-state">No saved lists yet.</div>
@@ -135,11 +141,11 @@
               }
             }
           </div>
-        }
+        </div>
       </div>
     }
-  </nav>
-</aside>
+  </div>
+</nav>
 
 <ng-template #sheetFormTemplate>
   <app-form-pane-template
@@ -151,10 +157,13 @@
     (cancelForm)="closeSidebar()"
   >
     <form class="pane-form" [formGroup]="sheetForm">
-      <div class="field-container">
-        <label for="newSheetName">Sheet Name</label>
-        <input id="newSheetName" pInputText class="field" type="text" formControlName="name" />
-      </div>
+      <mat-form-field appearance="outline" class="sheet-field">
+        <mat-label>Sheet name</mat-label>
+        <input matInput id="newSheetName" type="text" formControlName="name" required />
+        @if (sheetForm.controls.name.invalid) {
+          <mat-error>Sheet name is required.</mat-error>
+        }
+      </mat-form-field>
     </form>
   </app-form-pane-template>
 </ng-template>

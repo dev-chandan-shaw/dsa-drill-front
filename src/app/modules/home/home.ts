@@ -1,19 +1,13 @@
-import { Component, computed, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, computed, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { Title, Meta } from '@angular/platform-browser';
-import { ButtonModule } from 'primeng/button';
-import { TagModule } from 'primeng/tag';
-import { TooltipModule } from 'primeng/tooltip';
 import { RouterModule } from '@angular/router';
-import { ProgressBarModule } from 'primeng/progressbar';
-import { DialogModule } from 'primeng/dialog';
-import { MenuModule } from 'primeng/menu';
-import { PopoverModule } from 'primeng/popover';
-import { CardModule } from 'primeng/card';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.service';
 import { PublicProblemService } from '../../shared/services/public-api/problem.service';
 import { ProblemList } from '../../shared/components/problem-list/problem-list';
-import { Divider } from 'primeng/divider';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { ProblemStatusApiService } from './services/user/question-status-api.service';
 import { isPlatformBrowser } from '@angular/common';
@@ -21,19 +15,12 @@ import { isPlatformBrowser } from '@angular/common';
 @Component({
   selector: 'app-home',
   imports: [
-    TagModule,
-    ButtonModule,
-    TooltipModule,
     RouterModule,
-    ProgressBarModule,
-    DialogModule,
-    MenuModule,
-    PopoverModule,
-    CardModule,
-    FormsModule,
-    ReactiveFormsModule,
+    MatButtonModule,
+    MatDividerModule,
+    MatIconModule,
+    MatProgressBarModule,
     ProblemList,
-    Divider,
   ],
   templateUrl: './home.html',
   styleUrl: './home.scss',
@@ -49,6 +36,8 @@ export class Home implements OnInit {
 
   problems = this.questionService.problems;
   tags = this.questionTagService.problemTags;
+  readonly loadError = signal(false);
+  readonly skeletonRows = Array.from({ length: 8 });
 
   hasLoaded = computed(
     () => this.questionService.hasLoaded() && this.questionTagService.hasLoaded(),
@@ -60,8 +49,21 @@ export class Home implements OnInit {
       name: 'description',
       content: 'Browse the complete library of DSA problems, organized by category, topic, and difficulty. Track your progress and patterns.',
     });
-    this.questionService.fetchProblems().subscribe();
-    this.questionTagService.fetchProblemTags().subscribe();
+    this.load();
+  }
+
+  retry(): void {
+    this.load();
+  }
+
+  private load(): void {
+    this.loadError.set(false);
+    this.questionService
+      .fetchProblems()
+      .subscribe({ error: () => this.loadError.set(true) });
+    this.questionTagService
+      .fetchProblemTags()
+      .subscribe({ error: () => this.loadError.set(true) });
     if (isPlatformBrowser(this.platformId) && this.authService.isLoggedIn()()) {
       this.questionStatusService.fetchProblemStatuses().subscribe();
     }

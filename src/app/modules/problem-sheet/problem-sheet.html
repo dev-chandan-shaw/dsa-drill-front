@@ -1,37 +1,58 @@
-@if (!hasLoaded()) {
-  <p-progressbar mode="indeterminate" aria-label="Loading problems list" [style]="{ height: '4px' }" />
+@if (!hasLoaded() && !loadError()) {
+  <div class="page-shell" role="status" aria-label="Loading problems list">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <div class="skeleton-list" aria-hidden="true">
+      @for (_ of skeletonRows; track $index) {
+        <div class="skeleton-row"></div>
+      }
+    </div>
+  </div>
+} @else if (loadError()) {
+  <div class="load-error" role="alert">
+    <mat-icon aria-hidden="true">cloud_off</mat-icon>
+    <div class="load-error-title">Couldn't load this sheet</div>
+    <div class="load-error-subtitle">Check your connection and try again.</div>
+    <button mat-flat-button type="button" (click)="retry()">Retry</button>
+  </div>
 } @else {
   <div class="sheet-layout">
-    <aside class="sheet-summary">
-      <p-card>
-        <div class="summary-card">
-          <div class="summary-title">{{ sheetTagName() }}</div>
-          <div class="summary-subtitle">{{ totalCount() }} problems</div>
+    <aside class="sheet-summary" aria-label="Sheet progress summary">
+      <mat-card>
+        <mat-card-content>
+          <div class="summary-card">
+            <div class="summary-title">{{ sheetTagName() }}</div>
+            <div class="summary-subtitle">{{ totalCount() }} problems</div>
 
-          <div class="summary-section">
-            <div class="summary-row">
-              <span>Easy</span>
-              <strong>{{ solvedEasyCount() }}/{{ easyCount() }}</strong>
+            <div class="summary-section">
+              <div class="summary-row">
+                <span>Easy</span>
+                <strong>{{ solvedEasyCount() }}/{{ easyCount() }}</strong>
+              </div>
+              <div class="summary-row">
+                <span>Medium</span>
+                <strong>{{ solvedMediumCount() }}/{{ mediumCount() }}</strong>
+              </div>
+              <div class="summary-row">
+                <span>Hard</span>
+                <strong>{{ solvedHardCount() }}/{{ hardCount() }}</strong>
+              </div>
             </div>
-            <div class="summary-row">
-              <span>Medium</span>
-              <strong>{{ solvedMediumCount() }}/{{ mediumCount() }}</strong>
-            </div>
-            <div class="summary-row">
-              <span>Hard</span>
-              <strong>{{ solvedHardCount() }}/{{ hardCount() }}</strong>
+
+            <div class="summary-section">
+              <div class="summary-row">
+                <span>Solved</span>
+                <strong>{{ solvedCount() }}</strong>
+              </div>
+              <mat-progress-bar
+                mode="determinate"
+                class="sheet-progress"
+                [value]="solvedPercent()"
+                [attr.aria-label]="solvedPercent() + '% of problems solved'"
+              ></mat-progress-bar>
             </div>
           </div>
-
-          <div class="summary-section">
-            <div class="summary-row">
-              <span>Solved</span>
-              <strong>{{ solvedCount() }}</strong>
-            </div>
-            <p-progressbar [value]="solvedPercent()" [showValue]="false" [attr.aria-label]="solvedPercent() + '% of problems solved'"></p-progressbar>
-          </div>
-        </div>
-      </p-card>
+        </mat-card-content>
+      </mat-card>
     </aside>
 
     <div class="sheet-content">

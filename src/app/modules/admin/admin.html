@@ -1,147 +1,253 @@
 <section class="admin-page">
-  <div class="admin-grid">
-    <p-card styleClass="admin-card">
-      <div class="panel-header">
-        <div>
-          <h2>Problems</h2>
-          <p>{{ filteredQuestions().length }} of {{ problems().length }} shown</p>
-        </div>
-        <p-button icon="pi pi-plus" rounded (click)="openAddProblemPane()" aria-label="Add new problem"></p-button>
-      </div>
+  <header class="admin-header">
+    <div class="admin-title">
+      <h1>Admin</h1>
+      <p>Manage problems, tags, and solving patterns from one place.</p>
+    </div>
+    <div class="admin-header-actions">
+      <button mat-flat-button type="button" (click)="openAddProblemPane()">
+        <mat-icon>add</mat-icon>
+        Add problem
+      </button>
+      <button mat-flat-button type="button" (click)="openAddTagPane()">
+        <mat-icon>add</mat-icon>
+        Add tag
+      </button>
+      <button mat-flat-button type="button" (click)="openAddPatternPane()">
+        <mat-icon>add</mat-icon>
+        Add pattern
+      </button>
+    </div>
+  </header>
 
-      <div class="filters">
-        <input
-          pInputText
-          #searchInput
-          type="text"
-          class="field"
-          placeholder="Search by title or slug"
-          [value]="searchTerm()"
-          (input)="setSearchTerm(searchInput.value)"
-        />
-
-        <p-select
-          [options]="difficultyFilterOptions"
-          optionLabel="label"
-          optionValue="value"
-          [formControl]="difficultyFilterControl"
-          placeholder="All difficulties"
-          styleClass="field"
-        ></p-select>
-      </div>
-
-      <div class="problem-list">
-        @for (question of filteredQuestions(); track trackByQuestionId($index, question)) {
-          @if ($index !== 0) {
-            <p-divider class="!m-0"></p-divider>
-          }
-          <div class="problem-row">
-            <div class="problem-meta">
-              <h3>{{ $index + 1 }}. {{ question.title }}</h3>
-            </div>
-            <div class="actions">
-              <p-button
-                variant="text"
-                icon="pi pi-pencil"
-                rounded
-                [attr.aria-label]="'Edit problem: ' + question.title"
-                (click)="openEditProblemPane(question)"
-              ></p-button>
-            </div>
+  <mat-card class="admin-workspace">
+    <mat-card-content>
+      <mat-tab-group
+        [selectedIndex]="tabIndex()"
+        (selectedIndexChange)="setTabIndex($event)"
+        aria-label="Admin sections"
+      >
+        <mat-tab [label]="'Problems (' + problems().length + ')'">
+          <div class="toolbar">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="grow">
+              <mat-label>Search by title or slug</mat-label>
+              <input
+                matInput
+                #searchInput
+                type="text"
+                [value]="searchTerm()"
+                (input)="setSearchTerm(searchInput.value)"
+              />
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="toolbar-select">
+              <mat-label>Difficulty</mat-label>
+              <mat-select [formControl]="difficultyFilterControl">
+                @for (option of difficultyFilterOptions; track option.value) {
+                  <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
           </div>
-        }
-      </div>
-    </p-card>
 
-    <p-card styleClass="admin-card">
-      <div class="panel-header">
-        <div>
-          <h2>Problem Tags</h2>
-          <p>{{ filteredTags().length }} of {{ tags().length }} tags</p>
-        </div>
-        <p-button icon="pi pi-plus" rounded (click)="openAddTagPane()" aria-label="Add new tag"></p-button>
-      </div>
-
-      <div class="filters">
-        <input
-          pInputText
-          #tagSearchInput
-          type="text"
-          class="field"
-          placeholder="Search tags by name"
-          [value]="tagSearchTerm()"
-          (input)="setTagSearchTerm(tagSearchInput.value)"
-        />
-      </div>
-
-      @if (filteredTags().length === 0) {
-        <div class="state-card">No tags available yet.</div>
-      } @else {
-        <div class="tag-list">
-          @for (tag of filteredTags(); track trackByTagId($index, tag)) {
-            @if ($index !== 0) {
-              <p-divider class="!m-0"></p-divider>
-            }
-            <div class="tag-row">
-              <div>
-                <h3>{{ $index + 1 }}. {{ tag.name }}</h3>
-              </div>
-              <p-button icon="pi pi-pencil" rounded text [attr.aria-label]="'Edit tag: ' + tag.name" (click)="openEditTagPane(tag)"></p-button>
+          @if (isLoadingProblems()) {
+            <div class="state-card" role="status">Loading problems…</div>
+          } @else if (filteredQuestions().length === 0) {
+            <div class="state-card">
+              No problems match the current filters.
+              <button type="button" class="link" (click)="clearProblemFilters()">
+                Clear filters
+              </button>
+            </div>
+          } @else {
+            <div class="row-list">
+              @for (question of filteredQuestions(); track trackByQuestionId($index, question)) {
+                @if ($index !== 0) {
+                  <mat-divider></mat-divider>
+                }
+                <div class="data-row">
+                  <div class="data-main">
+                    <h3>{{ $index + 1 }}. {{ question.title }}</h3>
+                    <div class="badge-row">
+                      <span class="difficulty-badge {{ difficultyClass(question.difficulty) }}">
+                        {{ getDifficultyLabel(question.difficulty) }}
+                      </span>
+                      @for (tagId of question.tags; track tagId) {
+                        <span class="mini-chip">{{ getTagNameById(tagId) }}</span>
+                      }
+                    </div>
+                  </div>
+                  <div class="row-actions">
+                    <button
+                      mat-icon-button
+                      type="button"
+                      matTooltip="Edit problem"
+                      [attr.aria-label]="'Edit problem: ' + question.title"
+                      (click)="openEditProblemPane(question)"
+                    >
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button
+                      mat-icon-button
+                      type="button"
+                      color="warn"
+                      matTooltip="Delete problem"
+                      [disabled]="isDeleting()"
+                      [attr.aria-label]="'Delete problem: ' + question.title"
+                      (click)="confirmDeleteProblem(question)"
+                    >
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              }
             </div>
           }
-        </div>
-      }
-    </p-card>
+        </mat-tab>
 
-    <p-card styleClass="admin-card">
-      <div class="panel-header">
-        <div>
-          <h2>Problem Patterns</h2>
-          <p>{{ filteredPatterns().length }} of {{ patterns().length }} patterns</p>
-        </div>
-        <p-button icon="pi pi-plus" rounded (click)="openAddPatternPane()" aria-label="Add new pattern"></p-button>
-      </div>
+        <mat-tab [label]="'Tags (' + tags().length + ')'">
+          <div class="toolbar">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="grow">
+              <mat-label>Search tags by name</mat-label>
+              <input
+                matInput
+                #tagSearchInput
+                type="text"
+                [value]="tagSearchTerm()"
+                (input)="setTagSearchTerm(tagSearchInput.value)"
+              />
+            </mat-form-field>
+          </div>
 
-      <div class="filters">
-        <input
-          pInputText
-          #patternSearchInput
-          type="text"
-          class="field"
-          placeholder="Search by name, explanation, or tag"
-          [value]="patternSearchTerm()"
-          (input)="setPatternSearchTerm(patternSearchInput.value)"
-        />
-      </div>
-
-      @if (filteredPatterns().length === 0) {
-        <div class="state-card">No patterns available yet.</div>
-      } @else {
-        <div class="pattern-list">
-          @for (pattern of filteredPatterns(); track trackByPatternId($index, pattern)) {
-            @if ($index !== 0) {
-              <p-divider class="!m-0"></p-divider>
-            }
-            <div class="pattern-row">
-              <div class="pattern-meta">
-                <h3>{{ pattern.name }}</h3>
-                <p>#{{ pattern.id }} | {{ getTagNameById(pattern.tagId) }}</p>
-                <p>{{ pattern.explanation }}</p>
-              </div>
-              <p-button
-                icon="pi pi-pencil"
-                rounded
-                text
-                [attr.aria-label]="'Edit pattern: ' + pattern.name"
-                (click)="openEditPatternPane(pattern)"
-              >
-              </p-button>
+          @if (isLoadingTags()) {
+            <div class="state-card" role="status">Loading tags…</div>
+          } @else if (filteredTags().length === 0) {
+            <div class="state-card">No tags available yet.</div>
+          } @else {
+            <div class="row-list">
+              @for (tag of filteredTags(); track trackByTagId($index, tag)) {
+                @if ($index !== 0) {
+                  <mat-divider></mat-divider>
+                }
+                <div class="data-row">
+                  <div class="data-main">
+                    <h3>{{ $index + 1 }}. {{ tag.name }}</h3>
+                    <div class="badge-row">
+                      <span class="mini-chip">{{ getProblemCountByTag(tag.id) }} problems</span>
+                      <span class="mini-chip">{{ getPatternCountByTag(tag.id) }} patterns</span>
+                    </div>
+                  </div>
+                  <div class="row-actions">
+                    <button
+                      mat-icon-button
+                      type="button"
+                      matTooltip="Edit tag"
+                      [attr.aria-label]="'Edit tag: ' + tag.name"
+                      (click)="openEditTagPane(tag)"
+                    >
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button
+                      mat-icon-button
+                      type="button"
+                      color="warn"
+                      matTooltip="Delete tag"
+                      [disabled]="isDeleting()"
+                      [attr.aria-label]="'Delete tag: ' + tag.name"
+                      (click)="confirmDeleteTag(tag)"
+                    >
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              }
             </div>
           }
-        </div>
-      }
-    </p-card>
-  </div>
+        </mat-tab>
+
+        <mat-tab [label]="'Patterns (' + patterns().length + ')'">
+          <div class="toolbar">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="grow">
+              <mat-label>Search by name, explanation, or tag</mat-label>
+              <input
+                matInput
+                #patternSearchInput
+                type="text"
+                [value]="patternSearchTerm()"
+                (input)="setPatternSearchTerm(patternSearchInput.value)"
+              />
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="toolbar-select">
+              <mat-label>Tag</mat-label>
+              <mat-select [formControl]="patternTagFilterControl" placeholder="All tags">
+                <mat-option [value]="null">All tags</mat-option>
+                @for (tag of tags(); track tag.id) {
+                  <mat-option [value]="tag.id">{{ tag.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          @if (selectedPatternTagId() !== null || patternSearchTerm()) {
+            <div class="chip-row">
+              <button type="button" class="chip chip-clear" (click)="clearPatternFilters()">
+                Clear pattern filters
+              </button>
+            </div>
+          }
+
+          @if (isLoadingPatterns()) {
+            <div class="state-card" role="status">Loading patterns…</div>
+          } @else if (filteredPatterns().length === 0) {
+            <div class="state-card">No patterns available yet.</div>
+          } @else {
+            <div class="row-list">
+              @for (pattern of filteredPatterns(); track trackByPatternId($index, pattern)) {
+                @if ($index !== 0) {
+                  <mat-divider></mat-divider>
+                }
+                <div class="data-row data-row-top">
+                  <div class="data-main">
+                    <h3>{{ pattern.name }}</h3>
+                    <p class="muted dsa-mono">
+                      #{{ pattern.id }} · {{ getTagNameById(pattern.tagId) }}
+                    </p>
+                    <p class="pattern-explanation" [class.clamped]="!isPatternExpanded(pattern.id)">
+                      {{ pattern.explanation }}
+                    </p>
+                    <button type="button" class="link" (click)="togglePatternExpanded(pattern.id)">
+                      {{ isPatternExpanded(pattern.id) ? 'Show less' : 'Show more' }}
+                    </button>
+                  </div>
+                  <div class="row-actions">
+                    <button
+                      mat-icon-button
+                      type="button"
+                      matTooltip="Edit pattern"
+                      [attr.aria-label]="'Edit pattern: ' + pattern.name"
+                      (click)="openEditPatternPane(pattern)"
+                    >
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button
+                      mat-icon-button
+                      type="button"
+                      color="warn"
+                      matTooltip="Delete pattern"
+                      [disabled]="isDeleting()"
+                      [attr.aria-label]="'Delete pattern: ' + pattern.name"
+                      (click)="confirmDeletePattern(pattern)"
+                    >
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </mat-tab>
+      </mat-tab-group>
+    </mat-card-content>
+  </mat-card>
 </section>
 
 <ng-template #problemFormTemplate>
@@ -155,42 +261,44 @@
     (saveForm)="submitProblem()"
   >
     <form class="pane-form" [formGroup]="problemForm">
-      <label>
-        <span>Title</span>
-        <input pInputText class="field" type="text" formControlName="title" />
-      </label>
+      <mat-form-field appearance="outline" class="pane-field">
+        <mat-label>Title</mat-label>
+        <input matInput type="text" formControlName="title" required minlength="3" />
+        @if (problemForm.controls.title.hasError('required')) {
+          <mat-error>Title is required.</mat-error>
+        } @else if (problemForm.controls.title.hasError('minlength')) {
+          <mat-error>Title needs at least 3 characters.</mat-error>
+        }
+      </mat-form-field>
 
-      <label>
-        <span>Link</span>
-        <input pInputText class="field" type="text" formControlName="link" />
-      </label>
+      <mat-form-field appearance="outline" class="pane-field">
+        <mat-label>Link</mat-label>
+        <input matInput type="text" formControlName="link" required />
+        @if (problemForm.controls.link.invalid) {
+          <mat-error>Link is required.</mat-error>
+        }
+      </mat-form-field>
 
-      <div>
-        <label for="difficultySelect"><span>Difficulty</span></label>
-        <p-select
-          inputId="difficultySelect"
-          formControlName="difficulty"
-          [options]="difficultyOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Select difficulty"
-          styleClass="field"
-        ></p-select>
-      </div>
-      <div>
-        <label for="problemTagSelect"><span>Problem Tag</span></label>
-        <p-multiselect
-          inputId="problemTagSelect"
-          formControlName="categoryIds"
-          [options]="tags()"
-          optionLabel="name"
-          optionValue="id"
-          placeholder="Select tags"
-          [maxSelectedLabels]="3"
-          display="chip"
-          styleClass="field"
-        ></p-multiselect>
-      </div>
+      <mat-form-field appearance="outline" class="pane-field">
+        <mat-label>Difficulty</mat-label>
+        <mat-select formControlName="difficulty">
+          @for (option of difficultyOptions; track option.value) {
+            <mat-option [value]="option.value">{{ option.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="pane-field">
+        <mat-label>Problem tags</mat-label>
+        <mat-select formControlName="categoryIds" multiple>
+          @for (tag of tags(); track tag.id) {
+            <mat-option [value]="tag.id">{{ tag.name }}</mat-option>
+          }
+        </mat-select>
+        @if (problemForm.controls.categoryIds.invalid) {
+          <mat-error>Select at least one tag.</mat-error>
+        }
+      </mat-form-field>
     </form>
   </app-form-pane-template>
 </ng-template>
@@ -206,10 +314,13 @@
     (saveForm)="submitTag()"
   >
     <form class="pane-form" [formGroup]="tagForm">
-      <label>
-        <span>Tag Name</span>
-        <input pInputText class="field" type="text" formControlName="name" />
-      </label>
+      <mat-form-field appearance="outline" class="pane-field">
+        <mat-label>Tag name</mat-label>
+        <input matInput type="text" formControlName="name" required minlength="2" />
+        @if (tagForm.controls.name.invalid) {
+          <mat-error>Tag name needs at least 2 characters.</mat-error>
+        }
+      </mat-form-field>
     </form>
   </app-form-pane-template>
 </ng-template>
@@ -225,28 +336,33 @@
     (saveForm)="submitPattern()"
   >
     <form class="pane-form" [formGroup]="patternForm">
-      <label>
-        <span>Pattern Name</span>
-        <input pInputText class="field" type="text" formControlName="name" />
-      </label>
+      <mat-form-field appearance="outline" class="pane-field">
+        <mat-label>Pattern name</mat-label>
+        <input matInput type="text" formControlName="name" required minlength="2" />
+        @if (patternForm.controls.name.invalid) {
+          <mat-error>Pattern name needs at least 2 characters.</mat-error>
+        }
+      </mat-form-field>
 
-      <label>
-        <span>Explanation</span>
-        <textarea class="field" rows="4" formControlName="explanation"></textarea>
-      </label>
+      <mat-form-field appearance="outline" class="pane-field">
+        <mat-label>Explanation</mat-label>
+        <textarea matInput rows="4" formControlName="explanation" required minlength="5"></textarea>
+        @if (patternForm.controls.explanation.invalid) {
+          <mat-error>Explanation needs at least 5 characters.</mat-error>
+        }
+      </mat-form-field>
 
-      <div>
-        <label for="patternTagSelect"><span>Problem Tag</span></label>
-        <p-select
-          inputId="patternTagSelect"
-          formControlName="tagId"
-          [options]="tags()"
-          optionLabel="name"
-          optionValue="id"
-          placeholder="Select tag"
-          styleClass="field"
-        ></p-select>
-      </div>
+      <mat-form-field appearance="outline" class="pane-field">
+        <mat-label>Problem tag</mat-label>
+        <mat-select formControlName="tagId">
+          @for (tag of tags(); track tag.id) {
+            <mat-option [value]="tag.id">{{ tag.name }}</mat-option>
+          }
+        </mat-select>
+        @if (patternForm.controls.tagId.invalid) {
+          <mat-error>Select a tag for this pattern.</mat-error>
+        }
+      </mat-form-field>
     </form>
   </app-form-pane-template>
 </ng-template>

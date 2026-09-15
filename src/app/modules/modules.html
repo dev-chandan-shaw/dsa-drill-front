@@ -1,9 +1,12 @@
 <div class="modules-wrapper">
   <app-header (toggleSidebar)="toggleSidebar()"></app-header>
   <div class="modules-container">
-    @if (showSidebar() && !isMobile()) {
-      <app-sidebar [showHeader]="false"></app-sidebar>
-    }
+    <app-sidebar
+      class="desktop-sidebar"
+      [class.collapsed]="!showSidebar()"
+      [attr.inert]="!showSidebar() || isMobile() ? '' : null"
+      [showHeader]="false"
+    ></app-sidebar>
     <main class="content">
       <router-outlet></router-outlet>
     </main>

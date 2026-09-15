@@ -18,4 +18,8 @@ export class AdminProblemService {
     const url = `${this.apiUrl}/problems`;
     return this.http.put<IProblem>(url, payload);
   }
+
+  deleteProblem(problemId: number) {
+    return this.http.delete<void>(`${this.apiUrl}/problems/${problemId}`);
+  }
 }

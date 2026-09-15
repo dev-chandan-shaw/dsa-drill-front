@@ -1,0 +1,77 @@
+// Shared page shell + loading/error primitives. Imported via `@use` from
+// page stylesheets (home, sheets, patterns) so layout never drifts.
+
+.page-shell {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 16px;
+  width: 100%;
+}
+
+.page-head {
+  margin-bottom: 12px;
+
+  h1,
+  h2 {
+    margin: 0;
+    font-family: 'Sora', Inter, system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.skeleton-row {
+  height: 44px;
+  border-radius: 12px;
+  background-color: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+  animation: dsa-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes dsa-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.load-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 16px;
+  text-align: center;
+  border: 1px dashed var(--mat-sys-error);
+  border-radius: 12px;
+  margin: 16px auto;
+  max-width: 1080px;
+
+  mat-icon {
+    color: var(--mat-sys-error);
+  }
+}
+
+.load-error-title {
+  font-weight: 600;
+  color: var(--mat-sys-on-surface);
+}
+
+.load-error-subtitle {
+  font-size: 0.85rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+@media (max-width: 640px) {
+  .page-shell {
+    padding: 12px;
+  }
+}

@@ -13,9 +13,11 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
-import { Card } from 'primeng/card';
-import { ProgressBarModule } from 'primeng/progressbar';
-import { ButtonModule } from 'primeng/button';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ProblemList } from '../../shared/components/problem-list/problem-list';
 import { TagBasedProblemList } from '../../shared/components/tag-based-problem-list/tag-based-problem-list';
 import { PublicProblemService } from '../../shared/services/public-api/problem.service';
@@ -38,9 +40,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   imports: [
     CommonModule,
     ProblemList,
-    Card,
-    ProgressBarModule,
-    ButtonModule,
+    MatButtonModule,
+    MatCardModule,
+    MatIconModule,
+    MatProgressBarModule,
+    MatTooltipModule,
     TagBasedProblemList,
     ReactiveFormsModule,
     FormPaneTemplate,
@@ -131,6 +135,7 @@ export class CustomProblemSheet implements OnInit {
   });
 
   readonly isSheetLoading = signal(true);
+  readonly skeletonRows = Array.from({ length: 6 });
   readonly hasLoaded = computed(() => !this.isSheetLoading() && this.tagService.hasLoaded());
   readonly isSelectionSaving = signal(false);
   private readonly hasFetchedStatuses = signal(false);

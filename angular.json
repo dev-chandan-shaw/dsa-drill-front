@@ -35,7 +35,7 @@
                 "output": "assets/monaco/vs"
               }
             ],
-            "styles": ["node_modules/primeicons/primeicons.css", "src/styles.scss"],
+            "styles": ["src/styles.scss"],
             "scripts": ["node_modules/monaco-editor/min/vs/loader.js"],
             "server": "src/main.server.ts",
             "outputMode": "server",
@@ -53,7 +53,7 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
+                  "maximumWarning": "6kB",
                   "maximumError": "8kB"
                 }
               ],

@@ -12,19 +12,22 @@ import { CommonModule } from '@angular/common';
 import { Sidebar } from '../sidebar/sidebar';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { Router } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { Menu, MenuModule } from 'primeng/menu';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatDividerModule } from '@angular/material/divider';
+import { ThemeService } from '../../../theme/theme.service';
 
 @Component({
   selector: 'app-header',
-  imports: [CommonModule, Sidebar, ButtonModule, MenuModule],
+  imports: [CommonModule, Sidebar, MatButtonModule, MatIconModule, MatMenuModule, MatDividerModule],
   templateUrl: './header.html',
   styleUrl: './header.scss',
 })
 export class Header {
   @ViewChild('sidebarTemplate') sidebarTemplate!: TemplateRef<any>;
-  @ViewChild('profileMenu') profileMenu!: Menu;
   readonly rightPaneService = inject(RightPaneService);
+  readonly theme = inject(ThemeService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   @Output() toggleSidebar = new EventEmitter<void>();
@@ -58,30 +61,6 @@ export class Header {
   logout() {
     this.authService.logout();
   }
-
-  readonly menuitems = computed(() => {
-    const user = this.loggedInUser();
-    if (!user) {
-      return [];
-    }
-
-    return [
-      {
-        label: this.userFullName(),
-        disabled: true,
-      },
-      {
-        label: user.email,
-        disabled: true,
-      },
-      { separator: true },
-      {
-        label: 'Logout',
-        icon: 'pi pi-sign-out',
-        command: () => this.logout(),
-      },
-    ];
-  });
 
   navigateToLogin() {
     this.router.navigate(['/login'], {

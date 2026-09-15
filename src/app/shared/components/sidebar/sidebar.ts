@@ -8,7 +8,10 @@ import { IProblemSheetDetails } from '../../../modules/home/models/problem-sheet
 import { ToastService } from '../../services/toast-service';
 import { FormPaneTemplate } from '../form-pane-template/form-pane-template';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { InputTextModule } from 'primeng/inputtext';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { concatMap, finalize } from 'rxjs';
 import { ProblemSheetService } from '../../services/public-api/problem-sheet.service';
 
@@ -20,7 +23,7 @@ interface NavItem {
 
 @Component({
   selector: 'app-sidebar',
-  imports: [CommonModule, ReactiveFormsModule, InputTextModule, FormPaneTemplate],
+  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, FormPaneTemplate],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.scss',
 })
@@ -53,12 +56,12 @@ export class Sidebar {
     {
       label: 'Library',
       route: '/home',
-      icon: 'pi pi-book',
+      icon: 'library_books',
     },
     {
       label: 'Pattern',
       route: '/question-pattern',
-      icon: 'pi pi-sitemap',
+      icon: 'account_tree',
     },
   ]);
 
@@ -70,10 +73,11 @@ export class Sidebar {
 
     effect(() => {
       if (this.isAdmin()) {
-        this.navItems.update((items) => [
-          ...items,
-          { label: 'Admin', route: '/admin', icon: 'pi pi-cog' },
-        ]);
+        this.navItems.update((items) =>
+          items.some((item) => item.route === '/admin')
+            ? items
+            : [...items, { label: 'Admin', route: '/admin', icon: 'settings' }],
+        );
       }
     });
 
@@ -85,7 +89,6 @@ export class Sidebar {
 
     effect(() => {
       if (this.isSavedAccordionOpen() && !this.hasLoadedSavedSheets() && this.isLoggedIn()) {
-        console.log('fetching saved problem sheets', this.isLoggedIn());
         this.savedProblemSheetService.fetchProblemSheets();
       }
     });

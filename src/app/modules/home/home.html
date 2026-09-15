@@ -1,41 +1,31 @@
 @if (hasLoaded()) {
-  <div class="flex home flex-col p-4 h-full overflow-y-auto">
-    <!-- Normal List -->
-    <div class="flex flex-wrap gap-2 items-center">
-      @for (category of tags(); track $index) {
-        <p
-          [routerLink]="['/problems', category.slug]"
-          class="cursor-pointer px-2 py-1 rounded-full text-sm flex gap-1 flex-wrap items-center"
-        >
-          <span>{{ category.name }}</span>
-          <span class="bg-[var(--p-surface-800)] text-[var(--p-surface-400)] px-2 rounded-full">{{
-            category.problemCount ?? 0
-          }}</span>
-        </p>
-      }
-    </div>
-    <p-divider styleClass="m-0"></p-divider>
+  <div class="page-shell home" aria-busy="false">
+    @if (tags().length > 0) {
+      <nav class="tag-row" aria-label="Problem categories">
+        @for (category of tags(); track category.slug) {
+          <a class="tag-link" [routerLink]="['/problems', category.slug]">
+            <span>{{ category.name }}</span>
+            <span class="tag-count">{{ category.problemCount ?? 0 }}</span>
+          </a>
+        }
+      </nav>
+    }
     <app-problem-list [problems]="problems()"></app-problem-list>
   </div>
+} @else if (loadError()) {
+  <div class="load-error" role="alert">
+    <mat-icon aria-hidden="true">cloud_off</mat-icon>
+    <div class="load-error-title">Couldn't load the library</div>
+    <div class="load-error-subtitle">Check your connection and try again.</div>
+    <button mat-flat-button type="button" (click)="retry()">Retry</button>
+  </div>
 } @else {
-  <p-progressbar mode="indeterminate" aria-label="Loading library problems" [style]="{ height: '4px' }" />
-}
-
-<!-- Filter Template -->
-
-<!-- <p-popover #addToSheetMenu appendTo="body" [style]="{ width: '20rem' }">
-  <h3 class="font-bold text-xl !py-4 !px-2">Add Question to Sheet</h3>
-  <form [formGroup]="addToSheetForm">
-    <div class="flex flex-col">
-      <p-select
-        appendTo="body"
-        optionLabel="title"
-        optionValue="id"
-        formControlName="categoryId"
-        placeholder="Select a sheet"
-        class="w-full"
-      ></p-select>
+  <div class="page-shell" role="status" aria-label="Loading library problems">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <div class="skeleton-list" aria-hidden="true">
+      @for (_ of skeletonRows; track $index) {
+        <div class="skeleton-row"></div>
+      }
     </div>
-    <button pButton type="submit" label="Save" class="p-button-primary w-full !mt-4"></button>
-  </form>
-</p-popover> -->
+  </div>
+}

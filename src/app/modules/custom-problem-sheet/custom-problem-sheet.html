@@ -1,64 +1,77 @@
 @if (!hasLoaded()) {
-  <p-progressbar mode="indeterminate" aria-label="Loading custom problems list" [style]="{ height: '4px' }" />
+  <div class="page-shell" role="status" aria-label="Loading custom problems list">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <div class="skeleton-list" aria-hidden="true">
+      @for (_ of skeletonRows; track $index) {
+        <div class="skeleton-row"></div>
+      }
+    </div>
+  </div>
 } @else {
   <div class="sheet-layout">
-    <aside class="sheet-summary">
-      <p-card>
-        <div class="summary-card">
-          <div class="summary-header">
-            <div>
-              <div class="summary-title">{{ sheetName() || 'Custom Sheet' }}</div>
-              <div class="summary-subtitle">{{ totalCount() }} problems</div>
+    <aside class="sheet-summary" aria-label="Sheet progress summary">
+      <mat-card>
+        <mat-card-content>
+          <div class="summary-card">
+            <div class="summary-header">
+              <div>
+                <div class="summary-title">{{ sheetName() || 'Custom Sheet' }}</div>
+                <div class="summary-subtitle">{{ totalCount() }} problems</div>
+              </div>
+              @if (isOwner()) {
+                <button
+                  mat-icon-button
+                  type="button"
+                  (click)="openProblemSelector()"
+                  matTooltip="Add problems to this sheet"
+                  aria-label="Add problems to this sheet"
+                >
+                  <mat-icon>add</mat-icon>
+                </button>
+              } @else {
+                <button
+                  mat-icon-button
+                  type="button"
+                  (click)="toggleSavedSheet()"
+                  [matTooltip]="isProblemSheetSaved() ? 'Unsave problem sheet' : 'Save problem sheet'"
+                  [attr.aria-label]="isProblemSheetSaved() ? 'Unsave problem sheet' : 'Save problem sheet'"
+                  [attr.aria-pressed]="isProblemSheetSaved()"
+                >
+                  <mat-icon>{{ isProblemSheetSaved() ? 'bookmark' : 'bookmark_border' }}</mat-icon>
+                </button>
+              }
             </div>
-            @if (isOwner()) {
-              <button
-                pButton
-                type="button"
-                icon="pi pi-plus"
-                severity="secondary"
-                (click)="openProblemSelector()"
-                title="Add problems to this sheet"
-                aria-label="Add problems to this sheet"
-                class="add-problems-btn"
-              ></button>
-            } @else {
-              <button
-                pButton
-                type="button"
-                [icon]="isProblemSheetSaved() ? 'pi pi-bookmark-fill ' : 'pi pi-bookmark'"
-                severity="secondary"
-                (click)="toggleSavedSheet()"
-                [title]="isProblemSheetSaved() ? 'Unsave problem sheet' : 'Save problem sheet'"
-                [attr.aria-label]="isProblemSheetSaved() ? 'Unsave problem sheet' : 'Save problem sheet'"
-                class="add-problems-btn"
-              ></button>
-            }
-          </div>
 
-          <div class="summary-section">
-            <div class="summary-row">
-              <span>Easy</span>
-              <strong>{{ solvedEasyCount() }}/{{ easyCount() }}</strong>
+            <div class="summary-section">
+              <div class="summary-row">
+                <span>Easy</span>
+                <strong>{{ solvedEasyCount() }}/{{ easyCount() }}</strong>
+              </div>
+              <div class="summary-row">
+                <span>Medium</span>
+                <strong>{{ solvedMediumCount() }}/{{ mediumCount() }}</strong>
+              </div>
+              <div class="summary-row">
+                <span>Hard</span>
+                <strong>{{ solvedHardCount() }}/{{ hardCount() }}</strong>
+              </div>
             </div>
-            <div class="summary-row">
-              <span>Medium</span>
-              <strong>{{ solvedMediumCount() }}/{{ mediumCount() }}</strong>
-            </div>
-            <div class="summary-row">
-              <span>Hard</span>
-              <strong>{{ solvedHardCount() }}/{{ hardCount() }}</strong>
-            </div>
-          </div>
 
-          <div class="summary-section">
-            <div class="summary-row">
-              <span>Solved</span>
-              <strong>{{ solvedCount() }}</strong>
+            <div class="summary-section">
+              <div class="summary-row">
+                <span>Solved</span>
+                <strong>{{ solvedCount() }}</strong>
+              </div>
+              <mat-progress-bar
+                mode="determinate"
+                class="sheet-progress"
+                [value]="solvedPercent()"
+                [attr.aria-label]="solvedPercent() + '% of problems solved'"
+              ></mat-progress-bar>
             </div>
-            <p-progressbar [value]="solvedPercent()" [showValue]="false" [attr.aria-label]="solvedPercent() + '% of problems solved'"></p-progressbar>
           </div>
-        </div>
-      </p-card>
+        </mat-card-content>
+      </mat-card>
     </aside>
 
     <div class="sheet-content">

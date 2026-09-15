@@ -1,42 +1,40 @@
-.select-field {
-    width: 16rem;
-}
-
-:host ::ng-deep .p-rowgroup-footer td {
-    font-weight: 700;
-}
-
-:host ::ng-deep .p-rowgroup-header {
-    span {
-        font-weight: 700;
-    }
-
-    .p-row-toggler {
-        vertical-align: middle;
-        margin-right: .25rem;
-    }
-}
-
-:host ::ng-deep .p-rowgroup-footer td {
-    font-weight: 700;
-}
-
-:host ::ng-deep .p-rowgroup-header {
-    span {
-        font-weight: 700;
-    }
-
-    .p-row-toggler {
-        vertical-align: middle;
-        margin-right: .25rem;
-    }
-}
-
-::ng-deep .p-datatable-table-container {
-    min-height: calc(100vh - 250px);
-}
+@use '../../shared/page-shell';
 
 .home {
-    max-width: 1080px;
-    margin: 0 auto;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 0;
+  margin-bottom: 1rem;
+}
+
+.tag-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  text-decoration: none;
+  color: var(--mat-sys-on-surface);
+  background-color: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--mat-sys-primary) 16%, transparent);
+    color: var(--mat-sys-primary);
+  }
+}
+
+.tag-count {
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: var(--mat-sys-on-surface-variant);
+  background-color: color-mix(in srgb, var(--mat-sys-on-surface) 10%, transparent);
 }

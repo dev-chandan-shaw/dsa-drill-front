@@ -1,29 +1,35 @@
 <div class="flex flex-col h-full">
-  <div class="right-panel-header flex items-center justify-between p-4">
-    <h2 class="text-lg font-semibold">{{ title }}</h2>
-    <p-button icon="pi pi-times" text rounded (click)="cancelForm.emit()" aria-label="Close"></p-button>
+  <div class="pane-header">
+    <h2 class="pane-title">{{ title }}</h2>
+    <button
+      mat-icon-button
+      type="button"
+      (click)="cancelForm.emit()"
+      [attr.aria-label]="'Close ' + title"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
-  <p-divider class="!m-0"></p-divider>
-  <div class="flex-1 overflow-y-auto p-4">
+  <mat-divider></mat-divider>
+  <div class="flex-1 overflow-y-auto pane-body">
     <ng-content></ng-content>
   </div>
-  <p-divider class="!m-0"></p-divider>
-  <div class="right-panel-footer flex justify-end gap-4 p-4">
+  <mat-divider></mat-divider>
+  <div class="pane-footer">
     @if (isEditMode) {
-      <p-button
-        [disabled]="!form.valid"
-        [loading]="isSaving"
-        label="Save"
-        (onClick)="saveForm.emit()"
-      ></p-button>
+      <button
+        mat-flat-button
+        type="button"
+        [disabled]="!form.valid || isSaving"
+        (click)="saveForm.emit()"
+      >
+        {{ isSaving ? 'Saving…' : 'Save changes' }}
+      </button>
     } @else {
-      <p-button
-        [disabled]="!form.valid"
-        [loading]="isSaving"
-        label="Add"
-        (onClick)="addForm.emit()"
-      ></p-button>
+      <button mat-flat-button type="button" [disabled]="!form.valid || isSaving" (click)="addForm.emit()">
+        {{ isSaving ? 'Adding…' : 'Add' }}
+      </button>
     }
-    <p-button label="Cancel" outlined (click)="cancelForm.emit()"></p-button>
+    <button mat-button type="button" (click)="cancelForm.emit()">Cancel</button>
   </div>
 </div>

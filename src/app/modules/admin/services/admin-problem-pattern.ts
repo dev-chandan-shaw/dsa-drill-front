@@ -19,4 +19,8 @@ export class AdminProblemPatternService {
   editProblemPattern(payload: IProblemPatternDto): Observable<IProblemPattern> {
     return this.http.post<IProblemPattern>(`${this.api}/problem-patterns`, payload);
   }
+
+  deleteProblemPattern(patternId: number): Observable<void> {
+    return this.http.delete<void>(`${this.api}/problem-patterns/${patternId}`);
+  }
 }

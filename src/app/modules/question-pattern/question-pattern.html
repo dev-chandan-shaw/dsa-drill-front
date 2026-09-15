@@ -1,28 +1,67 @@
-@if (!hasLoaded()) {
-  <p-progressbar mode="indeterminate" aria-label="Loading question patterns" [style]="{ height: '4px' }" />
-} @else {
-  <section class="question-pattern-page">
-    <div class="tag-filter-row">
-      @for (tag of tags(); track tag.id) {
-        <p class="tag-chip">
-          <span>{{ tag.name }}</span>
-          <span class="tag-count">{{ getPatternCountByTag(tag.id) }}</span>
-        </p>
+@if (!hasLoaded() && !loadError()) {
+  <div class="page-shell" role="status" aria-label="Loading question patterns">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <div class="skeleton-list" aria-hidden="true">
+      @for (_ of skeletonRows; track $index) {
+        <div class="skeleton-row"></div>
       }
     </div>
+  </div>
+} @else if (loadError() && !hasLoaded()) {
+  <div class="load-error" role="alert">
+    <mat-icon aria-hidden="true">cloud_off</mat-icon>
+    <div class="load-error-title">Couldn't load patterns</div>
+    <div class="load-error-subtitle">Check your connection and try again.</div>
+    <button mat-flat-button type="button" (click)="retry()">Retry</button>
+  </div>
+} @else {
+  <section class="page-shell question-pattern-page" aria-busy="false">
+    @if (selectedTagId() !== null) {
+      <div class="toolbar">
+        <button mat-button type="button" (click)="clearFilters()">Clear filter</button>
+      </div>
+    }
+
+    @if (tags().length > 0) {
+      <div class="tag-filter-row" role="group" aria-label="Filter patterns by tag">
+        @for (tag of tags(); track tag.id) {
+          <button
+            type="button"
+            class="tag-chip"
+            [class.active]="selectedTagId() === tag.id"
+            [attr.aria-pressed]="selectedTagId() === tag.id"
+            (click)="setSelectedTagId(tag.id)"
+          >
+            <span>{{ tag.name }}</span>
+            <span class="tag-count">{{ getPatternCountByTag(tag.id) }}</span>
+          </button>
+        }
+      </div>
+    }
 
     @if (filteredPatterns().length === 0) {
-      <div class="state-card">No question patterns available.</div>
+      <div class="state-card" role="status">
+        @if (selectedTagId() !== null) {
+          No patterns match the selected tag.
+          <button type="button" class="link" (click)="clearFilters()">Clear filter</button>
+        } @else {
+          No question patterns available yet.
+        }
+      </div>
     } @else {
-      @for (pattern of filteredPatterns(); track trackByPatternId($index, pattern)) {
-        <p-card styleClass="mb-4">
-          <div class="pattern-meta">
-            <h3>{{ pattern.name }}</h3>
-            <p>#{{ pattern.id }} | {{ getTagNameById(pattern.tagId) }}</p>
-            <p>{{ pattern.explanation }}</p>
-          </div>
-        </p-card>
-      }
+      <div class="pattern-list">
+        @for (pattern of filteredPatterns(); track trackByPatternId($index, pattern)) {
+          <mat-card class="pattern-card">
+            <mat-card-content>
+              <div class="pattern-meta">
+                <h3>{{ pattern.name }}</h3>
+                <p class="pattern-tag dsa-mono">#{{ pattern.id }} · {{ getTagNameById(pattern.tagId) }}</p>
+                <p>{{ pattern.explanation }}</p>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
     }
   </section>
 }
