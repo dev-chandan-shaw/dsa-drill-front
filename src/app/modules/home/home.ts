@@ -61,6 +61,10 @@ export class Home implements OnInit {
     this.questionService
       .fetchProblems()
       .subscribe({ error: () => this.loadError.set(true) });
+    // Silent freshness: instant paint from cache first, then reconcile with the
+    // server in the background (no-ops on cold boots where fetchProblems owns
+    // the first paint, so no double-fire and no skeleton flash).
+    this.questionService.refreshProblemsInBackground();
     this.questionTagService
       .fetchProblemTags()
       .subscribe({ error: () => this.loadError.set(true) });
