@@ -1,4 +1,4 @@
-import { inject, Injectable, signal, makeStateKey } from '@angular/core';
+import { inject, Injectable, signal, makeStateKey, TransferState } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { IApiResponse } from '../../models/ApiResponse';
@@ -17,6 +17,7 @@ export interface IQuestionTagDto {
 export class ProblemTagService {
   private readonly api = environment.apiUrl + '/public';
   private readonly http = inject(HttpClient);
+  private readonly transferState = inject(TransferState);
 
   private readonly _problemTags = signal<IProblemTag[]>([]);
   public isLoading = signal<boolean>(false); // Progress bar state
@@ -30,14 +31,51 @@ export class ProblemTagService {
       return of(this._problemTags());
     }
 
+    if (!force) {
+      const cached = this.transferState.get(TAGS_STATE_KEY, null);
+
+      if (cached) {
+        this._problemTags.set(cached);
+        this.hasLoaded.set(true);
+
+        this.transferState.remove(TAGS_STATE_KEY);
+
+        return of(cached);
+      }
+    }
+
+    // A forced reload always hits the network so post-save refreshes
+    // never resolve with stale SSR TransferState data.
+    this.transferState.remove(TAGS_STATE_KEY);
+
     this.isLoading.set(true);
     return this.http.get<IProblemTag[]>(`${this.api}/problem-tags`).pipe(
       tap((res) => {
         this._problemTags.set(res);
         this.hasLoaded.set(true);
+
+        this.transferState.set(TAGS_STATE_KEY, res);
       }),
       finalize(() => this.isLoading.set(false)),
     );
+  }
+
+  /**
+   * Silent freshness pass (stale-while-revalidate), mirroring
+   * PublicProblemService.refreshProblemsInBackground: re-hit the network when
+   * tag data is already present and patch the signal on arrival, without
+   * touching `hasLoaded` — the tag strip updates in place instead of flashing.
+   * No-ops when nothing is loaded yet so cold boots never double-fire.
+   */
+  refreshProblemTagsInBackground(): void {
+    if (!this.hasLoaded()) {
+      return;
+    }
+    this.http.get<IProblemTag[]>(`${this.api}/problem-tags`).subscribe({
+      next: (res) => this._problemTags.set(res),
+      // Freshness is best-effort: keep showing the snapshot on failure.
+      error: () => undefined,
+    });
   }
 
   addProblemTag(payload: IQuestionTagDto) {

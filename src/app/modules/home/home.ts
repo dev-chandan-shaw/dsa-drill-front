@@ -11,6 +11,7 @@ import { ProblemList } from '../../shared/components/problem-list/problem-list';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { ProblemStatusApiService } from './services/user/question-status-api.service';
 import { isPlatformBrowser } from '@angular/common';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -68,8 +69,22 @@ export class Home implements OnInit {
     this.questionTagService
       .fetchProblemTags()
       .subscribe({ error: () => this.loadError.set(true) });
-    if (isPlatformBrowser(this.platformId) && this.authService.isLoggedIn()()) {
-      this.questionStatusService.fetchProblemStatuses().subscribe();
+    // Same silent treatment for the tag strip.
+    this.questionTagService.refreshProblemTagsInBackground();
+    if (isPlatformBrowser(this.platformId)) {
+      // Personal statuses ride the auth-resolution event, not a synchronous
+      // login check: on cold boots auth is still unresolved at init, and the
+      // old sync check skipped statuses forever. Resolved-with-user fires the
+      // single fetch; resolved-null skips it for good. No extra auth request —
+      // loadCurrentUser() is shared and cached.
+      this.authService
+        .loadCurrentUser()
+        .pipe(take(1))
+        .subscribe((user) => {
+          if (user) {
+            this.questionStatusService.fetchProblemStatuses().subscribe();
+          }
+        });
     }
   }
 }
