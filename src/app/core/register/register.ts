@@ -58,10 +58,8 @@ export class Register implements OnInit {
   ngOnInit(): void {
     const params = this.route.snapshot.queryParamMap;
     this.authService.handleOAuthReturn({
-      token: params.get('token'),
       error: params.get('error'),
       message: params.get('msg'),
-      fallbackUrl: '/home',
     });
   }
 
@@ -102,7 +100,6 @@ export class Register implements OnInit {
       return;
     }
     this.isGoogleLoading.set(true);
-    this.authService.storeOAuthReturnUrl('/home');
     globalThis.location.href = environment.googleOAuthRedirectUrl;
   }
 }

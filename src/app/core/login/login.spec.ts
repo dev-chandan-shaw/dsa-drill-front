@@ -9,8 +9,6 @@ import { StorageService } from '../services/storage.service';
 
 import { Login } from './login';
 
-const OAUTH_RETURN_KEY = 'dsa-drill-oauth-return';
-
 function createMemoryStorage() {
   const data = new Map<string, string>();
   const stub: StorageService = {
@@ -110,35 +108,24 @@ describe('Login', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should store the return URL and redirect to Google on Google sign-in', () => {
-    queryParams = { returnUrl: '/admin' };
+  it('should redirect to Google on Google sign-in', () => {
+    queryParams = {};
     create();
 
     const button = fixture!.nativeElement.querySelector('.google-btn') as HTMLButtonElement;
     expect(button).toBeTruthy();
     button.click();
 
-    expect(memStore.get(OAUTH_RETURN_KEY)).toBe('/admin');
     expect(locationHref).toBe(environment.googleOAuthRedirectUrl);
   });
 
-  it('should exchange an OAuth token and navigate to the stored return URL', () => {
-    queryParams = { token: 'oauth-jwt-123' };
+  it('should fire no auth request on an ordinary visit (session is cookie-based)', () => {
+    queryParams = {};
     create();
-    memStore.set(OAUTH_RETURN_KEY, '/admin');
 
-    // loadCurrentUser fires first (no session yet) and fails...
-    const initial = httpMock.expectOne(`${environment.apiUrl}/auth/user`);
-    initial.flush('unauthorized', { status: 401, statusText: 'Unauthorized' });
-
-    // ...then the token exchange runs.
-    const exchange = httpMock.expectOne(`${environment.apiUrl}/auth/user?token=oauth-jwt-123`);
-    exchange.flush({ id: 7, email: 'g@example.com', firstName: 'G', lastName: 'User' });
-
-    expect(navigatedByUrl).toEqual([['/admin']]);
-    expect(snackCalls.length).toBeGreaterThan(0);
-    expect(String(snackCalls[0][0])).toContain('Signed in with Google');
-    expect(memStore.get(OAUTH_RETURN_KEY)).toBeUndefined();
+    httpMock.expectNone(`${environment.apiUrl}/auth/user`);
+    expect(snackCalls.length).toBe(0);
+    expect(navigated.length).toBe(0);
   });
 
   it('should toast an error and strip params when Google reports an error', () => {

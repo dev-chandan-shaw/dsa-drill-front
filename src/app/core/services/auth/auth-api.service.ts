@@ -22,9 +22,8 @@ export class AuthApiService {
     return this._http.post<IUser>(`${this._apiUrl}/auth/register`, data);
   }
 
-  fetchCurrentUser(token?: string) {
-    const url = token ? `${this._apiUrl}/auth/user?token=${token}` : `${this._apiUrl}/auth/user`;
-    return this._http.get<IUser>(url);
+  fetchCurrentUser() {
+    return this._http.get<IUser>(`${this._apiUrl}/auth/user`);
   }
 
   logout(): Observable<void> {

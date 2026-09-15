@@ -5,6 +5,14 @@
       "destination": "https://dsa-drill.duckdns.org/api/:path*"
     },
     {
+      "source": "/oauth2/:path*",
+      "destination": "https://dsa-drill.duckdns.org/oauth2/:path*"
+    },
+    {
+      "source": "/login/oauth2/:path*",
+      "destination": "https://dsa-drill.duckdns.org/login/oauth2/:path*"
+    },
+    {
       "source": "/admin",
       "destination": "/index.csr.html"
     },

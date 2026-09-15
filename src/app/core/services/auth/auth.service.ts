@@ -1,14 +1,13 @@
 import { computed, inject, Injectable, PLATFORM_ID, Signal, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { AuthApiService } from './auth-api.service';
-import { catchError, finalize, map, Observable, of, shareReplay, switchMap, tap } from 'rxjs';
+import { catchError, finalize, map, Observable, of, shareReplay, tap } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { IRegisterRequest, IUser } from '../../../shared/models/User';
 import { Router } from '@angular/router';
 import { StorageService } from '../storage.service';
 import { ToastService } from '../../../shared/services/toast-service';
 
-const OAUTH_RETURN_URL_KEY = 'dsa-drill-oauth-return';
 // Profile-only snapshot (no tokens — the JWT stays in its httpOnly cookie).
 // Lets the header render the logged-in state on first paint; every boot still
 // revalidates against /auth/user and drops the snapshot on 401.
@@ -114,76 +113,23 @@ export class AuthService {
   }
 
   /**
-   * Remembers where to land after the Google round-trip (full-page redirect,
-   * so router state does not survive). Read back by handleOAuthReturn.
+   * Surfaces a Google sign-in failure redirected back to /login as
+   * ?error=true&msg=... by the backend. Success needs no handling: the
+   * session arrives purely via the httpOnly cookie and App boot already
+   * revalidates it with loadCurrentUser. No-ops on ordinary visits.
    */
-  storeOAuthReturnUrl(returnUrl: string | null): void {
-    if (returnUrl) {
-      this.storage.set(OAUTH_RETURN_URL_KEY, returnUrl);
-    } else {
-      this.storage.remove(OAUTH_RETURN_URL_KEY);
-    }
-  }
+  handleOAuthReturn(options: { error?: string | null; message?: string | null }): void {
+    const { error, message } = options;
 
-  /**
-   * Completes a Google sign-in return to /login: exchanges ?token= for a
-   * session, or surfaces ?error=. No-ops on ordinary visits.
-   *
-   * Serializes behind loadCurrentUser so a stale in-flight 401 can never
-   * clobber the freshly exchanged session.
-   */
-  handleOAuthReturn(options: {
-    token?: string | null;
-    error?: string | null;
-    message?: string | null;
-    fallbackUrl?: string | null;
-  }): void {
-    const { token, error, message, fallbackUrl } = options;
-
-    if (error) {
-      this.toastService.showError(
-        'Google sign-in failed',
-        message || 'The Google sign-in was not completed. Please try again.',
-      );
-      this.clearOAuthParams();
-      this.storage.remove(OAUTH_RETURN_URL_KEY);
+    if (!error) {
       return;
     }
 
-    if (!token) {
-      return;
-    }
-
-    this.isCompletingOAuth.set(true);
-    this.loadCurrentUser()
-      .pipe(
-        switchMap(() => this._authApiService.fetchCurrentUser(token)),
-        finalize(() => this.isCompletingOAuth.set(false)),
-      )
-      .subscribe({
-        next: (user) => {
-          if (!user) {
-            this.toastService.showError(
-              'Could not complete Google sign-in',
-              'Please try again.',
-            );
-            this.clearOAuthParams();
-            return;
-          }
-          this.setSessionUser(user);
-          this.toastService.showSuccess('Signed in with Google', 'Welcome back.');
-          const destination = this.consumeOAuthReturnUrl(fallbackUrl ?? '/');
-          this.clearOAuthParams();
-          this.router.navigateByUrl(destination);
-        },
-        error: () => {
-          this.toastService.showError(
-            'Could not complete Google sign-in',
-            'Please try again.',
-          );
-          this.clearOAuthParams();
-        },
-      });
+    this.toastService.showError(
+      'Google sign-in failed',
+      message || 'The Google sign-in was not completed. Please try again.',
+    );
+    this.clearOAuthParams();
   }
 
   ensureLoggedIn(redirectUrl?: string): Observable<boolean> {
@@ -259,20 +205,9 @@ export class AuthService {
     }
   }
 
-  private consumeOAuthReturnUrl(fallbackUrl: string): string {
-    const stored = this.storage.get(OAUTH_RETURN_URL_KEY);
-    this.storage.remove(OAUTH_RETURN_URL_KEY);
-    for (const candidate of [stored, fallbackUrl]) {
-      if (candidate && candidate.startsWith('/') && !candidate.startsWith('//')) {
-        return candidate;
-      }
-    }
-    return '/';
-  }
-
   private clearOAuthParams(): void {
     this.router.navigate([], {
-      queryParams: { token: null, error: null, msg: null },
+      queryParams: { error: null, msg: null },
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });

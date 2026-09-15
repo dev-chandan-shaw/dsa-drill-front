@@ -55,10 +55,8 @@ export class Login implements OnInit {
   ngOnInit(): void {
     const params = this._route.snapshot.queryParamMap;
     this._authService.handleOAuthReturn({
-      token: params.get('token'),
       error: params.get('error'),
       message: params.get('msg'),
-      fallbackUrl: params.get('returnUrl') || '/',
     });
   }
 
@@ -94,9 +92,6 @@ export class Login implements OnInit {
       return;
     }
     this.isGoogleLoading.set(true);
-    this._authService.storeOAuthReturnUrl(
-      this._route.snapshot.queryParamMap.get('returnUrl') || '/',
-    );
     globalThis.location.href = environment.googleOAuthRedirectUrl;
   }
 }
