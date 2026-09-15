@@ -5,8 +5,12 @@
       "destination": "https://dsa-drill.duckdns.org/api/:path*"
     },
     {
-      "source": "/(.*)",
-      "destination": "/"
+      "source": "/admin",
+      "destination": "/index.csr.html"
+    },
+    {
+      "source": "/problems-sheet/:path*",
+      "destination": "/index.csr.html"
     }
   ]
 }

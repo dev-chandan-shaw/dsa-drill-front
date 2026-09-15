@@ -6,9 +6,12 @@ export const routes: Routes = [
     path: '',
     loadComponent: () => import('./modules').then((m) => m.Modules),
     children: [
+      // Root renders Home directly (instead of redirecting) so the static
+      // index.html is a full page: better first paint + SEO, and a working
+      // SPA fallback shell for client-only deep links.
       {
         path: '',
-        redirectTo: 'home',
+        loadComponent: () => import('./home/home').then((m) => m.Home),
         pathMatch: 'full',
       },
       {
