@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/",
+      "destination": "/api/ssr"
+    },
+    {
+      "source": "/home",
+      "destination": "/api/ssr"
+    },
+    {
       "source": "/api/:path*",
       "destination": "https://dsa-drill.duckdns.org/api/:path*"
     },
@@ -20,5 +28,10 @@
       "source": "/problems-sheet/:path*",
       "destination": "/index.csr.html"
     }
-  ]
+  ],
+  "functions": {
+    "api/ssr.js": {
+      "includeFiles": "dist/dsa-drill-front/**"
+    }
+  }
 }
