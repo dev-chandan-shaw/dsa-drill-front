@@ -1,19 +1,19 @@
-import {
-  inject,
-  Injectable,
-  signal,
-  PLATFORM_ID,
-  TransferState,
-  makeStateKey,
-} from '@angular/core';
+import { inject, Injectable, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, of, switchMap, catchError, throwError } from 'rxjs';
+import {
+  Observable,
+  tap,
+  of,
+  switchMap,
+  catchError,
+  throwError,
+  finalize,
+  shareReplay,
+} from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { IUserQuestionStatus, UserQuestionStatusDto } from '../../models/Question-status';
 import { AuthService } from '../../../../core/services/auth/auth.service';
-
-const STATUSES_STATE_KEY = makeStateKey<IUserQuestionStatus[]>('problem-statuses');
 
 @Injectable({
   providedIn: 'root',
@@ -22,7 +22,6 @@ export class ProblemStatusApiService {
   private readonly _problemStatusEndpoint = `${environment.apiUrl}/user-problem-status`;
   private readonly _http: HttpClient = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
-  private readonly transferState = inject(TransferState);
   private readonly authService = inject(AuthService);
 
   // 1. Keep the state private
@@ -30,24 +29,28 @@ export class ProblemStatusApiService {
 
   // 2. Expose a read-only version for components
   public readonly problemStatuses = this._problemStatuses.asReadonly();
+  public readonly hasLoaded = signal(false);
+  private statusesRequest: Observable<IUserQuestionStatus[]> | null = null;
 
-  fetchProblemStatuses() {
-    const cached = this.transferState.get(STATUSES_STATE_KEY, null as IUserQuestionStatus[] | null);
-
-    if (cached) {
-      if (isPlatformBrowser(this.platformId)) {
-        this.transferState.remove(STATUSES_STATE_KEY);
-      }
-      this._problemStatuses.set(
-        cached.reduce((acc: Record<number, IUserQuestionStatus>, status) => {
-          acc[status.problemId] = status;
-          return acc;
-        }, {}),
-      );
-      return of(cached);
+  fetchProblemStatuses(force = false) {
+    // Per-user data must never touch TransferState: prerendered HTML is
+    // shared static output, and baking one user's solved map into it would
+    // leak it to every visitor. Statuses are browser-only by design —
+    // callers already gate on auth resolution, this is the service-level
+    // enforcement.
+    if (!isPlatformBrowser(this.platformId)) {
+      return of<IUserQuestionStatus[]>([]);
     }
 
-    return this._http.get<IUserQuestionStatus[]>(`${this._problemStatusEndpoint}`).pipe(
+    if (this.hasLoaded() && !force) {
+      return of(Object.values(this._problemStatuses()));
+    }
+
+    if (!force && this.statusesRequest) {
+      return this.statusesRequest;
+    }
+
+    const request$ = this._http.get<IUserQuestionStatus[]>(`${this._problemStatusEndpoint}`).pipe(
       tap((statuses) => {
         this._problemStatuses.set(
           statuses.reduce((acc: Record<number, IUserQuestionStatus>, status) => {
@@ -55,9 +58,22 @@ export class ProblemStatusApiService {
             return acc;
           }, {}),
         );
-        this.transferState.set(STATUSES_STATE_KEY, statuses);
+        this.hasLoaded.set(true);
       }),
+      finalize(() => {
+        this.statusesRequest = null;
+      }),
+      shareReplay({ bufferSize: 1, refCount: false }),
     );
+
+    this.statusesRequest = request$;
+    return request$;
+  }
+
+  clearStatuses(): void {
+    this._problemStatuses.set({});
+    this.hasLoaded.set(false);
+    this.statusesRequest = null;
   }
 
   updateProblemStatus(status: UserQuestionStatusDto): Observable<boolean> {

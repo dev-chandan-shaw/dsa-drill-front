@@ -1,6 +1,5 @@
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Title, Meta } from '@angular/platform-browser';
 import { ProblemList } from '../../shared/components/problem-list/problem-list';
 import { IProblem, ProblemDifficulty } from '../home/models/Question';
 import { PublicProblemService } from '../../shared/services/public-api/problem.service';
@@ -11,6 +10,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ProblemStatusApiService } from '../home/services/user/question-status-api.service';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.service';
+import { SeoService } from '../../shared/services/seo.service';
 
 @Component({
   selector: 'app-problem-sheet',
@@ -24,8 +24,7 @@ export class ProblemSheet implements OnInit {
   private readonly tagService = inject(ProblemTagService);
   private readonly statusService = inject(ProblemStatusApiService);
   private readonly authService = inject(AuthService);
-  private readonly titleService = inject(Title);
-  private readonly metaService = inject(Meta);
+  private readonly seoService = inject(SeoService);
   problems = signal<IProblem[]>([]);
   sheetId = signal<string | null>(null);
   readonly tags = this.tagService.problemTags;
@@ -33,11 +32,12 @@ export class ProblemSheet implements OnInit {
 
   private readonly seoEffect = effect(() => {
     const tagName = this.sheetTagName();
-    if (tagName && tagName !== '-') {
-      this.titleService.setTitle(`${tagName} Problems - DSA Drill`);
-      this.metaService.updateTag({
-        name: 'description',
-        content: `Practice handpicked ${tagName} coding questions on DSA Drill. Track your solved questions and prepare for coding interviews.`,
+    const slug = this.sheetId();
+    if (tagName && tagName !== '-' && slug) {
+      this.seoService.setPageMeta({
+        title: `${tagName} Problems - DSA Drill`,
+        description: `Practice handpicked ${tagName} coding questions on DSA Drill. Track your solved questions and prepare for coding interviews.`,
+        path: `/problems/${slug}`,
       });
     }
   });

@@ -13,6 +13,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { AuthService } from '../services/auth/auth.service';
 import { finalize } from 'rxjs';
 import { ToastService } from '../../shared/services/toast-service';
+import { SeoService } from '../../shared/services/seo.service';
 import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-login',
@@ -43,6 +44,7 @@ export class Login implements OnInit {
   private readonly _route = inject(ActivatedRoute);
   private readonly _authService = inject(AuthService);
   private readonly _toastService = inject(ToastService);
+  private readonly _seoService = inject(SeoService);
 
   constructor() {
     this.loginForm = this._fb.group({
@@ -53,6 +55,12 @@ export class Login implements OnInit {
   }
 
   ngOnInit(): void {
+    this._seoService.setPageMeta({
+      title: 'Login - DSA Drill',
+      description: 'Log in to DSA Drill to track solved problems, save sheets, and continue your interview prep.',
+      path: '/login',
+      robots: 'noindex, follow',
+    });
     const params = this._route.snapshot.queryParamMap;
     this._authService.handleOAuthReturn({
       error: params.get('error'),

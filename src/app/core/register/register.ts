@@ -13,6 +13,7 @@ import { AuthService } from '../services/auth/auth.service';
 import { IRegisterRequest } from '../../shared/models/User';
 import { finalize } from 'rxjs';
 import { ToastService } from '../../shared/services/toast-service';
+import { SeoService } from '../../shared/services/seo.service';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -44,6 +45,7 @@ export class Register implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
+  private readonly seoService = inject(SeoService);
 
   constructor() {
     this.registerForm = this.fb.group({
@@ -56,6 +58,12 @@ export class Register implements OnInit {
   }
 
   ngOnInit(): void {
+    this.seoService.setPageMeta({
+      title: 'Sign up - DSA Drill',
+      description: 'Create a DSA Drill account to track progress, save custom sheets, and ace coding interviews.',
+      path: '/register',
+      robots: 'noindex, follow',
+    });
     const params = this.route.snapshot.queryParamMap;
     this.authService.handleOAuthReturn({
       error: params.get('error'),

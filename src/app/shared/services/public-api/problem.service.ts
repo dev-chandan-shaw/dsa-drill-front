@@ -6,6 +6,10 @@ import { IProblem } from '../../../modules/home/models/Question';
 
 const PROBLEMS_STATE_KEY = makeStateKey<IProblem[]>('problems');
 
+function problemsByTagKey(tagSlug: string) {
+  return makeStateKey<IProblem[]>(`problems-tag-${tagSlug}`);
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -88,8 +92,26 @@ export class PublicProblemService {
     return this.http.get<IProblem>(`${this.apiUrl}/problems/slug/${slug}`);
   }
 
-  getProblemsByTag(tagId: string): Observable<IProblem[]> {
-    return this.http.get<IProblem[]>(`${this.apiUrl}/problems/tag/${tagId}`);
+  getProblemsByTag(tagId: string, force = false): Observable<IProblem[]> {
+    const key = problemsByTagKey(tagId);
+
+    if (!force) {
+      const cached = this.transferState.get(key, null);
+      if (cached) {
+        this.transferState.remove(key);
+        return of(cached);
+      }
+    }
+
+    this.transferState.remove(key);
+
+    return this.http.get<IProblem[]>(`${this.apiUrl}/problems/tag/${tagId}`).pipe(
+      tap((res) => {
+        // Server serializes into the prerendered HTML; the browser consumes
+        // it above instead of refetching on hydration.
+        this.transferState.set(key, res);
+      }),
+    );
   }
 
   upsertProblemSignal(problem: IProblem): void {

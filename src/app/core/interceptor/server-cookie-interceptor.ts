@@ -1,13 +1,14 @@
 import { inject, PLATFORM_ID, REQUEST } from '@angular/core';
 import { isPlatformServer } from '@angular/common';
 import { HttpInterceptorFn } from '@angular/common/http';
+import { BACKEND_API_ORIGIN } from '../api-origins';
 
 // Absolute backend origin for server-side API calls. The app uses a relative
 // '/api' base (proxied by vercel.json in production), which cannot resolve
 // without a request origin during prerendering — so on the server only,
 // relative API URLs are prefixed with the backend origin. Browser calls keep
 // the relative base (and its CORS-free proxying) untouched.
-const SERVER_API_ORIGIN = 'https://dsa-drill.duckdns.org';
+const SERVER_API_ORIGIN = BACKEND_API_ORIGIN;
 
 export const serverCookieInterceptor: HttpInterceptorFn = (req, next) => {
   const platformId = inject(PLATFORM_ID);

@@ -8,7 +8,6 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { Title, Meta } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,6 +16,7 @@ import { IProblemPattern } from '../home/models/problem-pattern';
 import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.service';
 import { ProblemPatternService } from '../../shared/services/public-api/problem-pattern.service';
 import { ToastService } from '../../shared/services/toast-service';
+import { SeoService } from '../../shared/services/seo.service';
 
 @Component({
   selector: 'app-question-pattern',
@@ -36,8 +36,7 @@ export class QuestionPattern implements OnInit {
   private readonly questionTagService = inject(ProblemTagService);
   private readonly problemPatternService = inject(ProblemPatternService);
   private readonly toastService = inject(ToastService);
-  private readonly titleService = inject(Title);
-  private readonly metaService = inject(Meta);
+  private readonly seoService = inject(SeoService);
 
   readonly tags = this.questionTagService.problemTags;
   readonly patterns = this.problemPatternService.problemPatterns;
@@ -71,10 +70,11 @@ export class QuestionPattern implements OnInit {
   }
 
   ngOnInit(): void {
-    this.titleService.setTitle('Question Patterns - DSA Drill');
-    this.metaService.updateTag({
-      name: 'description',
-      content: 'Explore common algorithmic patterns, structure logic, and learn strategies to solve complex DSA problems effectively.',
+    this.seoService.setPageMeta({
+      title: 'Question Patterns - DSA Drill',
+      description:
+        'Explore common algorithmic patterns, structure logic, and learn strategies to solve complex DSA problems effectively.',
+      path: '/question-pattern',
     });
     this.load();
   }
@@ -88,9 +88,11 @@ export class QuestionPattern implements OnInit {
     this.questionTagService
       .fetchProblemTags()
       .subscribe({ error: () => this.fail('Unable to load tags') });
+    this.questionTagService.refreshProblemTagsInBackground();
     this.problemPatternService
       .fetchProblemPatterns()
       .subscribe({ error: () => this.fail('Unable to load patterns') });
+    this.problemPatternService.refreshProblemPatternsInBackground();
   }
 
   private fail(message: string): void {

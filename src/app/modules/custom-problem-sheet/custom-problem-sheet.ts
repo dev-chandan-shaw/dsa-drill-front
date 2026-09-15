@@ -11,7 +11,6 @@ import {
   viewChild,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Title, Meta } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -24,6 +23,7 @@ import { PublicProblemService } from '../../shared/services/public-api/problem.s
 import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.service';
 import { RightPaneService } from '../../shared/services/right-pane-service';
 import { ToastService } from '../../shared/services/toast-service';
+import { SeoService } from '../../shared/services/seo.service';
 import { ProblemStatusApiService } from '../home/services/user/question-status-api.service';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { IProblem, ProblemDifficulty } from '../home/models/Question';
@@ -63,8 +63,7 @@ export class CustomProblemSheet implements OnInit {
 
   private readonly rightPaneService = inject(RightPaneService);
   private readonly toastService = inject(ToastService);
-  private readonly titleService = inject(Title);
-  private readonly metaService = inject(Meta);
+  private readonly seoService = inject(SeoService);
 
   private readonly destroyRef = inject(DestroyRef);
 
@@ -84,11 +83,14 @@ export class CustomProblemSheet implements OnInit {
 
   private readonly seoEffect = effect(() => {
     const sheetName = this.sheetName();
+    const id = this.sheetId();
     if (sheetName) {
-      this.titleService.setTitle(`${sheetName} - DSA Drill`);
-      this.metaService.updateTag({
-        name: 'description',
-        content: `Practice the custom problem sheet "${sheetName}" on DSA Drill. Solve curated coding challenges, track status, and study efficiently.`,
+      this.seoService.setPageMeta({
+        title: `${sheetName} - DSA Drill`,
+        description: `Practice the custom problem sheet "${sheetName}" on DSA Drill. Solve curated coding challenges, track status, and study efficiently.`,
+        // Client-only route: still set OG/canonical for share previews + SPA nav.
+        path: id ? `/problems-sheet/${id}` : undefined,
+        robots: 'noindex, follow',
       });
     }
   });

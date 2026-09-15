@@ -1,13 +1,13 @@
 import { RenderMode, ServerRoute } from '@angular/ssr';
+import { BACKEND_API_URL } from './core/api-origins';
 
 interface ProblemTagDto {
   slug?: string;
 }
 
-// Absolute backend origin: getPrerenderParams runs in Node at build time
-// with no request origin, so the relative '/api' base cannot resolve here.
-// Same destination as the /api rewrite in vercel.json.
-const BACKEND_API_URL = 'https://dsa-drill.duckdns.org/api';
+// Absolute backend origin (shared constant): getPrerenderParams runs in Node
+// at build time with no request origin, so the relative '/api' base cannot
+// resolve here. Same destination as the /api rewrite in vercel.json.
 
 // Tag slugs for prerendering public sheet pages. Runs at build time against
 // the production API; on any failure returns [] so those URLs fall back to

@@ -40,6 +40,9 @@ export class Modules implements OnInit {
 
   @HostListener('window:resize')
   onResize() {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     this.isMobile.set(globalThis.innerWidth < 768);
   }
 

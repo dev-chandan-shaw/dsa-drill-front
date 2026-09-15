@@ -2,7 +2,6 @@ import { computed, inject, Injectable, PLATFORM_ID, Signal, signal } from '@angu
 import { isPlatformBrowser } from '@angular/common';
 import { AuthApiService } from './auth-api.service';
 import { catchError, finalize, map, Observable, of, shareReplay, tap } from 'rxjs';
-import { jwtDecode } from 'jwt-decode';
 import { IRegisterRequest, IUser } from '../../../shared/models/User';
 import { Router } from '@angular/router';
 import { StorageService } from '../storage.service';
@@ -220,14 +219,5 @@ export class AuthService {
     this.router.navigate(['/login'], {
       queryParams: { returnUrl },
     });
-  }
-
-  getRoles(token: string): string[] {
-    const decodedToken: any = jwtDecode(token);
-    return decodedToken.roles || [];
-  }
-
-  private resolveToken(user: IUser & { accessToken?: string; jwt?: string }): string {
-    return user.token || user.accessToken || user.jwt || '';
   }
 }

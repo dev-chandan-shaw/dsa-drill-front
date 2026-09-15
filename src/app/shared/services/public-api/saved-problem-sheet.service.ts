@@ -35,11 +35,14 @@ export class SavedProblemSheetService {
   }
 
   fetchProblemSheets() {
-    return new Promise<void>((resolve) => {
-      this.getAllProblemSheets().subscribe((sheets) => {
-        this.problemSheets.set(sheets);
-        this.hasLoaded.set(true);
-        resolve();
+    return new Promise<void>((resolve, reject) => {
+      this.getAllProblemSheets().subscribe({
+        next: (sheets) => {
+          this.problemSheets.set(sheets);
+          this.hasLoaded.set(true);
+          resolve();
+        },
+        error: (err) => reject(err),
       });
     });
   }

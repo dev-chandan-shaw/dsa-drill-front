@@ -1,5 +1,4 @@
 import { Component, computed, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
-import { Title, Meta } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
@@ -10,6 +9,7 @@ import { PublicProblemService } from '../../shared/services/public-api/problem.s
 import { ProblemList } from '../../shared/components/problem-list/problem-list';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { ProblemStatusApiService } from './services/user/question-status-api.service';
+import { SeoService } from '../../shared/services/seo.service';
 import { isPlatformBrowser } from '@angular/common';
 import { take } from 'rxjs';
 
@@ -32,8 +32,7 @@ export class Home implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly questionStatusService = inject(ProblemStatusApiService);
   private readonly platformId = inject(PLATFORM_ID);
-  private readonly titleService = inject(Title);
-  private readonly metaService = inject(Meta);
+  private readonly seoService = inject(SeoService);
 
   problems = this.questionService.problems;
   tags = this.questionTagService.problemTags;
@@ -45,10 +44,11 @@ export class Home implements OnInit {
   );
 
   ngOnInit(): void {
-    this.titleService.setTitle('Library - DSA Drill');
-    this.metaService.updateTag({
-      name: 'description',
-      content: 'Browse the complete library of DSA problems, organized by category, topic, and difficulty. Track your progress and patterns.',
+    this.seoService.setPageMeta({
+      title: 'Library - DSA Drill',
+      description:
+        'Browse the complete library of DSA problems, organized by category, topic, and difficulty. Track your progress and patterns.',
+      path: '/home',
     });
     this.load();
   }
