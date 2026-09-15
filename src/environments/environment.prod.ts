@@ -1,8 +1,8 @@
 export const environment = {
   production: true,
-  // DIRECT (no-proxy) experiment: absolute backend URLs, cross-origin.
-  // Cookies are third-party here (vercel.app page, duckdns.org cookie) and
-  // require SameSite=None + Secure + exact CORS origin on the backend.
-  apiUrl: 'https://dsa-drill.duckdns.org/api',
-  googleOAuthRedirectUrl: 'https://dsa-drill.duckdns.org/oauth2/authorization/google',
+  apiUrl: '/api',
+  // Same-origin: proxied to the backend via vercel.json so the OAuth2 session
+  // (JSESSIONID) and the app session cookie stay first-party — pure cookie
+  // auth, nothing in the URL.
+  googleOAuthRedirectUrl: '/oauth2/authorization/google',
 };
