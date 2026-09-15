@@ -60,6 +60,20 @@ describe('AuthService user snapshot', () => {
     httpMock.expectNone(`${environment.apiUrl}/auth/user`);
   });
 
+  it('should hydrate a realistic API payload that includes the user id', () => {
+    const apiPayload = {
+      ...USER,
+      role: 'ROLE_ADMIN',
+      profilePictureUrl: 'https://example.com/pic.png',
+    };
+    const service = setup({ 'dsa-drill-user': JSON.stringify(apiPayload) });
+
+    expect(service.isLoggedIn()()).toBe(true);
+    expect(service.getLoggedInUser()()?.id).toBe(3);
+    expect(service.isAdmin()()).toBe(true);
+    httpMock.expectNone(`${environment.apiUrl}/auth/user`);
+  });
+
   it('should ignore a corrupted snapshot', () => {
     const service = setup({ 'dsa-drill-user': 'not-json{{{' });
 
@@ -76,6 +90,45 @@ describe('AuthService user snapshot', () => {
 
     const stored = memStore.get('dsa-drill-user');
     expect(stored).toContain('a@b.c');
+  });
+
+  it('should derive the admin flag on first login (no reload needed)', () => {
+    const service = setup();
+    expect(service.isAdmin()()).toBe(false);
+    service.login('a@b.c', 'password123').subscribe();
+
+    httpMock
+      .expectOne(`${environment.apiUrl}/auth/login`)
+      .flush({ ...USER, role: 'ROLE_ADMIN' });
+
+    expect(service.isLoggedIn()()).toBe(true);
+    expect(service.isAdmin()()).toBe(true);
+  });
+
+  it('should leave a non-admin login without the admin flag', () => {
+    const service = setup();
+    service.login('a@b.c', 'password123').subscribe();
+
+    httpMock
+      .expectOne(`${environment.apiUrl}/auth/login`)
+      .flush({ ...USER, role: 'ROLE_USER' });
+
+    expect(service.isLoggedIn()()).toBe(true);
+    expect(service.isAdmin()()).toBe(false);
+  });
+
+  it('should derive the admin flag on first register (no reload needed)', () => {
+    const service = setup();
+    service
+      .register({ email: 'a@b.c', firstName: 'A', lastName: 'B', password: 'password123' })
+      .subscribe();
+
+    httpMock
+      .expectOne(`${environment.apiUrl}/auth/register`)
+      .flush({ ...USER, role: 'ROLE_ADMIN' });
+
+    expect(service.isLoggedIn()()).toBe(true);
+    expect(service.isAdmin()()).toBe(true);
   });
 
   it('should drop the snapshot when revalidation fails with 401', () => {

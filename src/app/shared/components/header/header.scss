@@ -61,4 +61,23 @@ header {
     border-radius: 50%;
     object-fit: cover;
   }
+
+  // Auth-resolving placeholders: same geometry as the real controls so the
+  // header never shifts, but visually blank — no wrong-state flash, no motion.
+  .profile-reserved {
+    cursor: default;
+    border-color: transparent;
+    background: transparent;
+  }
+
+  .avatar-reserved {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+  }
+}
+
+.icon-reserved {
+  width: 40px;
+  height: 40px;
 }

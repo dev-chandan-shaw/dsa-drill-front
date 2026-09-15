@@ -58,8 +58,10 @@ export class AuthService {
   login(username: string, password: string): Observable<IUser> {
     return this._authApiService.login(username, password).pipe(
       map((response) => {
-        this._loggedInUser.set(response);
-        this.persistUser(response);
+        // Single funnel: sets the user, persists the snapshot, AND derives
+        // the admin flag — a manual set/persist here once skipped the admin
+        // derivation, hiding admin UI until the next reload/revalidation.
+        this.setSessionUser(response);
         return response;
       }),
     );
@@ -68,8 +70,8 @@ export class AuthService {
   register(data: IRegisterRequest): Observable<IUser> {
     return this._authApiService.register(data).pipe(
       map((response) => {
-        this._loggedInUser.set(response);
-        this.persistUser(response);
+        // Same funnel as login (see above).
+        this.setSessionUser(response);
         return response;
       }),
     );

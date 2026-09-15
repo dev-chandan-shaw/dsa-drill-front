@@ -26,6 +26,9 @@
     >
       <mat-icon>{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
     </button>
+  } @else if (!isLoggedIn()) {
+    <!-- Auth still resolving: invisible reserved space, same size as the toggle. -->
+    <span class="icon-reserved" aria-hidden="true"></span>
   }
 
   <div class="user-profile">
@@ -52,6 +55,11 @@
       <button mat-button type="button" class="login-button" (click)="navigateToLogin()">
         Login
       </button>
+    } @else {
+      <!-- Auth still resolving: invisible reserved space, avatar-sized. -->
+      <span class="profile-trigger profile-reserved" aria-hidden="true">
+        <span class="avatar-reserved"></span>
+      </span>
     }
   </div>
 </header>
@@ -69,8 +77,8 @@
     [attr.aria-checked]="theme.isDark()"
     (click)="theme.toggle()"
   >
-    <mat-icon>{{ theme.isDark() ? 'dark_mode' : 'light_mode' }}</mat-icon>
-    <span>Dark mode</span>
+    <mat-icon>{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+    <span>{{ theme.isDark() ? 'Light mode' : 'Dark mode' }}</span>
   </button>
   <mat-divider></mat-divider>
   <button mat-menu-item type="button" (click)="logout()">
