@@ -1,10 +1,18 @@
 import { computed, inject, Injectable, PLATFORM_ID, Signal, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { AuthApiService } from './auth-api.service';
-import { catchError, finalize, map, Observable, of, shareReplay, tap } from 'rxjs';
+import { catchError, finalize, map, Observable, of, shareReplay, switchMap, tap } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { IRegisterRequest, IUser } from '../../../shared/models/User';
 import { Router } from '@angular/router';
+import { StorageService } from '../storage.service';
+import { ToastService } from '../../../shared/services/toast-service';
+
+const OAUTH_RETURN_URL_KEY = 'dsa-drill-oauth-return';
+// Profile-only snapshot (no tokens — the JWT stays in its httpOnly cookie).
+// Lets the header render the logged-in state on first paint; every boot still
+// revalidates against /auth/user and drops the snapshot on 401.
+const USER_SNAPSHOT_KEY = 'dsa-drill-user';
 
 @Injectable({
   providedIn: 'root',
@@ -19,6 +27,14 @@ export class AuthService {
   private currentUserRequest: Observable<IUser | null> | null = null;
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly storage = inject(StorageService);
+  private readonly toastService = inject(ToastService);
+
+  readonly isCompletingOAuth = signal(false);
+
+  constructor() {
+    this.hydrateUserFromStorage();
+  }
 
   isLoggedIn() {
     return this._isLoggedIn;
@@ -43,9 +59,9 @@ export class AuthService {
   login(username: string, password: string): Observable<IUser> {
     return this._authApiService.login(username, password).pipe(
       map((response) => {
-        const user = response;
-        this._loggedInUser.set(user);
-        return user;
+        this._loggedInUser.set(response);
+        this.persistUser(response);
+        return response;
       }),
     );
   }
@@ -53,9 +69,9 @@ export class AuthService {
   register(data: IRegisterRequest): Observable<IUser> {
     return this._authApiService.register(data).pipe(
       map((response) => {
-        const user = response;
-        this._loggedInUser.set(user);
-        return user;
+        this._loggedInUser.set(response);
+        this.persistUser(response);
+        return response;
       }),
     );
   }
@@ -71,14 +87,7 @@ export class AuthService {
 
     this._isAuthLoading.set(true);
     const request$ = this._authApiService.fetchCurrentUser().pipe(
-      tap((user) => {
-        if (user) {
-          this._loggedInUser.set(user);
-          if (user.role === 'ROLE_ADMIN') {
-            this._isAdmin.set(true);
-          }
-        }
-      }),
+      tap((user) => this.setSessionUser(user)),
       map((user) => user || null),
       catchError(() => {
         this.clearUser();
@@ -102,6 +111,79 @@ export class AuthService {
       error: (err) => console.error(err),
       complete: () => this.router.navigate(['/login']), // Runs no matter what
     });
+  }
+
+  /**
+   * Remembers where to land after the Google round-trip (full-page redirect,
+   * so router state does not survive). Read back by handleOAuthReturn.
+   */
+  storeOAuthReturnUrl(returnUrl: string | null): void {
+    if (returnUrl) {
+      this.storage.set(OAUTH_RETURN_URL_KEY, returnUrl);
+    } else {
+      this.storage.remove(OAUTH_RETURN_URL_KEY);
+    }
+  }
+
+  /**
+   * Completes a Google sign-in return to /login: exchanges ?token= for a
+   * session, or surfaces ?error=. No-ops on ordinary visits.
+   *
+   * Serializes behind loadCurrentUser so a stale in-flight 401 can never
+   * clobber the freshly exchanged session.
+   */
+  handleOAuthReturn(options: {
+    token?: string | null;
+    error?: string | null;
+    message?: string | null;
+    fallbackUrl?: string | null;
+  }): void {
+    const { token, error, message, fallbackUrl } = options;
+
+    if (error) {
+      this.toastService.showError(
+        'Google sign-in failed',
+        message || 'The Google sign-in was not completed. Please try again.',
+      );
+      this.clearOAuthParams();
+      this.storage.remove(OAUTH_RETURN_URL_KEY);
+      return;
+    }
+
+    if (!token) {
+      return;
+    }
+
+    this.isCompletingOAuth.set(true);
+    this.loadCurrentUser()
+      .pipe(
+        switchMap(() => this._authApiService.fetchCurrentUser(token)),
+        finalize(() => this.isCompletingOAuth.set(false)),
+      )
+      .subscribe({
+        next: (user) => {
+          if (!user) {
+            this.toastService.showError(
+              'Could not complete Google sign-in',
+              'Please try again.',
+            );
+            this.clearOAuthParams();
+            return;
+          }
+          this.setSessionUser(user);
+          this.toastService.showSuccess('Signed in with Google', 'Welcome back.');
+          const destination = this.consumeOAuthReturnUrl(fallbackUrl ?? '/');
+          this.clearOAuthParams();
+          this.router.navigateByUrl(destination);
+        },
+        error: () => {
+          this.toastService.showError(
+            'Could not complete Google sign-in',
+            'Please try again.',
+          );
+          this.clearOAuthParams();
+        },
+      });
   }
 
   ensureLoggedIn(redirectUrl?: string): Observable<boolean> {
@@ -133,6 +215,67 @@ export class AuthService {
     this._loggedInUser.set(null);
     this._isAdmin.set(false);
     this._isAuthResolved.set(true);
+    this.storage.remove(USER_SNAPSHOT_KEY);
+  }
+
+  private setSessionUser(user: IUser | null): void {
+    if (!user) {
+      return;
+    }
+    this._loggedInUser.set(user);
+    if (user.role === 'ROLE_ADMIN') {
+      this._isAdmin.set(true);
+    }
+    this.persistUser(user);
+  }
+
+  private hydrateUserFromStorage(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    try {
+      const raw = this.storage.get(USER_SNAPSHOT_KEY);
+      if (!raw) {
+        return;
+      }
+      const user = JSON.parse(raw) as Partial<IUser>;
+      if (user && typeof user.id === 'number' && typeof user.email === 'string') {
+        this._loggedInUser.set(user as IUser);
+        if (user.role === 'ROLE_ADMIN') {
+          this._isAdmin.set(true);
+        }
+      }
+    } catch {
+      // Corrupted snapshot: ignore it; the boot revalidation cleans up.
+      this.storage.remove(USER_SNAPSHOT_KEY);
+    }
+  }
+
+  private persistUser(user: IUser): void {
+    try {
+      this.storage.set(USER_SNAPSHOT_KEY, JSON.stringify(user));
+    } catch {
+      // Storage full or unavailable: session still works for this visit.
+    }
+  }
+
+  private consumeOAuthReturnUrl(fallbackUrl: string): string {
+    const stored = this.storage.get(OAUTH_RETURN_URL_KEY);
+    this.storage.remove(OAUTH_RETURN_URL_KEY);
+    for (const candidate of [stored, fallbackUrl]) {
+      if (candidate && candidate.startsWith('/') && !candidate.startsWith('//')) {
+        return candidate;
+      }
+    }
+    return '/';
+  }
+
+  private clearOAuthParams(): void {
+    this.router.navigate([], {
+      queryParams: { token: null, error: null, msg: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   private redirectToLogin(redirectUrl?: string): void {

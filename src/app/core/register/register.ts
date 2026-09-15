@@ -1,9 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, Signal, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -12,6 +13,7 @@ import { AuthService } from '../services/auth/auth.service';
 import { IRegisterRequest } from '../../shared/models/User';
 import { finalize } from 'rxjs';
 import { ToastService } from '../../shared/services/toast-service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-register',
@@ -21,6 +23,7 @@ import { ToastService } from '../../shared/services/toast-service';
     RouterModule,
     MatButtonModule,
     MatCardModule,
+    MatDividerModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
@@ -29,13 +32,16 @@ import { ToastService } from '../../shared/services/toast-service';
   templateUrl: './register.html',
   styleUrl: './register.scss',
 })
-export class Register {
+export class Register implements OnInit {
   registerForm: FormGroup;
   showPassword = false;
   isLoading = signal(false);
+  isGoogleLoading = signal(false);
+  readonly isCompletingOAuth: Signal<boolean>;
 
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
 
@@ -45,6 +51,17 @@ export class Register {
       lastName: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
+    });
+    this.isCompletingOAuth = this.authService.isCompletingOAuth;
+  }
+
+  ngOnInit(): void {
+    const params = this.route.snapshot.queryParamMap;
+    this.authService.handleOAuthReturn({
+      token: params.get('token'),
+      error: params.get('error'),
+      message: params.get('msg'),
+      fallbackUrl: '/home',
     });
   }
 
@@ -78,5 +95,14 @@ export class Register {
           this.toastService.showError('Signup failed', detail);
         },
       });
+  }
+
+  signupWithGoogle(): void {
+    if (this.isLoading() || this.isGoogleLoading()) {
+      return;
+    }
+    this.isGoogleLoading.set(true);
+    this.authService.storeOAuthReturnUrl('/home');
+    globalThis.location.href = environment.googleOAuthRedirectUrl;
   }
 }

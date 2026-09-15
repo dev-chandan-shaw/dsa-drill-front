@@ -1,9 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, Signal, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -11,7 +13,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { AuthService } from '../services/auth/auth.service';
 import { finalize } from 'rxjs';
 import { ToastService } from '../../shared/services/toast-service';
-
+import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-login',
   imports: [
@@ -20,6 +22,7 @@ import { ToastService } from '../../shared/services/toast-service';
     RouterModule,
     MatButtonModule,
     MatCardModule,
+    MatDividerModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
@@ -28,10 +31,12 @@ import { ToastService } from '../../shared/services/toast-service';
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
-export class Login {
+export class Login implements OnInit {
   loginForm: FormGroup;
   showPassword = false;
   isLoading = signal(false);
+  isGoogleLoading = signal(false);
+  readonly isCompletingOAuth: Signal<boolean>;
 
   private readonly _fb = inject(FormBuilder);
   private readonly _router = inject(Router);
@@ -43,6 +48,17 @@ export class Login {
     this.loginForm = this._fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
+    });
+    this.isCompletingOAuth = this._authService.isCompletingOAuth;
+  }
+
+  ngOnInit(): void {
+    const params = this._route.snapshot.queryParamMap;
+    this._authService.handleOAuthReturn({
+      token: params.get('token'),
+      error: params.get('error'),
+      message: params.get('msg'),
+      fallbackUrl: params.get('returnUrl') || '/',
     });
   }
 
@@ -71,5 +87,16 @@ export class Login {
     } else {
       this.loginForm.markAllAsTouched();
     }
+  }
+
+  loginWithGoogle(): void {
+    if (this.isLoading() || this.isGoogleLoading()) {
+      return;
+    }
+    this.isGoogleLoading.set(true);
+    this._authService.storeOAuthReturnUrl(
+      this._route.snapshot.queryParamMap.get('returnUrl') || '/',
+    );
+    globalThis.location.href = environment.googleOAuthRedirectUrl;
   }
 }

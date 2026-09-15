@@ -43,6 +43,18 @@ body {
   }
 }
 
+// Google button content: MDC lays the label out as inline text (no flex),
+// so the logo sits on the text baseline instead of centering with it.
+// NOTE: this must live here, not in auth-layout.scss — .mdc-button__label is
+// rendered by Material, so component-encapsulated selectors can never match
+// it (that scoping is exactly why the previous fix had no effect).
+.google-btn .mdc-button__label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
 // Compact inputs app-wide: single-line fields render ~44px tall (mirrors the
 // official M3 density −3 field metrics). Set as component tokens so MDC's own
 // rules pick them up — no specificity battles. Textareas are unaffected: they
