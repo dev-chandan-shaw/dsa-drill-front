@@ -1,0 +1,53 @@
+name: Build and Deploy DSA Drill Frontend
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Angular SSR App
+        run: npm run build
+
+      - name: Copy dist output and files to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          # Uploads dist directory, Dockerfile, and package files needed by the container
+          source: "dist/,Dockerfile,package*.json"
+          target: "/opt/myapps/dsa-drill-front/"
+
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /opt/myapps/dsa-drill-front
+            docker stop dsa-drill-front || true
+            docker rm dsa-drill-front || true
+            docker build -t dsa-drill-front .
+            docker run -d \
+              --name dsa-drill-front \
+              --restart always \
+              -p 4000:4000 \
+              dsa-drill-front
