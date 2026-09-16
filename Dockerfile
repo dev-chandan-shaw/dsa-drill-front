@@ -3,6 +3,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=4000
+ENV NG_ALLOWED_HOSTS=dsa-drill.duckdns.org,localhost,127.0.0.1
 
 # Copy pre-built dist output and package definitions uploaded via SCP
 COPY package*.json ./
