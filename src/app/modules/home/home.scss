@@ -1,8 +1,7 @@
 @use '../../shared/page-shell';
 
-.home {
-  height: 100%;
-  overflow-y: auto;
+:host {
+  display: block;
 }
 
 .tag-row {
