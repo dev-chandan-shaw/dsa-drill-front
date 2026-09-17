@@ -17,10 +17,8 @@
   flex: 1;
   min-width: 200px;
   max-width: 360px;
-}
-
-.difficulty-field {
-  width: 160px;
+  // Pill-shaped outline (M3 container-shape token, scoped to search only).
+  --mat-form-field-outlined-container-shape: 999px;
 }
 
 .empty-state {

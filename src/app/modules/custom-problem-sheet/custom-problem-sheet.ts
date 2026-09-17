@@ -13,10 +13,9 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { SheetSummaryCard } from '../../shared/components/sheet-summary-card/sheet-summary-card';
 import { ProblemList } from '../../shared/components/problem-list/problem-list';
 import { TagBasedProblemList } from '../../shared/components/tag-based-problem-list/tag-based-problem-list';
 import { PublicProblemService } from '../../shared/services/public-api/problem.service';
@@ -41,10 +40,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     CommonModule,
     ProblemList,
     MatButtonModule,
-    MatCardModule,
     MatIconModule,
-    MatProgressBarModule,
     MatTooltipModule,
+    SheetSummaryCard,
     TagBasedProblemList,
     ReactiveFormsModule,
     FormPaneTemplate,

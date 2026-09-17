@@ -15,7 +15,6 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ProblemDrillService } from '../../../modules/home/services/problem-drill.service';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
@@ -34,7 +33,6 @@ import { Router } from '@angular/router';
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
-    MatSelectModule,
     MatTooltipModule,
     CommonModule,
     FormPaneTemplate,
@@ -62,27 +60,17 @@ export class ProblemList implements OnInit {
   problems = input.required<IProblem[]>();
   readonly searchTerm = signal('');
   readonly revisionOnly = signal(false);
-  readonly selectedDifficulty = signal<'ALL' | IProblem['difficulty']>('ALL');
-  readonly difficultyOptions = [
-    { label: 'All difficulties', value: 'ALL' as const },
-    { label: 'Easy', value: 'EASY' as const },
-    { label: 'Medium', value: 'MED' as const },
-    { label: 'Hard', value: 'HARD' as const },
-  ];
   problemStatuses = this.questionStatusService.problemStatuses;
   readonly filteredProblems = computed(() => {
     const normalizedSearch = this.searchTerm().trim().toLowerCase();
     const revisionOnly = this.revisionOnly();
-    const selectedDifficulty = this.selectedDifficulty();
 
     return this.problems().filter((problem) => {
       const matchesSearch =
         !normalizedSearch || problem.title.toLowerCase().includes(normalizedSearch);
       const matchesRevision = !revisionOnly || !!this.problemStatuses()[problem.id]?.revision;
-      const matchesDifficulty =
-        selectedDifficulty === 'ALL' || problem.difficulty === selectedDifficulty;
 
-      return matchesSearch && matchesRevision && matchesDifficulty;
+      return matchesSearch && matchesRevision;
     });
   });
 
@@ -104,20 +92,13 @@ export class ProblemList implements OnInit {
     this.revisionOnly.set(revisionOnly);
   }
 
-  setDifficultyFilter(difficulty: 'ALL' | IProblem['difficulty']) {
-    this.selectedDifficulty.set(difficulty);
-  }
-
   clearListFilters() {
     this.searchTerm.set('');
     this.revisionOnly.set(false);
-    this.selectedDifficulty.set('ALL');
   }
 
   get hasActiveFilters(): boolean {
-    return (
-      this.searchTerm().trim() !== '' || this.revisionOnly() || this.selectedDifficulty() !== 'ALL'
-    );
+    return this.searchTerm().trim() !== '' || this.revisionOnly();
   }
 
   toggleMarkForRevision(problemId: number) {

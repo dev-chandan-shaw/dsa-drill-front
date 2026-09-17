@@ -11,7 +11,6 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { IProblemPattern } from '../home/models/problem-pattern';
 import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.service';
 import { ProblemPatternService } from '../../shared/services/public-api/problem-pattern.service';
@@ -25,7 +24,6 @@ import { SeoService } from '../../shared/services/seo.service';
     MatButtonModule,
     MatCardModule,
     MatIconModule,
-    MatProgressBarModule,
   ],
   templateUrl: './question-pattern.html',
   styleUrl: './question-pattern.scss',

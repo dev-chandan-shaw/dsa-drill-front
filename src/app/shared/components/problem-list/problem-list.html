@@ -9,17 +9,6 @@
       (input)="setSearchTerm($any($event.target).value)"
     />
   </mat-form-field>
-  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="difficulty-field">
-    <mat-label>Difficulty</mat-label>
-    <mat-select
-      [value]="selectedDifficulty()"
-      (selectionChange)="setDifficultyFilter($event.value)"
-    >
-      @for (option of difficultyOptions; track option.value) {
-        <mat-option [value]="option.value">{{ option.label }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
   <mat-button-toggle-group
     hideSingleSelectionIndicator
     [value]="revisionOnly() ? 'revision' : 'all'"

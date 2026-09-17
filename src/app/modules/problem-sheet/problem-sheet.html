@@ -1,6 +1,5 @@
 @if (!hasLoaded() && !loadError()) {
   <div class="page-shell" role="status" aria-label="Loading problems list">
-    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
     <div class="skeleton-list" aria-hidden="true">
       @for (_ of skeletonRows; track $index) {
         <div class="skeleton-row"></div>
@@ -17,42 +16,18 @@
 } @else {
   <div class="sheet-layout">
     <aside class="sheet-summary" aria-label="Sheet progress summary">
-      <mat-card>
-        <mat-card-content>
-          <div class="summary-card">
-            <div class="summary-title">{{ sheetTagName() }}</div>
-            <div class="summary-subtitle">{{ totalCount() }} problems</div>
-
-            <div class="summary-section">
-              <div class="summary-row">
-                <span>Easy</span>
-                <strong>{{ solvedEasyCount() }}/{{ easyCount() }}</strong>
-              </div>
-              <div class="summary-row">
-                <span>Medium</span>
-                <strong>{{ solvedMediumCount() }}/{{ mediumCount() }}</strong>
-              </div>
-              <div class="summary-row">
-                <span>Hard</span>
-                <strong>{{ solvedHardCount() }}/{{ hardCount() }}</strong>
-              </div>
-            </div>
-
-            <div class="summary-section">
-              <div class="summary-row">
-                <span>Solved</span>
-                <strong>{{ solvedCount() }}</strong>
-              </div>
-              <mat-progress-bar
-                mode="determinate"
-                class="sheet-progress"
-                [value]="solvedPercent()"
-                [attr.aria-label]="solvedPercent() + '% of problems solved'"
-              ></mat-progress-bar>
-            </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
+      <app-sheet-summary-card
+        [title]="sheetTagName()"
+        [total]="totalCount()"
+        [easyTotal]="easyCount()"
+        [mediumTotal]="mediumCount()"
+        [hardTotal]="hardCount()"
+        [solvedTotal]="solvedCount()"
+        [solvedEasy]="solvedEasyCount()"
+        [solvedMedium]="solvedMediumCount()"
+        [solvedHard]="solvedHardCount()"
+        [solvedPercent]="solvedPercent()"
+      ></app-sheet-summary-card>
     </aside>
 
     <div class="sheet-content">

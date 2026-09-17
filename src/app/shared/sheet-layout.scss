@@ -9,64 +9,22 @@
   margin: 0 auto;
 }
 
+// Shared sheet layout for problem-sheet + custom-problem-sheet.
+// Imported via `@use` so the two pages share one layout definition.
+// Card visuals live in the shared SheetSummaryCard component; only the
+// two-column positioning stays here.
+
+.sheet-layout {
+  display: flex;
+  gap: 24px;
+  padding: 16px;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
 .sheet-summary {
   width: 320px;
   flex-shrink: 0;
-}
-
-.summary-card {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 4px;
-}
-
-.summary-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-}
-
-.summary-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--mat-sys-on-surface);
-}
-
-.summary-subtitle {
-  color: var(--mat-sys-on-surface-variant);
-  font-size: 0.9rem;
-}
-
-.summary-section {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-top: 6px;
-  border-top: 1px solid var(--mat-sys-outline-variant);
-}
-
-.summary-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.9rem;
-
-  span {
-    color: var(--mat-sys-on-surface-variant);
-  }
-
-  strong {
-    color: var(--mat-sys-on-surface);
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-  }
-}
-
-.sheet-progress {
-  height: 6px;
-  border-radius: 999px;
 }
 
 .sheet-content {
