@@ -18,7 +18,10 @@
   min-width: 200px;
   max-width: 360px;
   // Pill-shaped outline (M3 container-shape token, scoped to search only).
-  --mat-form-field-outlined-container-shape: 999px;
+  // Keep <= half the 44px field height: MDC also uses this token for the
+  // leading-piece width (max(12px, shape)), so huge values stretch the
+  // outline and break the field. 24px already clamps to a full capsule.
+  --mat-form-field-outlined-container-shape: 24px;
 }
 
 .empty-state {
