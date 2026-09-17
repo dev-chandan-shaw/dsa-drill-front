@@ -23,6 +23,7 @@ import { AdminProblemService } from './services/admin-problem';
 import { AdminProblemTagService } from './services/admin-problem-tag';
 import { AdminProblemPatternService } from './services/admin-problem-pattern';
 import { RightPaneService, RightPaneSize } from '../../shared/services/right-pane-service';
+import { AutoSaveHandle, createAutoSave } from '../../shared/services/auto-save';
 import { ToastService } from '../../shared/services/toast-service';
 import { FormPaneTemplate } from '../../shared/components/form-pane-template/form-pane-template';
 import { MatButtonModule } from '@angular/material/button';
@@ -83,7 +84,6 @@ export class Admin implements OnInit {
   readonly isLoadingPatterns = this.problemPatternService.isLoading;
   readonly isSavingProblem = signal(false);
   readonly isSavingTag = signal(false);
-  readonly isSavingPattern = signal(false);
   readonly isDeleting = signal(false);
 
   readonly activeTab = signal<AdminTab>('problems');
@@ -112,6 +112,9 @@ export class Admin implements OnInit {
   readonly editingQuestionId = signal<number | null>(null);
   readonly editingTagId = signal<number | null>(null);
   readonly editingPatternId = signal<number | null>(null);
+  // Auto-save driver for the pattern pane (footer shows Saved bottom-left).
+  // Non-private: the template reads its state/savedAt signals.
+  patternAutoSave: AutoSaveHandle | null = null;
 
   readonly QuestionDifficulty = ProblemDifficulty;
   readonly difficultyFilterOptions = [
@@ -247,17 +250,6 @@ export class Admin implements OnInit {
       .pipe(take(1))
       .subscribe({
         error: () => this.toastService.showError('Unable to load patterns'),
-      });
-  }
-
-  refreshPatterns() {
-    this.problemPatternService
-      .fetchProblemPatterns(true)
-      .pipe(take(1))
-      .subscribe({
-        error: () => {
-          this.toastService.showError('Unable to reload patterns', 'Please refresh the page.');
-        },
       });
   }
 
@@ -553,6 +545,7 @@ export class Admin implements OnInit {
   }
 
   openAddPatternPane() {
+    this.teardownPatternAutoSave(true);
     this.editingPatternId.set(null);
     this.patternForm.reset({
       name: '',
@@ -562,9 +555,11 @@ export class Admin implements OnInit {
     this.rightPaneService.open(this.patternFormTemplate, RightPaneSize.SMALL, {
       title: 'Add Problem Pattern',
     });
+    this.startPatternAutoSave();
   }
 
   openEditPatternPane(pattern: IProblemPattern) {
+    this.teardownPatternAutoSave(true);
     this.editingPatternId.set(pattern.id);
     this.patternForm.reset({
       name: pattern.name,
@@ -574,52 +569,58 @@ export class Admin implements OnInit {
     this.rightPaneService.open(this.patternFormTemplate, RightPaneSize.SMALL, {
       title: `Edit Pattern #${pattern.id}`,
     });
+    this.startPatternAutoSave();
   }
 
-  submitPattern() {
-    if (this.patternForm.invalid || this.isSavingPattern()) {
-      this.patternForm.markAllAsTouched();
-      return;
-    }
-
-    const formValue = this.patternForm.getRawValue();
-    if (formValue.tagId === null) {
-      this.toastService.showError('Please select a problem tag');
-      return;
-    }
-
-    const editingId = this.editingPatternId();
-    const request$: Observable<unknown> = editingId
-      ? this.adminProblemPatternService.editProblemPattern({
-          id: editingId,
-          name: formValue.name,
-          explanation: formValue.explanation,
-          tagId: formValue.tagId,
-        })
-      : this.adminProblemPatternService.addProblemPattern({
+  private startPatternAutoSave() {
+    this.patternAutoSave = createAutoSave(this.patternForm, {
+      shouldSave: () => this.patternForm.valid,
+      save: (value: unknown) => {
+        // shouldSave guarantees a valid form, so tagId is non-null here.
+        const formValue = value as { name: string; explanation: string; tagId: number };
+        const editingId = this.editingPatternId();
+        if (editingId !== null) {
+          return this.adminProblemPatternService.editProblemPattern({
+            id: editingId,
+            name: formValue.name,
+            explanation: formValue.explanation,
+            tagId: formValue.tagId,
+          });
+        }
+        return this.adminProblemPatternService.addProblemPattern({
           name: formValue.name,
           explanation: formValue.explanation,
           tagId: formValue.tagId,
         });
-
-    this.isSavingPattern.set(true);
-    request$.pipe(finalize(() => this.isSavingPattern.set(false)), take(1)).subscribe({
-      next: (response) => {
+      },
+      onSaved: (_value: unknown, response: unknown) => {
         const saved = response as IProblemPattern;
         if (saved && typeof saved.id === 'number') {
+          // First auto-save on a new pattern creates it; keep editing it.
+          this.editingPatternId.set(saved.id);
           this.problemPatternService.upsertPatternSignal(saved);
         }
-        this.toastService.showSuccess(
-          'Pattern saved',
-          editingId ? 'Pattern updated.' : 'Pattern added.',
-        );
-        this.rightPaneService.close();
-        this.refreshPatterns();
       },
-      error: () => {
-        this.toastService.showError('Unable to save problem pattern');
-      },
+      onError: () => this.toastService.showError('Unable to save problem pattern'),
     });
+  }
+
+  closePatternPane() {
+    // Save-on-close: flush pending keystrokes, then dismiss.
+    this.teardownPatternAutoSave(true);
+    this.closeRightPane();
+  }
+
+  retryPatternSave() {
+    this.patternAutoSave?.flush();
+  }
+
+  private teardownPatternAutoSave(flush: boolean) {
+    if (flush) {
+      this.patternAutoSave?.flush();
+    }
+    this.patternAutoSave?.destroy();
+    this.patternAutoSave = null;
   }
 
   confirmDeletePattern(pattern: IProblemPattern) {

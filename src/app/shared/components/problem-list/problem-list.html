@@ -83,9 +83,11 @@
     [isSaving]="isNoteSaving()"
     [isEditMode]="selectedProblemId !== null"
     [title]="getNoteTitle()"
-    (addForm)="updateNote()"
-    (cancelForm)="clearSelectedProblem()"
-    (saveForm)="updateNote()"
+    [autoSaveMode]="true"
+    [saveState]="noteAutoSave?.state() ?? 'idle'"
+    [savedAt]="noteAutoSave?.savedAt() ?? null"
+    (cancelForm)="closeNotePane()"
+    (retrySave)="retryNoteSave()"
   >
     <form class="pane-form" [formGroup]="noteForm">
       <mat-form-field appearance="outline" class="note-field">

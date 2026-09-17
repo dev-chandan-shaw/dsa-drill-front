@@ -1,0 +1,56 @@
+// Bottom-left auto-save status. Muted by default; only the saved check
+// carries the primary color. Theme-aware via --mat-sys-* tokens.
+
+.save-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  font-size: 0.8rem;
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+
+  .mat-mdc-button {
+    min-width: 0;
+    padding: 0 8px;
+    line-height: 28px;
+    font-size: 0.8rem;
+  }
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.dot-dirty {
+  background-color: var(--mat-sys-on-surface-variant);
+}
+
+.dot-saving {
+  background-color: var(--mat-sys-primary);
+  animation: save-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes save-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot-saving {
+    animation: none;
+  }
+}
