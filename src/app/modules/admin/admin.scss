@@ -208,10 +208,17 @@ mat-tab-group {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  height: 100%;
 }
 
 .pane-field {
   width: 100%;
+}
+
+.field-error {
+  color: var(--mat-sys-error);
+  font-size: var(--mat-sys-body-small-size, 0.75rem);
+  margin: 0;
 }
 
 @media (max-width: 768px) {

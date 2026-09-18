@@ -25,6 +25,8 @@ import { AdminProblemPatternService } from './services/admin-problem-pattern';
 import { RightPaneService, RightPaneSize } from '../../shared/services/right-pane-service';
 import { ToastService } from '../../shared/services/toast-service';
 import { FormPaneTemplate } from '../../shared/components/form-pane-template/form-pane-template';
+import { MarkdownNoteEditor } from '../../shared/components/markdown-note-editor/markdown-note-editor';
+import { MarkdownView } from '../../shared/components/markdown-view/markdown-view';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
@@ -44,6 +46,8 @@ type AdminTab = 'problems' | 'tags' | 'patterns';
     CommonModule,
     ReactiveFormsModule,
     FormPaneTemplate,
+    MarkdownNoteEditor,
+    MarkdownView,
     MatButtonModule,
     MatCardModule,
     MatDividerModule,
@@ -559,8 +563,9 @@ export class Admin implements OnInit {
       explanation: '',
       tagId: null,
     });
-    this.rightPaneService.open(this.patternFormTemplate, RightPaneSize.SMALL, {
+    this.rightPaneService.open(this.patternFormTemplate, RightPaneSize.MEDIUM, {
       title: 'Add Problem Pattern',
+      disableClose: true,
     });
   }
 
@@ -571,8 +576,9 @@ export class Admin implements OnInit {
       explanation: pattern.explanation,
       tagId: pattern.tagId,
     });
-    this.rightPaneService.open(this.patternFormTemplate, RightPaneSize.SMALL, {
+    this.rightPaneService.open(this.patternFormTemplate, RightPaneSize.MEDIUM, {
       title: `Edit Pattern #${pattern.id}`,
+      disableClose: true,
     });
   }
 

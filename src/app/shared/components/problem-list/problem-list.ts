@@ -22,6 +22,7 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ProblemStatusApiService } from '../../../modules/home/services/user/question-status-api.service';
 import { IProblem } from '../../../modules/home/models/Question';
 import { FormPaneTemplate } from '../form-pane-template/form-pane-template';
+import { MarkdownNoteEditor } from '../markdown-note-editor/markdown-note-editor';
 import { RightPaneService, RightPaneSize } from '../../services/right-pane-service';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../../core/services/auth/auth.service';
@@ -38,6 +39,7 @@ import { Router } from '@angular/router';
     MatTooltipModule,
     CommonModule,
     FormPaneTemplate,
+    MarkdownNoteEditor,
     ReactiveFormsModule,
   ],
   templateUrl: './problem-list.html',
@@ -175,6 +177,7 @@ export class ProblemList implements OnInit {
       });
       this.rightPaneService.open(this.noteTemplate, RightPaneSize.MEDIUM, {
         title: 'Edit Note',
+        disableClose: true,
         context: {
           problemId: problemId,
           note: this.problemStatuses()[problemId]?.note,

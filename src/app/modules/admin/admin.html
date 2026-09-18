@@ -211,9 +211,12 @@
                     <p class="muted dsa-mono">
                       #{{ pattern.id }} · {{ getTagNameById(pattern.tagId) }}
                     </p>
-                    <p class="pattern-explanation" [class.clamped]="!isPatternExpanded(pattern.id)">
-                      {{ pattern.explanation }}
-                    </p>
+                    <div
+                      class="pattern-explanation"
+                      [class.clamped]="!isPatternExpanded(pattern.id)"
+                    >
+                      <app-markdown-view [content]="pattern.explanation" />
+                    </div>
                     <button type="button" class="link" (click)="togglePatternExpanded(pattern.id)">
                       {{ isPatternExpanded(pattern.id) ? 'Show less' : 'Show more' }}
                     </button>
@@ -344,13 +347,14 @@
         }
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="pane-field">
-        <mat-label>Explanation</mat-label>
-        <textarea matInput rows="4" formControlName="explanation" required minlength="5"></textarea>
-        @if (patternForm.controls.explanation.invalid) {
-          <mat-error>Explanation needs at least 5 characters.</mat-error>
-        }
-      </mat-form-field>
+      <app-markdown-note-editor
+        [control]="patternForm.controls.explanation"
+        section="patterns"
+        label="Explanation"
+      />
+      @if (patternForm.controls.explanation.invalid) {
+        <p class="field-error">Explanation needs at least 5 characters.</p>
+      }
 
       <mat-form-field appearance="outline" class="pane-field">
         <mat-label>Problem tag</mat-label>

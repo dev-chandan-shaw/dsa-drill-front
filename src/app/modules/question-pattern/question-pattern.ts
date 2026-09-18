@@ -17,6 +17,7 @@ import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.
 import { ProblemPatternService } from '../../shared/services/public-api/problem-pattern.service';
 import { ToastService } from '../../shared/services/toast-service';
 import { SeoService } from '../../shared/services/seo.service';
+import { MarkdownView } from '../../shared/components/markdown-view/markdown-view';
 
 @Component({
   selector: 'app-question-pattern',
@@ -26,6 +27,7 @@ import { SeoService } from '../../shared/services/seo.service';
     MatCardModule,
     MatIconModule,
     MatProgressBarModule,
+    MarkdownView,
   ],
   templateUrl: './question-pattern.html',
   styleUrl: './question-pattern.scss',

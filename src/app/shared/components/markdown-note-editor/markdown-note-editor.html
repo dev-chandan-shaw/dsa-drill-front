@@ -1,0 +1,127 @@
+<div class="md-editor">
+  <div
+    class="md-toolbar"
+    role="toolbar"
+    aria-label="Markdown formatting"
+    (mousedown)="$event.preventDefault()"
+  >
+    <button
+      mat-icon-button
+      type="button"
+      matTooltip="Heading"
+      aria-label="Heading"
+      (click)="prefixLines('### ')"
+    >
+      <mat-icon>title</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      type="button"
+      matTooltip="Bold (Ctrl+B)"
+      aria-label="Bold"
+      (click)="wrapInline('**', '**')"
+    >
+      <mat-icon>format_bold</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      type="button"
+      matTooltip="Italic (Ctrl+I)"
+      aria-label="Italic"
+      (click)="wrapInline('*', '*')"
+    >
+      <mat-icon>format_italic</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      type="button"
+      matTooltip="Numbered list"
+      aria-label="Numbered list"
+      (click)="prefixLines('1. ')"
+    >
+      <mat-icon>format_list_numbered</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      type="button"
+      matTooltip="Bulleted list"
+      aria-label="Bulleted list"
+      (click)="prefixLines('- ')"
+    >
+      <mat-icon>format_list_bulleted</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      type="button"
+      matTooltip="Quote"
+      aria-label="Quote"
+      (click)="prefixLines('> ')"
+    >
+      <mat-icon>format_quote</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      type="button"
+      matTooltip="Code block"
+      aria-label="Code block"
+      (click)="insertCodeBlock()"
+    >
+      <mat-icon>data_object</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      type="button"
+      matTooltip="Insert link (Ctrl+K)"
+      aria-label="Insert link"
+      (click)="openInsertDialog('link')"
+    >
+      <mat-icon>link</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      type="button"
+      matTooltip="Insert image"
+      aria-label="Insert image"
+      (click)="openInsertDialog('image')"
+    >
+      <mat-icon>image</mat-icon>
+    </button>
+    <span class="md-toolbar-divider" aria-hidden="true"></span>
+    <button
+      mat-icon-button
+      type="button"
+      [matTooltip]="previewing() ? 'Back to edit' : 'Preview'"
+      [attr.aria-label]="previewing() ? 'Back to edit' : 'Preview'"
+      [attr.aria-pressed]="previewing()"
+      [class.active]="previewing()"
+      (click)="togglePreview()"
+    >
+      <mat-icon>{{ previewing() ? 'visibility_off' : 'visibility' }}</mat-icon>
+    </button>
+  </div>
+
+  <div class="md-body" [class.drag-over]="isDragOver()">
+    @if (!previewing()) {
+      <textarea
+        #editorArea
+        class="md-textarea"
+        rows="8"
+        [formControl]="control()"
+        [attr.aria-label]="label()"
+        placeholder="Type here...(Markdown is enabled)"
+        (keydown)="onKeydown($event)"
+        (paste)="onPaste($event)"
+        (dragover)="$event.preventDefault(); isDragOver.set(true)"
+        (dragleave)="isDragOver.set(false)"
+        (drop)="onDrop($event)"
+      ></textarea>
+    } @else {
+      <div class="md-preview">
+        <app-markdown-view [content]="control().value ?? ''" />
+      </div>
+    }
+    @if (isDragOver()) {
+      <div class="drop-hint">Drop image to upload</div>
+    }
+  </div>
+</div>

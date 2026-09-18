@@ -1,0 +1,69 @@
+mat-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: min(420px, calc(100dvw - 64px));
+}
+
+.upload-drop {
+  border: 1px dashed var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  padding: 22px 12px;
+  width: 100%;
+}
+
+.dlg-hint {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.dlg-error {
+  color: var(--mat-sys-error);
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.upload-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+
+  img {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .dlg-field {
+    flex: 1;
+  }
+}
+
+.dlg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--mat-sys-on-surface-variant);
+
+  input {
+    border: 1px solid var(--mat-sys-outline-variant);
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: transparent;
+    color: var(--mat-sys-on-surface);
+    font-size: 0.85rem;
+    outline: none;
+
+    &:focus {
+      border-color: var(--mat-sys-primary);
+    }
+  }
+}
+
+.dlg-file-input {
+  display: none;
+}

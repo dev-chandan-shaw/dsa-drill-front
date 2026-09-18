@@ -8,6 +8,7 @@
     mode="over"
     [position]="position"
     [opened]="rightPaneService.isOpen"
+    [disableClose]="rightPaneService.disableClose"
     (openedChange)="onOpenedChange($event)"
     (closed)="onClosed()"
     [style.width]="width"

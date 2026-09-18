@@ -56,7 +56,7 @@
               <div class="pattern-meta">
                 <h3>{{ pattern.name }}</h3>
                 <p class="pattern-tag dsa-mono">#{{ pattern.id }} · {{ getTagNameById(pattern.tagId) }}</p>
-                <p>{{ pattern.explanation }}</p>
+                <app-markdown-view [content]="pattern.explanation" />
               </div>
             </mat-card-content>
           </mat-card>

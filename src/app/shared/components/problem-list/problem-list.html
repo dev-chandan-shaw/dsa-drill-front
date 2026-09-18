@@ -99,15 +99,7 @@
     (saveForm)="updateNote()"
   >
     <form class="pane-form" [formGroup]="noteForm">
-      <mat-form-field appearance="outline" class="note-field">
-        <mat-label>Note</mat-label>
-        <textarea
-          matInput
-          id="problemNoteTextArea"
-          rows="6"
-          formControlName="note"
-        ></textarea>
-      </mat-form-field>
+      <app-markdown-note-editor [control]="noteForm.controls.note" section="notes" label="Note" />
     </form>
   </app-form-pane-template>
 </ng-template>

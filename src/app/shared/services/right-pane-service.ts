@@ -27,6 +27,12 @@ export class RightPaneService {
   title = '';
   size: RightPaneSize = RightPaneSize.MEDIUM;
   side: PaneSide = PaneSide.RIGHT;
+  /**
+   * When true the sidenav ignores backdrop clicks and Escape, so unsaved
+   * editor content (notes, patterns) can't be dismissed accidentally.
+   * Explicit Save/Cancel buttons keep working.
+   */
+  disableClose = false;
 
   open(
     template: TemplateRef<any>,
@@ -35,6 +41,7 @@ export class RightPaneService {
       title?: string;
       context?: any;
       side?: PaneSide;
+      disableClose?: boolean;
     },
   ) {
     this.template = template;
@@ -43,6 +50,7 @@ export class RightPaneService {
     this.isOpen = true;
     this.size = size ?? RightPaneSize.SMALL;
     this.side = options?.side ?? PaneSide.RIGHT;
+    this.disableClose = options?.disableClose ?? false;
   }
 
   /**
@@ -64,5 +72,6 @@ export class RightPaneService {
     this.context = undefined;
     this.title = '';
     this.side = PaneSide.RIGHT;
+    this.disableClose = false;
   }
 }

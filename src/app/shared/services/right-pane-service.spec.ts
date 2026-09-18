@@ -13,4 +13,18 @@ describe('RightPaneService', () => {
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
+
+  it('defaults disableClose to false', () => {
+    service.open({} as never);
+    expect(service.disableClose).toBe(false);
+  });
+
+  it('keeps disableClose while open and resets after close', () => {
+    service.open({} as never, undefined, { disableClose: true });
+    expect(service.disableClose).toBe(true);
+
+    service.close();
+    service.completeClose();
+    expect(service.disableClose).toBe(false);
+  });
 });

@@ -1,0 +1,89 @@
+<h2 mat-dialog-title>Insert {{ data.target === 'image' ? 'image' : 'link' }}</h2>
+
+<mat-dialog-content>
+  @if (data.target === 'image') {
+    <mat-button-toggle-group
+      hideSingleSelectionIndicator
+      [value]="tab()"
+      (change)="setTab($event.value)"
+      aria-label="Insert mode"
+    >
+      <mat-button-toggle value="upload">Upload</mat-button-toggle>
+      <mat-button-toggle value="link">Link</mat-button-toggle>
+    </mat-button-toggle-group>
+  }
+
+  @if (uploadError()) {
+    <p class="dlg-error" role="alert">{{ uploadError() }}</p>
+  }
+
+  @if (tab() === 'upload') {
+    <button
+      mat-button
+      type="button"
+      class="upload-drop"
+      [disabled]="uploading()"
+      (click)="fileInput.click()"
+      (dragover)="$event.preventDefault()"
+      (drop)="onDrop($event)"
+    >
+      <mat-icon>cloud_upload</mat-icon>
+      {{ uploading() ? 'Uploading… ' + uploadProgress() + '%' : 'Drop or browse an image' }}
+    </button>
+    @if (uploading()) {
+      <mat-progress-bar mode="determinate" [value]="uploadProgress()"></mat-progress-bar>
+    }
+    <p class="dlg-hint">PNG, JPEG, WebP or GIF · max 5MB · stored on Cloudinary</p>
+
+    @for (item of uploads(); track item.url; let i = $index) {
+      <div class="upload-row">
+        <img [src]="item.url" [alt]="item.text" loading="lazy" />
+        <label class="dlg-field">
+          <span>Alt text</span>
+          <input
+            type="text"
+            [value]="item.text"
+            (input)="updateAlt(i, $any($event.target).value)"
+          />
+        </label>
+      </div>
+    }
+  } @else {
+    <label class="dlg-field">
+      <span>{{ data.target === 'image' ? 'Alt text' : 'Text' }}</span>
+      <input
+        type="text"
+        [value]="linkText()"
+        (input)="linkText.set($any($event.target).value)"
+      />
+    </label>
+    <label class="dlg-field">
+      <span>URL</span>
+      <input
+        type="url"
+        placeholder="https://…"
+        [value]="linkUrl()"
+        (input)="linkUrl.set($any($event.target).value)"
+        (keydown.enter)="insert()"
+      />
+    </label>
+  }
+
+  <input
+    #fileInput
+    type="file"
+    class="dlg-file-input"
+    accept="image/png,image/jpeg,image/webp,image/gif"
+    multiple
+    (change)="onFilePicked($event)"
+    aria-hidden="true"
+    tabindex="-1"
+  />
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cancel()">Cancel</button>
+  <button mat-flat-button type="button" [disabled]="!canInsert" (click)="insert()">
+    Insert{{ uploads().length > 1 && tab() === 'upload' ? ' all' : '' }}
+  </button>
+</mat-dialog-actions>

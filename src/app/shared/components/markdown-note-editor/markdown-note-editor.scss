@@ -1,0 +1,108 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.md-editor {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: color-mix(in srgb, var(--mat-sys-on-surface) 2%, transparent);
+
+  &:focus-within {
+    border-color: var(--mat-sys-primary);
+  }
+}
+
+.md-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 4px 8px;
+
+  button[mat-icon-button] {
+    width: 32px;
+    height: 32px;
+    padding: 4px;
+    color: var(--mat-sys-on-surface-variant);
+
+    &:hover {
+      color: var(--mat-sys-on-surface);
+    }
+
+    &.active {
+      color: var(--mat-sys-primary);
+    }
+
+    .mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+.md-toolbar-divider {
+  width: 1px;
+  align-self: stretch;
+  margin: 6px 6px;
+  background-color: var(--mat-sys-outline-variant);
+}
+
+.md-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  &.drag-over {
+    outline: 1px dashed var(--mat-sys-primary);
+    outline-offset: -1px;
+  }
+}
+
+.md-textarea {
+  display: block;
+  width: 100%;
+  flex: 1;
+  min-height: 240px;
+  resize: vertical;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 4px 14px 14px;
+  color: var(--mat-sys-on-surface);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+
+  &::placeholder {
+    color: var(--mat-sys-on-surface-variant);
+    opacity: 0.8;
+  }
+}
+
+.md-preview {
+  padding: 4px 14px 14px;
+  flex: 1;
+  min-height: 240px;
+  overflow-y: auto;
+}
+
+.drop-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
+  color: var(--mat-sys-primary);
+  font-weight: 600;
+  pointer-events: none;
+}
