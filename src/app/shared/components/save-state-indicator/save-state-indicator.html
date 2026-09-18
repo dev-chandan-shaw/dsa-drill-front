@@ -1,0 +1,28 @@
+@if (state() !== 'idle') {
+  <div class="save-state" role="status" aria-live="polite">
+    @switch (state()) {
+      @case ('dirty') {
+        <span class="dot dot-dirty" aria-hidden="true"></span>
+        <span>Unsaved changes</span>
+      }
+      @case ('saving') {
+        <span class="dot dot-saving" aria-hidden="true"></span>
+        <span>Saving…</span>
+      }
+      @case ('saved') {
+        <mat-icon aria-hidden="true">check</mat-icon>
+        <span>
+          Saved
+          @if (savedAt()) {
+            · {{ savedAt() | date: 'shortTime' }}
+          }
+        </span>
+      }
+      @case ('error') {
+        <mat-icon aria-hidden="true">error_outline</mat-icon>
+        <span>Couldn't save</span>
+        <button mat-button type="button" (click)="retry.emit()">Retry</button>
+      }
+    }
+  </div>
+}

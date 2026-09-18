@@ -4,9 +4,8 @@ import { ProblemList } from '../../shared/components/problem-list/problem-list';
 import { IProblem, ProblemDifficulty } from '../home/models/Question';
 import { PublicProblemService } from '../../shared/services/public-api/problem.service';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { SheetSummaryCard } from '../../shared/components/sheet-summary-card/sheet-summary-card';
 import { ProblemStatusApiService } from '../home/services/user/question-status-api.service';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.service';
@@ -14,7 +13,7 @@ import { SeoService } from '../../shared/services/seo.service';
 
 @Component({
   selector: 'app-problem-sheet',
-  imports: [ProblemList, MatButtonModule, MatCardModule, MatIconModule, MatProgressBarModule],
+  imports: [ProblemList, MatButtonModule, MatIconModule, SheetSummaryCard],
   templateUrl: './problem-sheet.html',
   styleUrl: './problem-sheet.scss',
 })

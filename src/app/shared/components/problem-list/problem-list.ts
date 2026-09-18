@@ -15,7 +15,6 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ProblemDrillService } from '../../../modules/home/services/problem-drill.service';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
@@ -24,7 +23,7 @@ import { IProblem } from '../../../modules/home/models/Question';
 import { FormPaneTemplate } from '../form-pane-template/form-pane-template';
 import { MarkdownNoteEditor } from '../markdown-note-editor/markdown-note-editor';
 import { RightPaneService, RightPaneSize } from '../../services/right-pane-service';
-import { finalize } from 'rxjs';
+import { AutoSaveHandle, createAutoSave } from '../../services/auto-save';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { Router } from '@angular/router';
 @Component({
@@ -35,7 +34,6 @@ import { Router } from '@angular/router';
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
-    MatSelectModule,
     MatTooltipModule,
     CommonModule,
     FormPaneTemplate,
@@ -64,27 +62,20 @@ export class ProblemList implements OnInit {
   problems = input.required<IProblem[]>();
   readonly searchTerm = signal('');
   readonly revisionOnly = signal(false);
-  readonly selectedDifficulty = signal<'ALL' | IProblem['difficulty']>('ALL');
-  readonly difficultyOptions = [
-    { label: 'All difficulties', value: 'ALL' as const },
-    { label: 'Easy', value: 'EASY' as const },
-    { label: 'Medium', value: 'MED' as const },
-    { label: 'Hard', value: 'HARD' as const },
-  ];
+  // Auto-save driver for the note pane (footer shows Saved bottom-left).
+  // Non-private: the template reads its state/savedAt signals.
+  noteAutoSave: AutoSaveHandle | null = null;
   problemStatuses = this.questionStatusService.problemStatuses;
   readonly filteredProblems = computed(() => {
     const normalizedSearch = this.searchTerm().trim().toLowerCase();
     const revisionOnly = this.revisionOnly();
-    const selectedDifficulty = this.selectedDifficulty();
 
     return this.problems().filter((problem) => {
       const matchesSearch =
         !normalizedSearch || problem.title.toLowerCase().includes(normalizedSearch);
       const matchesRevision = !revisionOnly || !!this.problemStatuses()[problem.id]?.revision;
-      const matchesDifficulty =
-        selectedDifficulty === 'ALL' || problem.difficulty === selectedDifficulty;
 
-      return matchesSearch && matchesRevision && matchesDifficulty;
+      return matchesSearch && matchesRevision;
     });
   });
 
@@ -106,20 +97,13 @@ export class ProblemList implements OnInit {
     this.revisionOnly.set(revisionOnly);
   }
 
-  setDifficultyFilter(difficulty: 'ALL' | IProblem['difficulty']) {
-    this.selectedDifficulty.set(difficulty);
-  }
-
   clearListFilters() {
     this.searchTerm.set('');
     this.revisionOnly.set(false);
-    this.selectedDifficulty.set('ALL');
   }
 
   get hasActiveFilters(): boolean {
-    return (
-      this.searchTerm().trim() !== '' || this.revisionOnly() || this.selectedDifficulty() !== 'ALL'
-    );
+    return this.searchTerm().trim() !== '' || this.revisionOnly();
   }
 
   toggleMarkForRevision(problemId: number) {
@@ -147,33 +131,32 @@ export class ProblemList implements OnInit {
     this.questionStatusService.updateProblemStatus(status).subscribe();
   }
 
-  updateNote() {
-    const problemId = this.selectedProblemId;
-    if (problemId === null) return;
-    this.isNoteSaving.set(true);
-    const status: UserQuestionStatusDto = {
-      problemId: problemId,
-      revision: this.problemStatuses()[problemId]?.revision,
-      note: this.noteForm.value.note ?? '',
-      solved: this.problemStatuses()[problemId]?.solved,
-    };
-    this.questionStatusService
-      .updateProblemStatus(status)
-      .pipe(finalize(() => this.isNoteSaving.set(false)))
-      .subscribe(() => {
-        this.rightPaneService.close();
-        this.clearSelectedProblem();
-      });
-  }
-
   editNote(problemId: number) {
     if (!this.authService.isLoggedIn()()) {
       this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
     } else {
+      // Switching notes flushes any pending save on the previous one first.
+      this.teardownNoteAutoSave(true);
       this.selectedProblemId = problemId;
       this.isNoteSaving.set(false);
       this.noteForm.reset({
         note: this.problemStatuses()[problemId]?.note ?? '',
+      });
+      this.noteAutoSave = createAutoSave(this.noteForm, {
+        shouldSave: () => this.selectedProblemId !== null,
+        save: (value: unknown) => {
+          const targetId = this.selectedProblemId;
+          if (targetId === null) {
+            throw new Error('No problem selected for note save');
+          }
+          const status: UserQuestionStatusDto = {
+            problemId: targetId,
+            revision: this.problemStatuses()[targetId]?.revision,
+            note: (value as { note: string }).note ?? '',
+            solved: this.problemStatuses()[targetId]?.solved,
+          };
+          return this.questionStatusService.updateProblemStatus(status);
+        },
       });
       this.rightPaneService.open(this.noteTemplate, RightPaneSize.MEDIUM, {
         title: 'Edit Note',
@@ -184,6 +167,24 @@ export class ProblemList implements OnInit {
         },
       });
     }
+  }
+
+  closeNotePane() {
+    // Save-on-close: flush pending keystrokes, then dismiss.
+    this.teardownNoteAutoSave(true);
+    this.clearSelectedProblem();
+  }
+
+  retryNoteSave() {
+    this.noteAutoSave?.flush();
+  }
+
+  private teardownNoteAutoSave(flush: boolean) {
+    if (flush) {
+      this.noteAutoSave?.flush();
+    }
+    this.noteAutoSave?.destroy();
+    this.noteAutoSave = null;
   }
 
   clearSelectedProblem() {

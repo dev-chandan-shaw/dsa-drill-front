@@ -11,7 +11,6 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { IProblemPattern } from '../home/models/problem-pattern';
 import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.service';
 import { ProblemPatternService } from '../../shared/services/public-api/problem-pattern.service';
@@ -26,7 +25,6 @@ import { MarkdownView } from '../../shared/components/markdown-view/markdown-vie
     MatButtonModule,
     MatCardModule,
     MatIconModule,
-    MatProgressBarModule,
     MarkdownView,
   ],
   templateUrl: './question-pattern.html',

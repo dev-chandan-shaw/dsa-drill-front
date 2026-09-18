@@ -3,7 +3,6 @@ import { RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.service';
 import { PublicProblemService } from '../../shared/services/public-api/problem.service';
 import { ProblemList } from '../../shared/components/problem-list/problem-list';
@@ -20,7 +19,6 @@ import { take } from 'rxjs';
     MatButtonModule,
     MatDividerModule,
     MatIconModule,
-    MatProgressBarModule,
     ProblemList,
   ],
   templateUrl: './home.html',

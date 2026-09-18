@@ -1,0 +1,200 @@
+// Shared tag/sheet summary card. Theme-aware via --mat-sys-* / --dsa-*
+// tokens so light/dark follow for free. No hex literals here.
+
+.sheet-summary-card {
+  border-radius: 16px;
+}
+
+.summary-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.summary-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background-color: var(--mat-sys-surface-container-high);
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 28px;
+  }
+}
+
+.summary-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.summary-title {
+  margin: 0;
+  font-family: 'Sora', Inter, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--mat-sys-on-surface);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.summary-subtitle {
+  margin-top: 2px;
+  font-size: 0.85rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.summary-progress {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--mat-sys-outline-variant);
+}
+
+.summary-progress-title {
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--mat-sys-on-surface);
+}
+
+.summary-progress-body {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  // Donut + tiles stay side by side like the reference: the 320px rail
+  // leaves ~288px after card padding, so keep the combined width under it
+  // (donut content ~140px + 104px tiles + 12px gap) instead of wrapping.
+  flex-wrap: nowrap;
+}
+
+.donut {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: var(--mat-sys-surface-container-high);
+}
+
+.donut-svg {
+  width: 116px;
+  height: 116px;
+  transform: rotate(-90deg);
+}
+
+.donut-track,
+.donut-value {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+}
+
+.donut-track {
+  stroke: var(--mat-sys-surface-container-highest, var(--mat-sys-outline-variant));
+}
+
+.donut-value {
+  stroke: var(--mat-sys-primary);
+  transition: stroke-dashoffset 0.4s ease;
+}
+
+.donut-center {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.donut-count {
+  font-variant-numeric: tabular-nums;
+
+  strong {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--mat-sys-on-surface);
+  }
+
+  span {
+    font-size: 0.8rem;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.donut-label {
+  font-size: 0.85rem;
+  color: var(--mat-sys-on-surface);
+}
+
+.difficulty-tiles {
+  flex: 0 0 104px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.difficulty-tile {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 10px 8px;
+  border-radius: 12px;
+  background-color: var(--mat-sys-surface-container-high);
+
+  strong {
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--mat-sys-on-surface);
+  }
+}
+
+.difficulty-tile-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.difficulty-tile-easy .difficulty-tile-label {
+  color: var(--dsa-difficulty-easy);
+}
+
+.difficulty-tile-medium .difficulty-tile-label {
+  color: var(--dsa-difficulty-medium);
+}
+
+.difficulty-tile-hard .difficulty-tile-label {
+  color: var(--dsa-difficulty-hard);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .donut-value {
+    transition: none;
+  }
+}

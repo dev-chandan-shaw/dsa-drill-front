@@ -331,12 +331,14 @@
 <ng-template #patternFormTemplate>
   <app-form-pane-template
     [form]="patternForm"
-    [isSaving]="isSavingPattern()"
+    [isSaving]="false"
     [isEditMode]="editingPatternId() !== null"
     [title]="editingPatternId() !== null ? 'Edit Pattern' : 'Add Pattern'"
-    (addForm)="submitPattern()"
-    (cancelForm)="closeRightPane()"
-    (saveForm)="submitPattern()"
+    [autoSaveMode]="true"
+    [saveState]="patternAutoSave?.state() ?? 'idle'"
+    [savedAt]="patternAutoSave?.savedAt() ?? null"
+    (cancelForm)="closePatternPane()"
+    (retrySave)="retryPatternSave()"
   >
     <form class="pane-form" [formGroup]="patternForm">
       <mat-form-field appearance="outline" class="pane-field">

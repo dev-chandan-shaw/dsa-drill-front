@@ -1,0 +1,61 @@
+<mat-card class="sheet-summary-card">
+  <mat-card-content>
+    <div class="summary-head">
+      <div class="summary-icon" aria-hidden="true">
+        <mat-icon>grid_view</mat-icon>
+      </div>
+      <div class="summary-titles">
+        <div class="summary-title">{{ title() }}</div>
+        <div class="summary-subtitle">{{ total() }} problems</div>
+      </div>
+      <ng-content select="[card-action]"></ng-content>
+    </div>
+
+    <div
+      class="summary-progress"
+      role="progressbar"
+      [attr.aria-valuenow]="clampedPercent()"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      [attr.aria-label]="clampedPercent() + '% of problems solved'"
+    >
+      <h2 class="summary-progress-title">Progress</h2>
+      <div class="summary-progress-body">
+        <div class="donut" aria-hidden="true">
+          <svg viewBox="0 0 140 140" class="donut-svg">
+            <circle class="donut-track" cx="70" cy="70" r="60"></circle>
+            <circle
+              class="donut-value"
+              cx="70"
+              cy="70"
+              r="60"
+              [attr.stroke-dasharray]="ringCircumference"
+              [attr.stroke-dashoffset]="ringOffset()"
+            ></circle>
+          </svg>
+          <div class="donut-center">
+            <div class="donut-count">
+              <strong>{{ solvedTotal() }}</strong><span>/{{ total() }}</span>
+            </div>
+            <div class="donut-label">Solved</div>
+          </div>
+        </div>
+        <ul class="difficulty-tiles">
+          <li class="difficulty-tile difficulty-tile-easy">
+            <span class="difficulty-tile-label">Easy</span>
+            <strong>{{ solvedEasy() }}/{{ easyTotal() }}</strong>
+          </li>
+          <li class="difficulty-tile difficulty-tile-medium">
+            <span class="difficulty-tile-label">Med.</span>
+            <strong>{{ solvedMedium() }}/{{ mediumTotal() }}</strong>
+          </li>
+          <li class="difficulty-tile difficulty-tile-hard">
+            <span class="difficulty-tile-label">Hard</span>
+            <strong>{{ solvedHard() }}/{{ hardTotal() }}</strong>
+          </li>
+        </ul>
+      </div>
+      <span class="sr-only">{{ solvedTotal() }} of {{ total() }} problems solved</span>
+    </div>
+  </mat-card-content>
+</mat-card>

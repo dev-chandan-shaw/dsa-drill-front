@@ -16,7 +16,14 @@
   </div>
   <mat-divider></mat-divider>
   <div class="pane-footer">
-    @if (isEditMode) {
+    @if (autoSaveMode) {
+      <app-save-state-indicator
+        class="save-state"
+        [state]="saveState"
+        [savedAt]="savedAt"
+        (retry)="retrySave.emit()"
+      ></app-save-state-indicator>
+    } @else if (isEditMode) {
       <button
         mat-flat-button
         type="button"
@@ -30,6 +37,8 @@
         {{ isSaving ? 'Adding…' : 'Add' }}
       </button>
     }
-    <button mat-button type="button" (click)="cancelForm.emit()">Cancel</button>
+    <button mat-button type="button" (click)="cancelForm.emit()">
+      {{ autoSaveMode ? 'Close' : 'Cancel' }}
+    </button>
   </div>
 </div>
