@@ -32,36 +32,15 @@
     <header class="wall-head">
       <div>
         <h1 class="dsa-display">{{ topic.name }}</h1>
-        <p class="wall-sub dsa-mono">
-          {{ notes().length }} patterns to learn, tap one to read it fully.
-        </p>
       </div>
-      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
-        <mat-icon matPrefix aria-hidden="true">search</mat-icon>
-        <mat-label>Search patterns</mat-label>
-        <input
-          matInput
-          type="text"
-          [value]="searchTerm()"
-          (input)="setSearchTerm($any($event.target).value)"
-        />
-      </mat-form-field>
     </header>
 
-    @if (filteredNotes().length === 0) {
-      <div class="state-card" role="status">
-        @if (notes().length === 0) {
-          No patterns under this topic yet.
-        } @else {
-          No patterns match your search.
-          <button type="button" class="link" (click)="setSearchTerm('')">Clear search</button>
-        }
-      </div>
+    @if (notes().length === 0) {
+      <div class="state-card" role="status">No patterns under this topic yet.</div>
     } @else {
       <div class="note-grid">
-        @for (note of filteredNotes(); track trackByPatternId($index, note)) {
+        @for (note of notes(); track trackByPatternId($index, note)) {
           <article class="note tone-{{ $index % 4 }}" [attr.aria-label]="note.pattern.name">
-            <span class="note-pin" aria-hidden="true"></span>
             <a
               class="note-title"
               [routerLink]="['/question-pattern', topic.slug, note.pattern.id]"

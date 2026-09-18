@@ -3,4 +3,7 @@ export interface IProblemTag {
   name: string;
   problemCount?: number;
   slug: string;
+  coverFrom?: string | null;
+  coverTo?: string | null;
+  coverGlyph?: string | null;
 }

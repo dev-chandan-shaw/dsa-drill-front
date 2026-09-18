@@ -59,6 +59,25 @@
     padding-left: 1.6em;
   }
 
+  // Markers: Tailwind preflight strips list-style globally, so restore the
+  // GitHub-style markers here (unlayered author CSS beats @layer base).
+  ul {
+    list-style: disc outside;
+  }
+
+  ol {
+    list-style: decimal outside;
+  }
+
+  ul ul {
+    list-style-type: circle;
+  }
+
+  ul ul ul,
+  ol ul {
+    list-style-type: square;
+  }
+
   li + li {
     margin-top: 0.2em;
   }

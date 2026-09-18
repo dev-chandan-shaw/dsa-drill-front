@@ -19,7 +19,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ProblemDrillService } from '../../../modules/home/services/problem-drill.service';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ProblemStatusApiService } from '../../../modules/home/services/user/question-status-api.service';
-import { IProblem } from '../../../modules/home/models/Question';
+import { compareProblemsByOrder, IProblem } from '../../../modules/home/models/Question';
 import { FormPaneTemplate } from '../form-pane-template/form-pane-template';
 import { MarkdownNoteEditor } from '../markdown-note-editor/markdown-note-editor';
 import { RightPaneService, RightPaneSize } from '../../services/right-pane-service';
@@ -60,6 +60,8 @@ export class ProblemList implements OnInit {
   });
 
   problems = input.required<IProblem[]>();
+  /** Hides the search/filter toolbar; rows render unfiltered. */
+  showFilters = input(true);
   readonly searchTerm = signal('');
   readonly revisionOnly = signal(false);
   // Auto-save driver for the note pane (footer shows Saved bottom-left).
@@ -70,13 +72,15 @@ export class ProblemList implements OnInit {
     const normalizedSearch = this.searchTerm().trim().toLowerCase();
     const revisionOnly = this.revisionOnly();
 
-    return this.problems().filter((problem) => {
-      const matchesSearch =
-        !normalizedSearch || problem.title.toLowerCase().includes(normalizedSearch);
-      const matchesRevision = !revisionOnly || !!this.problemStatuses()[problem.id]?.revision;
+    return this.problems()
+      .filter((problem) => {
+        const matchesSearch =
+          !normalizedSearch || problem.title.toLowerCase().includes(normalizedSearch);
+        const matchesRevision = !revisionOnly || !!this.problemStatuses()[problem.id]?.revision;
 
-      return matchesSearch && matchesRevision;
-    });
+        return matchesSearch && matchesRevision;
+      })
+      .sort(compareProblemsByOrder);
   });
 
   ngOnInit(): void {

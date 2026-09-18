@@ -140,4 +140,20 @@ describe('Home', () => {
     const statuses = TestBed.inject(ProblemStatusApiService).problemStatuses();
     expect(statuses[1]?.revision).toBe(true);
   });
+
+  it('hides tags with zero problems from the row', async () => {
+    await setup();
+    fixture.detectChanges();
+
+    httpMock.expectOne(PROBLEMS_URL).flush(PROBLEMS);
+    httpMock
+      .expectOne(TAGS_URL)
+      .flush([...TAGS, { id: 2, name: 'Empty', slug: 'empty', problemCount: 0 }]);
+    httpMock.expectOne(AUTH_URL).flush('unauthorized', {
+      status: 401,
+      statusText: 'Unauthorized',
+    });
+
+    expect(component.visibleTags().map((tag) => tag.slug)).toEqual(['array']);
+  });
 });

@@ -2,9 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { IProblemPattern } from '../../home/models/problem-pattern';
@@ -29,9 +27,7 @@ export interface PatternNote {
     CommonModule,
     RouterModule,
     MatButtonModule,
-    MatFormFieldModule,
     MatIconModule,
-    MatInputModule,
     MatProgressBarModule,
   ],
   templateUrl: './topic-patterns.html',
@@ -57,7 +53,6 @@ export class TopicPatterns implements OnInit {
   );
   readonly loadError = signal(false);
   readonly tagSlug = signal<string | null>(null);
-  readonly searchTerm = signal('');
   readonly skeletonRows = Array.from({ length: 6 });
 
   readonly topic = computed<IProblemTag | null>(() => {
@@ -80,18 +75,6 @@ export class TopicPatterns implements OnInit {
     }));
   });
 
-  readonly filteredNotes = computed(() => {
-    const query = this.searchTerm().trim().toLowerCase();
-    if (!query) {
-      return this.notes();
-    }
-    return this.notes().filter(
-      (note) =>
-        note.pattern.name.toLowerCase().includes(query) ||
-        note.excerpt.toLowerCase().includes(query),
-    );
-  });
-
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       this.tagSlug.set(params.get('tagSlug'));
@@ -102,10 +85,6 @@ export class TopicPatterns implements OnInit {
 
   retry(): void {
     this.load();
-  }
-
-  setSearchTerm(value: string) {
-    this.searchTerm.set(value ?? '');
   }
 
   trackByPatternId(_: number, note: PatternNote) {

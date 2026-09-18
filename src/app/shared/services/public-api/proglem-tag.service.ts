@@ -9,6 +9,9 @@ const TAGS_STATE_KEY = makeStateKey<IProblemTag[]>('problem-tags');
 
 export interface IQuestionTagDto {
   name: string;
+  coverFrom?: string;
+  coverTo?: string;
+  coverGlyph?: string;
 }
 
 @Injectable({

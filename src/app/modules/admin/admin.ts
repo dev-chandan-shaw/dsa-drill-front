@@ -13,8 +13,13 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize, Observable, take } from 'rxjs';
-import { IProblem, ProblemDifficulty } from '../home/models/Question';
+import { compareProblemsByOrder, IProblem, ProblemDifficulty } from '../home/models/Question';
 import { IProblemTag } from '../home/models/question-tag';
+import {
+  COVER_SWATCHES,
+  TopicCover,
+  resolveTopicCover,
+} from '../question-pattern/topic-covers';
 import { IProblemPattern } from '../home/models/problem-pattern';
 import { IApiResponse } from '../../shared/models/ApiResponse';
 import { PublicProblemService } from '../../shared/services/public-api/problem.service';
@@ -152,17 +157,19 @@ export class Admin implements OnInit {
     const normalizedSearch = this.searchTerm().toLowerCase().trim();
     const selectedDifficulty = this.selectedDifficulty();
 
-    return this.problems().filter((question) => {
-      const matchesSearch =
-        !normalizedSearch ||
-        question.title.toLowerCase().includes(normalizedSearch) ||
-        (question.slug ?? '').toLowerCase().includes(normalizedSearch);
+    return this.problems()
+      .filter((question) => {
+        const matchesSearch =
+          !normalizedSearch ||
+          question.title.toLowerCase().includes(normalizedSearch) ||
+          (question.slug ?? '').toLowerCase().includes(normalizedSearch);
 
-      const matchesDifficulty =
-        selectedDifficulty === 'ALL' || question.difficulty === selectedDifficulty;
+        const matchesDifficulty =
+          selectedDifficulty === 'ALL' || question.difficulty === selectedDifficulty;
 
-      return matchesSearch && matchesDifficulty;
-    });
+        return matchesSearch && matchesDifficulty;
+      })
+      .sort(compareProblemsByOrder);
   });
 
   readonly filteredTags = computed(() => {
@@ -209,7 +216,12 @@ export class Admin implements OnInit {
 
   readonly tagForm = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
+    coverFrom: [''],
+    coverTo: [''],
+    coverGlyph: [''],
   });
+
+  readonly coverSwatches = COVER_SWATCHES;
 
   constructor() {
     if (!isPlatformBrowser(this.platformId)) {
@@ -433,7 +445,9 @@ export class Admin implements OnInit {
     this.confirmationService
       .confirm({
         title: 'Delete problem',
-        message: `Delete "${question.title}"? This cannot be undone.`,
+        message:
+          `Delete "${question.title}"? Its examples, test cases, submissions, ` +
+          `progress, sheet entries and pattern links go with it. This cannot be undone.`,
         confirmLabel: 'Delete',
       })
       .pipe(take(1))
@@ -459,7 +473,7 @@ export class Admin implements OnInit {
 
   openAddTagPane() {
     this.editingTagId.set(null);
-    this.tagForm.reset({ name: '' });
+    this.tagForm.reset({ name: '', coverFrom: '', coverTo: '', coverGlyph: '' });
     this.rightPaneService.open(this.tagFormTemplate, RightPaneSize.SMALL, {
       title: 'Add Problem Tag',
     });
@@ -467,9 +481,38 @@ export class Admin implements OnInit {
 
   openEditTagPane(tag: IProblemTag) {
     this.editingTagId.set(tag.id);
-    this.tagForm.reset({ name: tag.name });
+    this.tagForm.reset({
+      name: tag.name,
+      coverFrom: tag.coverFrom ?? '',
+      coverTo: tag.coverTo ?? '',
+      coverGlyph: tag.coverGlyph ?? '',
+    });
     this.rightPaneService.open(this.tagFormTemplate, RightPaneSize.SMALL, {
       title: `Edit Tag #${tag.id}`,
+    });
+  }
+
+  selectCoverSwatch(swatch: { from: string; to: string }): void {
+    this.tagForm.controls.coverFrom.setValue(swatch.from);
+    this.tagForm.controls.coverTo.setValue(swatch.to);
+    this.tagForm.markAsDirty();
+  }
+
+  isCoverSwatchSelected(swatch: { from: string; to: string }): boolean {
+    return (
+      this.tagForm.controls.coverFrom.value === swatch.from &&
+      this.tagForm.controls.coverTo.value === swatch.to
+    );
+  }
+
+  tagCoverPreview(): TopicCover {
+    const raw = this.tagForm.getRawValue();
+    return resolveTopicCover({
+      slug: '',
+      name: raw.name?.trim() || 'Preview',
+      coverFrom: raw.coverFrom?.trim() || null,
+      coverTo: raw.coverTo?.trim() || null,
+      coverGlyph: raw.coverGlyph?.trim() || null,
     });
   }
 

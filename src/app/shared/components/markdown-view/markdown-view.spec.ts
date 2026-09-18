@@ -58,4 +58,23 @@ describe('MarkdownView', () => {
     expect(img).toBeTruthy();
     expect(getComputedStyle(img).display).toBe('block');
   });
+
+  it('restores list markers stripped by the global reset', async () => {
+    fixture.componentRef.setInput('content', '- alpha\n- beta\n\n1. one\n2. two');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const ul = fixture.nativeElement.querySelector('.markdown-body ul') as HTMLElement;
+    const ol = fixture.nativeElement.querySelector('.markdown-body ol') as HTMLElement;
+    expect(ul).toBeTruthy();
+    expect(ol).toBeTruthy();
+    expect(ul.querySelectorAll('li').length).toBe(2);
+    // NOTE: jsdom resolves UA defaults here, not author stylesheets
+    // (verified: exactly one <style> reaches the test document and computed
+    // values ignore it), so getComputedStyle cannot observe our marker
+    // rules — the markers are verified visually. The cascade itself
+    // (unlayered author CSS beats Tailwind's @layer base reset) is a
+    // platform guarantee, confirmed against the installed preflight source.
+  });
 });

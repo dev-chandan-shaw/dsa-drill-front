@@ -14,6 +14,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { FormControl, FormsModule } from '@angular/forms';
+import { compareProblemsByOrder } from '../../../modules/home/models/Question';
 import { PublicProblemService } from '../../services/public-api/problem.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -46,17 +47,19 @@ export class TagBasedProblemList implements OnInit {
     const normalizedSearch = this.searchTerm().toLowerCase().trim();
     const tagId = this.selectedTagId();
 
-    return this.problems().filter((problem) => {
-      if (tagId !== null && !problem.tags.includes(tagId)) {
-        return false;
-      }
+    return this.problems()
+      .filter((problem) => {
+        if (tagId !== null && !problem.tags.includes(tagId)) {
+          return false;
+        }
 
-      if (!normalizedSearch) {
-        return true;
-      }
+        if (!normalizedSearch) {
+          return true;
+        }
 
-      return problem.title.toLowerCase().includes(normalizedSearch);
-    });
+        return problem.title.toLowerCase().includes(normalizedSearch);
+      })
+      .sort(compareProblemsByOrder);
   });
 
   ngOnInit(): void {

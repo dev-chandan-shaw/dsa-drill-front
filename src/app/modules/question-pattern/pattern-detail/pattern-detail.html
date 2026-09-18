@@ -35,15 +35,6 @@
 
     <header class="detail-head">
       <h1 class="dsa-display">{{ pattern.name }}</h1>
-      <div class="detail-tags">
-        @for (tagId of pattern.tagIds; track tagId) {
-          @if (getTagSlugById(tagId); as slug) {
-            <a class="tag-chip" [routerLink]="['/problems', slug]">{{
-              getTagNameById(tagId)
-            }}</a>
-          }
-        }
-      </div>
     </header>
 
     <div class="detail-body">
@@ -69,29 +60,5 @@
       </section>
     }
 
-    <nav class="sibling-nav" aria-label="More patterns">
-      @if (prevPattern(); as prev) {
-        <a
-          class="sibling-link"
-          [routerLink]="['/question-pattern', tagSlug(), prev.id]"
-          rel="prev"
-        >
-          <mat-icon aria-hidden="true">arrow_back</mat-icon>
-          <span>{{ prev.name }}</span>
-        </a>
-      } @else {
-        <span></span>
-      }
-      @if (nextPattern(); as next) {
-        <a
-          class="sibling-link next"
-          [routerLink]="['/question-pattern', tagSlug(), next.id]"
-          rel="next"
-        >
-          <span>{{ next.name }}</span>
-          <mat-icon aria-hidden="true">arrow_forward</mat-icon>
-        </a>
-      }
-    </nav>
   </article>
 }

@@ -13,7 +13,7 @@ import { PublicProblemService } from '../../../shared/services/public-api/proble
 import { ToastService } from '../../../shared/services/toast-service';
 import { SeoService } from '../../../shared/services/seo.service';
 import { MarkdownView } from '../../../shared/components/markdown-view/markdown-view';
-import { linkedQuestions, patternsForTag, primaryTagId } from '../pattern-utils';
+import { linkedQuestions, primaryTagId } from '../pattern-utils';
 import { markdownExcerpt } from '../markdown-excerpt';
 
 @Component({
@@ -82,26 +82,6 @@ export class PatternDetail implements OnInit {
       return 0;
     }
     return linkedQuestions(this.problems(), pattern.problemIds ?? []).length;
-  });
-
-  readonly siblings = computed<IProblemPattern[]>(() => {
-    const topic = this.topic();
-    if (!topic) {
-      return [];
-    }
-    return patternsForTag(this.patterns(), topic.id);
-  });
-
-  readonly prevPattern = computed<IProblemPattern | null>(() => {
-    const list = this.siblings();
-    const index = list.findIndex((item) => item.id === this.patternId());
-    return index > 0 ? list[index - 1] : null;
-  });
-
-  readonly nextPattern = computed<IProblemPattern | null>(() => {
-    const list = this.siblings();
-    const index = list.findIndex((item) => item.id === this.patternId());
-    return index >= 0 && index < list.length - 1 ? list[index + 1] : null;
   });
 
   ngOnInit(): void {

@@ -34,11 +34,6 @@
   line-height: 1.6;
 }
 
-.search-field {
-  width: min(360px, 100%);
-  margin-top: 6px;
-}
-
 .topic-grid {
   max-width: 1080px;
   margin: 0 auto;
@@ -113,15 +108,6 @@
   gap: 8px;
   align-items: center;
   flex-wrap: wrap;
-}
-
-.link {
-  background: none;
-  border: none;
-  padding: 0;
-  color: var(--mat-sys-primary);
-  cursor: pointer;
-  font-size: inherit;
 }
 
 @media (max-width: 640px) {

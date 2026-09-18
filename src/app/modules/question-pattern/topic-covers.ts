@@ -6,6 +6,17 @@ export interface TopicCover {
   glyph: string;
 }
 
+/** Minimal tag shape needed to resolve a cover. */
+export interface TagCoverSource {
+  slug: string;
+  name: string;
+  coverFrom?: string | null;
+  coverTo?: string | null;
+  coverGlyph?: string | null;
+}
+
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
+
 const CURATED: Record<string, TopicCover> = {
   arrays: { from: '#1e3a8a', to: '#0284c7', glyph: '[]' },
   strings: { from: '#6b21a8', to: '#c026d3', glyph: '{}' },
@@ -41,15 +52,55 @@ const FALLBACKS: TopicCover[] = [
   { from: '#500724', to: '#9d174d', glyph: '△' },
 ];
 
-/** Curated cover per topic slug; deterministic fallback so new tags never look broken. */
-export function topicCover(slug: string): TopicCover {
-  const hit = CURATED[(slug ?? '').toLowerCase()];
-  if (hit) {
-    return hit;
+/** Swatch palette offered in the admin tag picker. */
+export const COVER_SWATCHES: { from: string; to: string }[] = [
+  { from: '#1e3a8a', to: '#0284c7' },
+  { from: '#6b21a8', to: '#c026d3' },
+  { from: '#065f46', to: '#0d9488' },
+  { from: '#7c2d12', to: '#ea580c' },
+  { from: '#14532d', to: '#16a34a' },
+  { from: '#0c4a6e', to: '#06b6d4' },
+  { from: '#500724', to: '#e11d48' },
+  { from: '#111827', to: '#4f46e5' },
+];
+
+/** Initials monogram, e.g. "Binary Search Tree" → "BS". */
+export function tagInitials(name: string): string {
+  const words = (name ?? '').trim().split(/\s+/).filter(Boolean);
+  if (!words.length) {
+    return '?';
   }
+  return ((words[0][0] ?? '') + (words[1]?.[0] ?? '')).toUpperCase();
+}
+
+function hashIndex(slug: string): number {
   let hash = 0;
   for (const ch of slug ?? '') {
     hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
   }
-  return FALLBACKS[hash % FALLBACKS.length];
+  return hash % FALLBACKS.length;
+}
+
+/** Curated cover per topic slug; deterministic fallback so new tags never look broken. */
+export function topicCover(slug: string): TopicCover {
+  return resolveTopicCover({ slug, name: slug });
+}
+
+/**
+ * Full resolution order: admin-curated values (when both colors are valid
+ * hex) win, then the curated map, then a monogram cover (tag initials over
+ * a hash-picked gradient) so runtime-added tags always look intentional.
+ */
+export function resolveTopicCover(tag: TagCoverSource): TopicCover {
+  const from = tag.coverFrom?.trim() ?? '';
+  const to = tag.coverTo?.trim() ?? '';
+  if (HEX_COLOR.test(from) && HEX_COLOR.test(to)) {
+    return { from, to, glyph: tag.coverGlyph?.trim() || tagInitials(tag.name) };
+  }
+  const slug = (tag.slug ?? '').toLowerCase();
+  if (CURATED[slug]) {
+    return CURATED[slug];
+  }
+  const fallback = FALLBACKS[hashIndex(tag.slug ?? '')];
+  return { ...fallback, glyph: tagInitials(tag.name) };
 }

@@ -29,7 +29,20 @@ function tagIdsOf(pattern) {
   return pattern.tagId != null ? [pattern.tagId] : [];
 }
 
+function patternTagIds(pattern) {
+  if (Array.isArray(pattern.tagIds) && pattern.tagIds.length) {
+    return pattern.tagIds;
+  }
+  return pattern.tagId != null ? [pattern.tagId] : [];
+}
+
 function buildSitemap(tags, patterns) {
+  const patternCounts = new Map();
+  for (const pattern of patterns) {
+    for (const tagId of patternTagIds(pattern)) {
+      patternCounts.set(tagId, (patternCounts.get(tagId) ?? 0) + 1);
+    }
+  }
   const urls = [
     { loc: `${SITE}/home`, priority: '1' },
     { loc: `${SITE}/question-pattern`, priority: '0.9' },
@@ -38,7 +51,11 @@ function buildSitemap(tags, patterns) {
     if (!tag.slug) {
       continue;
     }
-    urls.push({ loc: `${SITE}/question-pattern/${tag.slug}`, priority: '0.8' });
+    // Topics without patterns are hidden from the gallery; keep them out
+    // of the sitemap too. Pattern and sheet URLs are unaffected.
+    if ((patternCounts.get(tag.id) ?? 0) > 0) {
+      urls.push({ loc: `${SITE}/question-pattern/${tag.slug}`, priority: '0.8' });
+    }
     urls.push({ loc: `${SITE}/problems/${tag.slug}`, priority: '0.8' });
   }
   for (const pattern of patterns) {

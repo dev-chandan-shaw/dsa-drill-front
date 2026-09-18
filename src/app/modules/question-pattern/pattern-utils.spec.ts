@@ -1,5 +1,5 @@
 import { linkedQuestions, patternsForTag, primaryTagId } from './pattern-utils';
-import { topicCover } from './topic-covers';
+import { resolveTopicCover, tagInitials, topicCover } from './topic-covers';
 import { markdownExcerpt } from './markdown-excerpt';
 import { IProblemPattern } from '../home/models/problem-pattern';
 import { IProblem, ProblemDifficulty } from '../home/models/Question';
@@ -42,7 +42,42 @@ describe('topicCover', () => {
 
   it('falls back deterministically for unknown slugs', () => {
     expect(topicCover('brand-new-topic')).toEqual(topicCover('brand-new-topic'));
-    expect(topicCover('brand-new-topic').glyph).toBeTruthy();
+    expect(topicCover('brand-new-topic').glyph).toBe('B');
+  });
+
+  it('prefers admin covers over curated ones', () => {
+    expect(
+      resolveTopicCover({
+        slug: 'arrays',
+        name: 'Arrays',
+        coverFrom: '#000000',
+        coverTo: '#ffffff',
+        coverGlyph: 'A!',
+      }),
+    ).toEqual({ from: '#000000', to: '#ffffff', glyph: 'A!' });
+  });
+
+  it('falls back to initials when admin glyph is missing', () => {
+    expect(
+      resolveTopicCover({
+        slug: 'arrays',
+        name: 'Arrays',
+        coverFrom: '#000000',
+        coverTo: '#ffffff',
+      }),
+    ).toEqual({ from: '#000000', to: '#ffffff', glyph: 'A' });
+  });
+
+  it('ignores invalid admin colors and uses curated covers', () => {
+    expect(
+      resolveTopicCover({ slug: 'arrays', name: 'Arrays', coverFrom: 'red', coverTo: '' }),
+    ).toEqual(topicCover('arrays'));
+  });
+
+  it('derives initials for names', () => {
+    expect(tagInitials('Binary Search Tree')).toBe('BS');
+    expect(tagInitials('Arrays')).toBe('A');
+    expect(tagInitials('')).toBe('?');
   });
 });
 

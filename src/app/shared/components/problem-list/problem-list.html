@@ -1,34 +1,36 @@
-<div class="list-toolbar">
-  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
-    <mat-icon matPrefix aria-hidden="true">search</mat-icon>
-    <mat-label>Search problems</mat-label>
-    <input
-      matInput
-      type="text"
-      [value]="searchTerm()"
-      (input)="setSearchTerm($any($event.target).value)"
-    />
-  </mat-form-field>
-  <mat-button-toggle-group
-    hideSingleSelectionIndicator
-    [value]="revisionOnly() ? 'revision' : 'all'"
-    (change)="setRevisionFilter($event.value === 'revision')"
-    aria-label="Revision filter"
-  >
-    <mat-button-toggle value="all">All</mat-button-toggle>
-    <mat-button-toggle value="revision">Revision</mat-button-toggle>
-  </mat-button-toggle-group>
-  <button
-    mat-icon-button
-    type="button"
-    class="toolbar-end"
-    (click)="pickRandom()"
-    matTooltip="Pick a random problem"
-    aria-label="Pick a random problem"
-  >
-    <mat-icon>shuffle</mat-icon>
-  </button>
-</div>
+@if (showFilters()) {
+  <div class="list-toolbar">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+      <mat-icon matPrefix aria-hidden="true">search</mat-icon>
+      <mat-label>Search problems</mat-label>
+      <input
+        matInput
+        type="text"
+        [value]="searchTerm()"
+        (input)="setSearchTerm($any($event.target).value)"
+      />
+    </mat-form-field>
+    <mat-button-toggle-group
+      hideSingleSelectionIndicator
+      [value]="revisionOnly() ? 'revision' : 'all'"
+      (change)="setRevisionFilter($event.value === 'revision')"
+      aria-label="Revision filter"
+    >
+      <mat-button-toggle value="all">All</mat-button-toggle>
+      <mat-button-toggle value="revision">Revision</mat-button-toggle>
+    </mat-button-toggle-group>
+    <button
+      mat-icon-button
+      type="button"
+      class="toolbar-end"
+      (click)="pickRandom()"
+      matTooltip="Pick a random problem"
+      aria-label="Pick a random problem"
+    >
+      <mat-icon>shuffle</mat-icon>
+    </button>
+  </div>
+}
 @for (question of filteredProblems(); let rowIndex = $index; track question.id) {
   <div class="problem-row" [class.zebra]="rowIndex % 2 === 0">
     <button
@@ -43,7 +45,7 @@
       }}</mat-icon>
     </button>
     <a [href]="question.link" target="_blank" rel="noopener" class="problem-title">
-      {{ rowIndex + 1 }}. {{ question.title }}
+      {{ question.order ?? question.id }}. {{ question.title }}
     </a>
     <span class="difficulty-badge difficulty-{{ question.difficulty.toLowerCase() }}">
       {{ difficultyLabel(question.difficulty) }}

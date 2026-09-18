@@ -22,39 +22,24 @@
         Learn the handful of moves behind hundreds of problems. Pick a topic to see its
         patterns, then practice the linked questions.
       </p>
-      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
-        <mat-icon matPrefix aria-hidden="true">search</mat-icon>
-        <mat-label>Search topics</mat-label>
-        <input
-          matInput
-          type="text"
-          [value]="searchTerm()"
-          (input)="setSearchTerm($any($event.target).value)"
-        />
-      </mat-form-field>
     </header>
 
-    @if (filteredTopics().length === 0) {
-      <div class="state-card" role="status">
-        No topics match your search.
-        <button type="button" class="link" (click)="setSearchTerm('')">Clear search</button>
-      </div>
+    @if (topics().length === 0) {
+      <div class="state-card" role="status">No topics yet.</div>
     } @else {
       <div class="topic-grid">
-        @for (topic of filteredTopics(); track trackByTagId($index, topic)) {
+        @for (topic of topics(); track trackByTagId($index, topic)) {
           <a
             class="topic-card"
             [routerLink]="['/question-pattern', topic.tag.slug]"
             [style.background]="coverStyle(topic.cover)"
-            [attr.aria-label]="
-              topic.tag.name + ': ' + topic.patternCount + ' patterns, ' + topic.questionCount + ' questions'
-            "
+            [attr.aria-label]="topic.tag.name + ': ' + topic.patternCount + ' patterns'"
           >
             <span class="topic-glyph" aria-hidden="true">{{ topic.cover.glyph }}</span>
             <span class="topic-body">
               <span class="topic-name">{{ topic.tag.name }}</span>
               <span class="topic-counts dsa-mono"
-                >{{ topic.patternCount }} patterns · {{ topic.questionCount }} questions</span
+                >{{ topic.patternCount }} patterns</span
               >
             </span>
             <mat-icon class="topic-go" aria-hidden="true">arrow_forward</mat-icon>

@@ -47,12 +47,30 @@ app.get('/sitemap.xml', async (_req, res, next) => {
         `  <url>\n    <loc>${SITE_URL}/home</loc>\n    <changefreq>weekly</changefreq>\n    <priority>1</priority>\n  </url>`,
         `  <url>\n    <loc>${SITE_URL}/question-pattern</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>`,
       ];
+      const patternCounts = new Map<number, number>();
+      const tagIdsOf = (pattern: any): number[] => {
+        if (Array.isArray(pattern?.tagIds) && pattern.tagIds.length) {
+          return pattern.tagIds.filter((id: unknown) => typeof id === 'number');
+        }
+        return typeof pattern?.tagId === 'number' ? [pattern.tagId] : [];
+      };
+      for (const pattern of patterns) {
+        for (const tagId of tagIdsOf(pattern)) {
+          patternCounts.set(tagId, (patternCounts.get(tagId) ?? 0) + 1);
+        }
+      }
       for (const tag of tags) {
         if (!tag?.slug) {
           continue;
         }
+        // Topics without patterns are hidden from the gallery; keep them
+        // out of the sitemap too. Pattern and sheet URLs are unaffected.
+        if ((patternCounts.get(tag.id) ?? 0) > 0) {
+          urls.push(
+            `  <url>\n    <loc>${SITE_URL}/question-pattern/${tag.slug}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>`,
+          );
+        }
         urls.push(
-          `  <url>\n    <loc>${SITE_URL}/question-pattern/${tag.slug}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>`,
           `  <url>\n    <loc>${SITE_URL}/problems/${tag.slug}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>`,
         );
       }

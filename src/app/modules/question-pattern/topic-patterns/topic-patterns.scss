@@ -59,10 +59,6 @@
   color: var(--mat-sys-on-surface-variant);
 }
 
-.search-field {
-  width: min(300px, 100%);
-}
-
 .note-grid {
   max-width: 1080px;
   margin: 0 auto;
@@ -80,7 +76,7 @@
   flex-direction: column;
   gap: 10px;
   min-height: 210px;
-  padding: 26px 18px 16px;
+  padding: 18px 18px 16px;
   border-radius: 4px 4px 14px 4px;
   color: #1c1917;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
@@ -108,18 +104,6 @@
 
 .tone-3 {
   background: linear-gradient(180deg, #e0f2fe, #7dd3fc);
-}
-
-.note-pin {
-  position: absolute;
-  top: 9px;
-  left: 50%;
-  width: 11px;
-  height: 11px;
-  margin-left: -5px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #f87171, #991b1b);
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.35);
 }
 
 .note-title {

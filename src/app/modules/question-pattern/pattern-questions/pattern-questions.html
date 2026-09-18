@@ -22,7 +22,7 @@
     </div>
   </div>
 } @else if (pattern(); as pattern) {
-  @if ((pattern.problemIds ?? []).length === 0) {
+  @if (pattern.problemIds.length === 0) {
     <div class="page-shell">
       <div class="state-card" role="status">
         <div>
@@ -60,7 +60,7 @@
     </aside>
 
     <div class="sheet-content">
-      <app-problem-list [problems]="problems()"></app-problem-list>
+      <app-problem-list [problems]="problems()" [showFilters]="false"></app-problem-list>
     </div>
   </div>
   }

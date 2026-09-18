@@ -1,9 +1,9 @@
 @if (hasLoaded()) {
   <div class="page-shell home" aria-busy="false">
     @defer (hydrate on idle) {
-      @if (tags().length > 0) {
+      @if (visibleTags().length > 0) {
         <nav class="tag-row" aria-label="Problem categories">
-          @for (category of tags(); track category.slug) {
+          @for (category of visibleTags(); track category.slug) {
             <a class="tag-link" [routerLink]="['/problems', category.slug]">
               <span>{{ category.name }}</span>
               <span class="tag-count">{{ category.problemCount ?? 0 }}</span>

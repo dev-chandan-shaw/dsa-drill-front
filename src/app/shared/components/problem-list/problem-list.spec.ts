@@ -25,4 +25,14 @@ describe('ProblemList', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('shows the filter toolbar by default', () => {
+    expect(fixture.nativeElement.querySelector('.list-toolbar')).toBeTruthy();
+  });
+
+  it('hides the filter toolbar when showFilters is false', () => {
+    fixture.componentRef.setInput('showFilters', false);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.list-toolbar')).toBeNull();
+  });
 });

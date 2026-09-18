@@ -14,7 +14,7 @@ export class AdminProblemTagService {
 
   addProblemTag(payload: IQuestionTagDto) {
     return this.http.post<IProblemTag>(`${this.api}/problem-tags`, null, {
-      params: { tagName: payload.name },
+      params: this.coverParams(payload),
     });
   }
 
@@ -23,9 +23,26 @@ export class AdminProblemTagService {
       `${this.api}/problem-tags/${tagId}`,
       {},
       {
-        params: { tagName: payload.name },
+        params: this.coverParams(payload),
       },
     );
+  }
+
+  private coverParams(payload: IQuestionTagDto): Record<string, string> {
+    const params: Record<string, string> = { tagName: payload.name };
+    const coverFrom = payload.coverFrom?.trim();
+    const coverTo = payload.coverTo?.trim();
+    const coverGlyph = payload.coverGlyph?.trim();
+    if (coverFrom) {
+      params['coverFrom'] = coverFrom;
+    }
+    if (coverTo) {
+      params['coverTo'] = coverTo;
+    }
+    if (coverGlyph) {
+      params['coverGlyph'] = coverGlyph;
+    }
+    return params;
   }
 
   deleteProblemTag(tagId: number) {

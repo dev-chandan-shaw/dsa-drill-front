@@ -37,6 +37,11 @@ export class Home implements OnInit {
   readonly loadError = signal(false);
   readonly skeletonRows = Array.from({ length: 8 });
 
+  /** Tags with at least one problem; empty topics stay out of the row. */
+  readonly visibleTags = computed(() =>
+    this.tags().filter((tag) => (tag.problemCount ?? 0) > 0),
+  );
+
   hasLoaded = computed(
     () => this.questionService.hasLoaded() && this.questionTagService.hasLoaded(),
   );

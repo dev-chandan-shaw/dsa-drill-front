@@ -66,7 +66,7 @@
                 }
                 <div class="data-row">
                   <div class="data-main">
-                    <h3>{{ $index + 1 }}. {{ question.title }}</h3>
+                    <h3>{{ question.order ?? question.id }}. {{ question.title }}</h3>
                     <div class="badge-row">
                       <span class="difficulty-badge {{ difficultyClass(question.difficulty) }}">
                         {{ getDifficultyLabel(question.difficulty) }}
@@ -327,6 +327,48 @@
           <mat-error>Tag name needs at least 2 characters.</mat-error>
         }
       </mat-form-field>
+
+      <div class="cover-picker">
+        <span class="cover-label">Cover</span>
+        <div class="swatch-grid" role="group" aria-label="Cover gradient">
+          @for (swatch of coverSwatches; track swatch.from) {
+            <button
+              mat-icon-button
+              type="button"
+              class="swatch"
+              [class.selected]="isCoverSwatchSelected(swatch)"
+              [style.background]="'linear-gradient(135deg, ' + swatch.from + ', ' + swatch.to + ')'"
+              [attr.aria-label]="'Cover gradient ' + swatch.from + ' to ' + swatch.to"
+              [attr.aria-pressed]="isCoverSwatchSelected(swatch)"
+              (click)="selectCoverSwatch(swatch)"
+            ></button>
+          }
+        </div>
+        <mat-form-field appearance="outline" class="pane-field">
+          <mat-label>Cover glyph (optional)</mat-label>
+          <input
+            matInput
+            type="text"
+            formControlName="coverGlyph"
+            maxlength="3"
+            [placeholder]="tagForm.controls.name.value.trim() ? 'Auto' : 'e.g. []'"
+          />
+        </mat-form-field>
+        <div
+          class="cover-preview"
+          [style.background]="
+            'linear-gradient(135deg, ' + tagCoverPreview().from + ', ' + tagCoverPreview().to + ')'
+          "
+        >
+          <span class="cover-preview-glyph" aria-hidden="true">{{
+            tagCoverPreview().glyph
+          }}</span>
+          <span class="cover-preview-name">{{
+            tagForm.controls.name.value.trim() || 'Preview'
+          }}</span>
+        </div>
+        <p class="cover-hint">Empty cover falls back to the curated topic art.</p>
+      </div>
     </form>
   </app-form-pane-template>
 </ng-template>
