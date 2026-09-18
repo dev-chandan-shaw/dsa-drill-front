@@ -1,42 +1,58 @@
-import { inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Injectable } from '@angular/core';
 import { marked } from 'marked';
-import DOMPurify from 'dompurify';
+import sanitizeHtml from 'sanitize-html';
 
-let linkHookRegistered = false;
-
-/** Forces rendered links to open in a new tab (notes/patterns link out). */
-function ensureLinkHook(): void {
-  if (linkHookRegistered) {
-    return;
-  }
-  DOMPurify.addHook('afterSanitizeAttributes', (node) => {
-    if (node.tagName === 'A') {
-      node.setAttribute('target', '_blank');
-      node.setAttribute('rel', 'noopener');
-    }
-  });
-  linkHookRegistered = true;
-}
+const CODE_CLASS_PATTERN = /^language-[\w-]+$/;
 
 /**
  * Renders user-authored markdown to XSS-safe HTML (pure GFM, like GitHub).
- * Browser-only by design: on the server it returns an empty string so SSR
- * never emits unsanitized markup (the client fills it in after hydration).
+ * Isomorphic by design: sanitize-html runs identically on the server and in
+ * the browser, so SSR emits the same explanation HTML that crawlers and
+ * hydration see — no client-only rendering gaps.
  */
 @Injectable({
   providedIn: 'root',
 })
 export class MarkdownService {
-  private readonly platformId = inject(PLATFORM_ID);
-
   render(content: string | null | undefined): string {
     const source = content ?? '';
-    if (!source.trim() || !isPlatformBrowser(this.platformId)) {
+    if (!source.trim()) {
       return '';
     }
     const html = marked.parse(source, { gfm: true }) as string;
-    ensureLinkHook();
-    return DOMPurify.sanitize(html);
+    return sanitizeHtml(html, {
+      allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+        'img',
+        'input',
+        'del',
+        'h1',
+        'h2',
+      ]),
+      allowedAttributes: {
+        // Transformed-in attributes (target/rel, class) must also be listed
+        // here: sanitize-html filters attributes after running transformTags.
+        a: ['href', 'title', 'target', 'rel'],
+        code: ['class'],
+        img: ['src', 'alt', 'title', 'loading'],
+        input: ['type', 'checked', 'disabled'],
+      },
+      allowedSchemes: ['http', 'https', 'mailto'],
+      allowProtocolRelative: false,
+      transformTags: {
+        // Links always open elsewhere; never in the app tab.
+        a: (tagName, attribs): sanitizeHtml.Tag => ({
+          tagName,
+          attribs: { ...attribs, target: '_blank', rel: 'noopener' },
+        }),
+        // Keep syntax-language hints for the highlighter, drop anything else.
+        code: (tagName, attribs): sanitizeHtml.Tag => {
+          const cls = attribs['class'] ?? '';
+          return {
+            tagName,
+            attribs: CODE_CLASS_PATTERN.test(cls) ? { class: cls } : {},
+          };
+        },
+      },
+    });
   }
 }

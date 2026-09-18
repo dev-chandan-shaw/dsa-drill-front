@@ -9,6 +9,14 @@
       "destination": "/api/ssr"
     },
     {
+      "source": "/question-pattern/:path*",
+      "destination": "/api/ssr"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    },
+    {
       "source": "/api/:path*",
       "destination": "https://dsa-drill.duckdns.org/api/:path*"
     },

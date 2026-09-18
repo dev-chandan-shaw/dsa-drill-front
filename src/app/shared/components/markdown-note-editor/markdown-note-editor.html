@@ -100,7 +100,7 @@
     </button>
   </div>
 
-  <div class="md-body" [class.drag-over]="isDragOver()">
+  <div class="md-body" [class.drag-over]="isDragOver()" [style.min-height]="minHeight() || null">
     @if (!previewing()) {
       <textarea
         #editorArea

@@ -1,5 +1,6 @@
 @if (!hasLoaded() && !loadError()) {
-  <div class="page-shell" role="status" aria-label="Loading question patterns">
+  <div class="page-shell" role="status" aria-label="Loading topics">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
     <div class="skeleton-list" aria-hidden="true">
       @for (_ of skeletonRows; track $index) {
         <div class="skeleton-row"></div>
@@ -14,51 +15,50 @@
     <button mat-flat-button type="button" (click)="retry()">Retry</button>
   </div>
 } @else {
-  <section class="page-shell question-pattern-page" aria-busy="false">
-    @if (selectedTagId() !== null) {
-      <div class="toolbar">
-        <button mat-button type="button" (click)="clearFilters()">Clear filter</button>
-      </div>
-    }
+  <section class="page-shell pattern-gallery" aria-busy="false">
+    <header class="gallery-head">
+      <h1 class="dsa-display">Patterns</h1>
+      <p class="gallery-sub">
+        Learn the handful of moves behind hundreds of problems. Pick a topic to see its
+        patterns, then practice the linked questions.
+      </p>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+        <mat-icon matPrefix aria-hidden="true">search</mat-icon>
+        <mat-label>Search topics</mat-label>
+        <input
+          matInput
+          type="text"
+          [value]="searchTerm()"
+          (input)="setSearchTerm($any($event.target).value)"
+        />
+      </mat-form-field>
+    </header>
 
-    @if (tags().length > 0) {
-      <div class="tag-filter-row" role="group" aria-label="Filter patterns by tag">
-        @for (tag of tags(); track tag.id) {
-          <button
-            type="button"
-            class="tag-chip"
-            [class.active]="selectedTagId() === tag.id"
-            [attr.aria-pressed]="selectedTagId() === tag.id"
-            (click)="setSelectedTagId(tag.id)"
-          >
-            <span>{{ tag.name }}</span>
-            <span class="tag-count">{{ getPatternCountByTag(tag.id) }}</span>
-          </button>
-        }
-      </div>
-    }
-
-    @if (filteredPatterns().length === 0) {
+    @if (filteredTopics().length === 0) {
       <div class="state-card" role="status">
-        @if (selectedTagId() !== null) {
-          No patterns match the selected tag.
-          <button type="button" class="link" (click)="clearFilters()">Clear filter</button>
-        } @else {
-          No question patterns available yet.
-        }
+        No topics match your search.
+        <button type="button" class="link" (click)="setSearchTerm('')">Clear search</button>
       </div>
     } @else {
-      <div class="pattern-list">
-        @for (pattern of filteredPatterns(); track trackByPatternId($index, pattern)) {
-          <mat-card class="pattern-card">
-            <mat-card-content>
-              <div class="pattern-meta">
-                <h3>{{ pattern.name }}</h3>
-                <p class="pattern-tag dsa-mono">#{{ pattern.id }} · {{ getTagNameById(pattern.tagId) }}</p>
-                <app-markdown-view [content]="pattern.explanation" />
-              </div>
-            </mat-card-content>
-          </mat-card>
+      <div class="topic-grid">
+        @for (topic of filteredTopics(); track trackByTagId($index, topic)) {
+          <a
+            class="topic-card"
+            [routerLink]="['/question-pattern', topic.tag.slug]"
+            [style.background]="coverStyle(topic.cover)"
+            [attr.aria-label]="
+              topic.tag.name + ': ' + topic.patternCount + ' patterns, ' + topic.questionCount + ' questions'
+            "
+          >
+            <span class="topic-glyph" aria-hidden="true">{{ topic.cover.glyph }}</span>
+            <span class="topic-body">
+              <span class="topic-name">{{ topic.tag.name }}</span>
+              <span class="topic-counts dsa-mono"
+                >{{ topic.patternCount }} patterns · {{ topic.questionCount }} questions</span
+              >
+            </span>
+            <mat-icon class="topic-go" aria-hidden="true">arrow_forward</mat-icon>
+          </a>
         }
       </div>
     }

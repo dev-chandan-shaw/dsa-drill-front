@@ -1,0 +1,229 @@
+@use '../../../shared/page-shell';
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+.editor-page {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.editor-head {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 20px 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+
+  h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    letter-spacing: -0.02em;
+  }
+}
+
+.editor-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editor-spacer {
+  flex: 1;
+}
+
+.editor-single {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 16px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pane-field {
+  width: 100%;
+}
+
+.pick-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.pick-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  h2 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 650;
+  }
+}
+
+.pick-sub {
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.pick-empty {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pick-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.8rem;
+  font-weight: 550;
+  padding: 3px 6px 3px 12px;
+  border-radius: 999px;
+  color: var(--mat-sys-primary);
+  background-color: color-mix(in srgb, var(--mat-sys-primary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--mat-sys-primary) 30%, transparent);
+}
+
+.chip-remove {
+  width: 24px;
+  height: 24px;
+  padding: 2px;
+
+  .mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.linked-titles {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 4px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+
+    &:nth-child(odd) {
+      background-color: color-mix(in srgb, var(--mat-sys-on-surface) 4%, transparent);
+    }
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
+
+// Picker panes (rendered inside the right slide-over via ng-template outlet,
+// so these styles apply from this component's view).
+.picker-pane {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+}
+
+.picker-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 650;
+  }
+}
+
+.picker-count {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.picker-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.picker-body app-tag-picker,
+.picker-body app-tag-based-problem-list {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.picker-foot {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.field-error {
+  color: var(--mat-sys-error);
+  font-size: var(--mat-sys-body-small-size, 0.75rem);
+  margin: 0;
+}
+
+.state-card {
+  max-width: 1080px;
+  margin: 24px auto;
+  border: 1px dashed var(--mat-sys-outline-variant);
+  border-radius: 10px;
+  padding: 16px;
+  color: var(--mat-sys-on-surface-variant);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--mat-sys-primary);
+  cursor: pointer;
+  font-size: inherit;
+}
+
+.empty-title {
+  font-weight: 600;
+  color: var(--mat-sys-on-surface);
+}
+
+.empty-subtitle {
+  font-size: 0.85rem;
+  margin-top: 2px;
+}

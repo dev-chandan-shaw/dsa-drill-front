@@ -13,7 +13,7 @@
         <mat-icon>add</mat-icon>
         Add tag
       </button>
-      <button mat-flat-button type="button" (click)="openAddPatternPane()">
+      <button mat-flat-button type="button" routerLink="/admin/patterns/new">
         <mat-icon>add</mat-icon>
         Add pattern
       </button>
@@ -208,9 +208,12 @@
                 <div class="data-row data-row-top">
                   <div class="data-main">
                     <h3>{{ pattern.name }}</h3>
-                    <p class="muted dsa-mono">
-                      #{{ pattern.id }} · {{ getTagNameById(pattern.tagId) }}
-                    </p>
+                    <p class="muted dsa-mono">#{{ pattern.id }}</p>
+                    <div class="badge-row">
+                      @for (tagId of pattern.tagIds; track tagId) {
+                        <span class="mini-chip">{{ getTagNameById(tagId) }}</span>
+                      }
+                    </div>
                     <div
                       class="pattern-explanation"
                       [class.clamped]="!isPatternExpanded(pattern.id)"
@@ -227,7 +230,7 @@
                       type="button"
                       matTooltip="Edit pattern"
                       [attr.aria-label]="'Edit pattern: ' + pattern.name"
-                      (click)="openEditPatternPane(pattern)"
+                      [routerLink]="['/admin/patterns', pattern.id, 'edit']"
                     >
                       <mat-icon>edit</mat-icon>
                     </button>
@@ -322,51 +325,6 @@
         <input matInput type="text" formControlName="name" required minlength="2" />
         @if (tagForm.controls.name.invalid) {
           <mat-error>Tag name needs at least 2 characters.</mat-error>
-        }
-      </mat-form-field>
-    </form>
-  </app-form-pane-template>
-</ng-template>
-
-<ng-template #patternFormTemplate>
-  <app-form-pane-template
-    [form]="patternForm"
-    [isSaving]="false"
-    [isEditMode]="editingPatternId() !== null"
-    [title]="editingPatternId() !== null ? 'Edit Pattern' : 'Add Pattern'"
-    [autoSaveMode]="true"
-    [saveState]="patternAutoSave?.state() ?? 'idle'"
-    [savedAt]="patternAutoSave?.savedAt() ?? null"
-    (cancelForm)="closePatternPane()"
-    (retrySave)="retryPatternSave()"
-  >
-    <form class="pane-form" [formGroup]="patternForm">
-      <mat-form-field appearance="outline" class="pane-field">
-        <mat-label>Pattern name</mat-label>
-        <input matInput type="text" formControlName="name" required minlength="2" />
-        @if (patternForm.controls.name.invalid) {
-          <mat-error>Pattern name needs at least 2 characters.</mat-error>
-        }
-      </mat-form-field>
-
-      <app-markdown-note-editor
-        [control]="patternForm.controls.explanation"
-        section="patterns"
-        label="Explanation"
-      />
-      @if (patternForm.controls.explanation.invalid) {
-        <p class="field-error">Explanation needs at least 5 characters.</p>
-      }
-
-      <mat-form-field appearance="outline" class="pane-field">
-        <mat-label>Problem tag</mat-label>
-        <mat-select formControlName="tagId">
-          @for (tag of tags(); track tag.id) {
-            <mat-option [value]="tag.id">{{ tag.name }}</mat-option>
-          }
-        </mat-select>
-        @if (patternForm.controls.tagId.invalid) {
-          <mat-error>Select a tag for this pattern.</mat-error>
         }
       </mat-form-field>
     </form>

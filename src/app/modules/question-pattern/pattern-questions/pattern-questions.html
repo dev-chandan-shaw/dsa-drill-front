@@ -1,0 +1,67 @@
+@if ((!hasLoaded() || isSheetLoading()) && !loadError()) {
+  <div class="page-shell" role="status" aria-label="Loading practice questions">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <div class="skeleton-list" aria-hidden="true">
+      @for (_ of skeletonRows; track $index) {
+        <div class="skeleton-row"></div>
+      }
+    </div>
+  </div>
+} @else if (loadError() && !hasLoaded()) {
+  <div class="load-error" role="alert">
+    <mat-icon aria-hidden="true">cloud_off</mat-icon>
+    <div class="load-error-title">Couldn't load this practice set</div>
+    <div class="load-error-subtitle">Check your connection and try again.</div>
+    <button mat-flat-button type="button" (click)="retry()">Retry</button>
+  </div>
+} @else if (notFound() || !pattern()) {
+  <div class="page-shell">
+    <div class="state-card" role="status">
+      This practice set doesn't exist.
+      <a class="link" routerLink="/question-pattern">Browse all topics</a>
+    </div>
+  </div>
+} @else if (pattern(); as pattern) {
+  @if ((pattern.problemIds ?? []).length === 0) {
+    <div class="page-shell">
+      <div class="state-card" role="status">
+        <div>
+          <div class="empty-title">No practice questions linked yet</div>
+          <div class="empty-subtitle">
+            An admin hasn't linked questions to {{ pattern.name }}.
+          </div>
+        </div>
+        <a class="link" [routerLink]="['/question-pattern', tagSlug(), pattern.id]">
+          Back to {{ pattern.name }}
+        </a>
+      </div>
+    </div>
+  } @else {
+  <div class="sheet-layout">
+    <aside class="sheet-summary" aria-label="Practice set progress summary">
+      <app-sheet-summary-card
+        [title]="pattern.name"
+        [total]="totalCount()"
+        [easyTotal]="easyCount()"
+        [mediumTotal]="mediumCount()"
+        [hardTotal]="hardCount()"
+        [solvedTotal]="solvedCount()"
+        [solvedEasy]="solvedEasyCount()"
+        [solvedMedium]="solvedMediumCount()"
+        [solvedHard]="solvedHardCount()"
+        [solvedPercent]="solvedPercent()"
+      ></app-sheet-summary-card>
+      <nav class="sheet-back" aria-label="Back to pattern">
+        <a [routerLink]="['/question-pattern', tagSlug(), pattern.id]">
+          <mat-icon aria-hidden="true">arrow_back</mat-icon>
+          Back to {{ pattern.name }}
+        </a>
+      </nav>
+    </aside>
+
+    <div class="sheet-content">
+      <app-problem-list [problems]="problems()"></app-problem-list>
+    </div>
+  </div>
+  }
+}

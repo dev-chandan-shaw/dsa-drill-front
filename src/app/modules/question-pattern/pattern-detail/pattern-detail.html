@@ -1,0 +1,97 @@
+@if (!hasLoaded() && !loadError()) {
+  <div class="page-shell" role="status" aria-label="Loading pattern">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <div class="skeleton-list" aria-hidden="true">
+      @for (_ of skeletonRows; track $index) {
+        <div class="skeleton-row"></div>
+      }
+    </div>
+  </div>
+} @else if (loadError() && !hasLoaded()) {
+  <div class="load-error" role="alert">
+    <mat-icon aria-hidden="true">cloud_off</mat-icon>
+    <div class="load-error-title">Couldn't load this pattern</div>
+    <div class="load-error-subtitle">Check your connection and try again.</div>
+    <button mat-flat-button type="button" (click)="retry()">Retry</button>
+  </div>
+} @else if (notFound() || !pattern()) {
+  <div class="page-shell">
+    <div class="state-card" role="status">
+      This pattern doesn't exist.
+      <a class="link" routerLink="/question-pattern">Browse all topics</a>
+    </div>
+  </div>
+} @else if (pattern(); as pattern) {
+  <article class="page-shell pattern-detail" aria-busy="false">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a routerLink="/question-pattern">Topics</a>
+      <mat-icon aria-hidden="true">chevron_right</mat-icon>
+      @if (topic(); as topic) {
+        <a [routerLink]="['/question-pattern', topic.slug]">{{ topic.name }}</a>
+        <mat-icon aria-hidden="true">chevron_right</mat-icon>
+      }
+      <span aria-current="page">{{ pattern.name }}</span>
+    </nav>
+
+    <header class="detail-head">
+      <h1 class="dsa-display">{{ pattern.name }}</h1>
+      <div class="detail-tags">
+        @for (tagId of pattern.tagIds; track tagId) {
+          @if (getTagSlugById(tagId); as slug) {
+            <a class="tag-chip" [routerLink]="['/problems', slug]">{{
+              getTagNameById(tagId)
+            }}</a>
+          }
+        }
+      </div>
+    </header>
+
+    <div class="detail-body">
+      <app-markdown-view [content]="pattern.explanation" />
+    </div>
+
+    @if (questionCount() > 0) {
+      <section class="practice-cta" aria-label="Practice questions">
+        <div>
+          <div class="practice-title">Put it into practice</div>
+          <div class="practice-sub">
+            {{ questionCount() }} linked questions in the full sheet view, with progress tracking.
+          </div>
+        </div>
+        @if (tagSlug(); as slug) {
+          <a
+            mat-flat-button
+            [routerLink]="['/question-pattern', slug, pattern.id, 'questions']"
+          >
+            Practice {{ questionCount() }} questions
+          </a>
+        }
+      </section>
+    }
+
+    <nav class="sibling-nav" aria-label="More patterns">
+      @if (prevPattern(); as prev) {
+        <a
+          class="sibling-link"
+          [routerLink]="['/question-pattern', tagSlug(), prev.id]"
+          rel="prev"
+        >
+          <mat-icon aria-hidden="true">arrow_back</mat-icon>
+          <span>{{ prev.name }}</span>
+        </a>
+      } @else {
+        <span></span>
+      }
+      @if (nextPattern(); as next) {
+        <a
+          class="sibling-link next"
+          [routerLink]="['/question-pattern', tagSlug(), next.id]"
+          rel="next"
+        >
+          <span>{{ next.name }}</span>
+          <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+        </a>
+      }
+    </nav>
+  </article>
+}

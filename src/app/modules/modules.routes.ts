@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { adminGuard } from '../core/guards/admin-guard';
+import { resolvePatternLibrary } from './question-pattern/pattern-library.resolver';
 
 export const routes: Routes = [
   {
@@ -24,9 +25,44 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/admin').then((m) => m.Admin),
       },
       {
+        path: 'admin/patterns/new',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./admin/pattern-editor/pattern-editor').then((m) => m.PatternEditor),
+      },
+      {
+        path: 'admin/patterns/:id/edit',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./admin/pattern-editor/pattern-editor').then((m) => m.PatternEditor),
+      },
+      {
         path: 'question-pattern',
         loadComponent: () =>
           import('./question-pattern/question-pattern').then((m) => m.QuestionPattern),
+        resolve: { library: resolvePatternLibrary },
+      },
+      {
+        path: 'question-pattern/:tagSlug',
+        loadComponent: () =>
+          import('./question-pattern/topic-patterns/topic-patterns').then(
+            (m) => m.TopicPatterns,
+          ),
+        resolve: { library: resolvePatternLibrary },
+      },
+      {
+        path: 'question-pattern/:tagSlug/:patternId',
+        loadComponent: () =>
+          import('./question-pattern/pattern-detail/pattern-detail').then((m) => m.PatternDetail),
+        resolve: { library: resolvePatternLibrary },
+      },
+      {
+        path: 'question-pattern/:tagSlug/:patternId/questions',
+        loadComponent: () =>
+          import('./question-pattern/pattern-questions/pattern-questions').then(
+            (m) => m.PatternQuestions,
+          ),
+        resolve: { library: resolvePatternLibrary },
       },
       {
         path: 'problems/:sheetId',

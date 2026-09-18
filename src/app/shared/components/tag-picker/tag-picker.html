@@ -1,0 +1,36 @@
+<div class="tag-picker-container">
+  <div class="list-toolbar">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+      <mat-icon matPrefix aria-hidden="true">search</mat-icon>
+      <mat-label>Search tags</mat-label>
+      <input
+        matInput
+        type="text"
+        [value]="searchTerm()"
+        (input)="setSearchTerm($any($event.target).value)"
+      />
+    </mat-form-field>
+  </div>
+
+  <div class="tags-section" role="group" aria-label="Select tags">
+    @if (filteredTags().length === 0) {
+      <div class="empty-state">
+        <mat-icon class="empty-icon" aria-hidden="true">search</mat-icon>
+        <div class="empty-title">No tags found</div>
+        <div class="empty-subtitle">Try a different keyword.</div>
+      </div>
+    } @else {
+      @for (tag of filteredTags(); track tag.id) {
+        <div class="tag-row" [class.zebra]="$index % 2 === 0">
+          <mat-checkbox
+            [checked]="isSelected(tag.id)"
+            (change)="toggleTagSelection(tag.id)"
+            [aria-label]="'Select tag: ' + tag.name"
+          >
+            <span class="tag-name">{{ tag.name }}</span>
+          </mat-checkbox>
+        </div>
+      }
+    }
+  </div>
+</div>

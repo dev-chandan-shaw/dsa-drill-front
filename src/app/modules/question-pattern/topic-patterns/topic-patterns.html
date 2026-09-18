@@ -1,0 +1,98 @@
+@if (!hasLoaded() && !loadError()) {
+  <div class="page-shell" role="status" aria-label="Loading patterns">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <div class="skeleton-list" aria-hidden="true">
+      @for (_ of skeletonRows; track $index) {
+        <div class="skeleton-row"></div>
+      }
+    </div>
+  </div>
+} @else if (loadError() && !hasLoaded()) {
+  <div class="load-error" role="alert">
+    <mat-icon aria-hidden="true">cloud_off</mat-icon>
+    <div class="load-error-title">Couldn't load patterns</div>
+    <div class="load-error-subtitle">Check your connection and try again.</div>
+    <button mat-flat-button type="button" (click)="retry()">Retry</button>
+  </div>
+} @else if (notFound()) {
+  <div class="page-shell">
+    <div class="state-card" role="status">
+      This topic doesn't exist.
+      <a class="link" routerLink="/question-pattern">Browse all topics</a>
+    </div>
+  </div>
+} @else if (topic(); as topic) {
+  <section class="page-shell pattern-wall" aria-busy="false">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a routerLink="/question-pattern">Topics</a>
+      <mat-icon aria-hidden="true">chevron_right</mat-icon>
+      <span aria-current="page">{{ topic.name }}</span>
+    </nav>
+
+    <header class="wall-head">
+      <div>
+        <h1 class="dsa-display">{{ topic.name }}</h1>
+        <p class="wall-sub dsa-mono">
+          {{ notes().length }} patterns to learn, tap one to read it fully.
+        </p>
+      </div>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+        <mat-icon matPrefix aria-hidden="true">search</mat-icon>
+        <mat-label>Search patterns</mat-label>
+        <input
+          matInput
+          type="text"
+          [value]="searchTerm()"
+          (input)="setSearchTerm($any($event.target).value)"
+        />
+      </mat-form-field>
+    </header>
+
+    @if (filteredNotes().length === 0) {
+      <div class="state-card" role="status">
+        @if (notes().length === 0) {
+          No patterns under this topic yet.
+        } @else {
+          No patterns match your search.
+          <button type="button" class="link" (click)="setSearchTerm('')">Clear search</button>
+        }
+      </div>
+    } @else {
+      <div class="note-grid">
+        @for (note of filteredNotes(); track trackByPatternId($index, note)) {
+          <article class="note tone-{{ $index % 4 }}" [attr.aria-label]="note.pattern.name">
+            <span class="note-pin" aria-hidden="true"></span>
+            <a
+              class="note-title"
+              [routerLink]="['/question-pattern', topic.slug, note.pattern.id]"
+            >
+              {{ note.pattern.name }}
+            </a>
+            <p class="note-excerpt">{{ note.excerpt || 'Tap to read the full explanation.' }}</p>
+            <div class="note-tags">
+              @for (tagId of note.pattern.tagIds; track tagId) {
+                @if (getTagSlugById(tagId); as slug) {
+                  <a class="mini-chip" [routerLink]="['/problems', slug]">{{
+                    getTagNameById(tagId)
+                  }}</a>
+                }
+              }
+            </div>
+            @if (note.questionCount > 0) {
+              <a
+                class="note-practice"
+                [routerLink]="['/question-pattern', topic.slug, note.pattern.id, 'questions']"
+                [attr.aria-label]="'Practice ' + note.questionCount + ' questions for ' + note.pattern.name"
+              >
+                Practice {{ note.questionCount }} questions
+                <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+              </a>
+            } @else {
+              <span class="note-empty">No questions linked yet</span>
+            }
+          </article>
+        }
+      </div>
+    }
+  </section>
+}

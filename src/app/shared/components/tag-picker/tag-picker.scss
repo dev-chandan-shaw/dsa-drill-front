@@ -1,4 +1,4 @@
-.tag-based-list-container {
+.tag-picker-container {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -13,8 +13,7 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  // Opaque so rows slide under it: both usages (admin pattern pane,
-  // custom-sheet selector) sit on the pane surface color.
+  // Opaque so rows slide under it (mirrors tag-based-problem-list).
   background-color: var(--mat-sys-surface-container-low);
   padding: 2px 0 10px;
 }
@@ -22,15 +21,14 @@
 .search-field {
   flex: 1;
   min-width: 200px;
-  max-width: 360px;
 }
 
-.problems-section {
+.tags-section {
   flex: 1;
   overflow-y: auto;
 }
 
-.problem-row {
+.tag-row {
   padding: 6px 12px;
   border-radius: 8px;
 
@@ -39,7 +37,7 @@
   }
 }
 
-.problem-title {
+.tag-name {
   overflow-wrap: break-word;
   white-space: normal;
 }
@@ -69,10 +67,4 @@
 
 .empty-subtitle {
   font-size: 0.85rem;
-}
-
-@media (max-width: 640px) {
-  .search-field {
-    max-width: none;
-  }
 }

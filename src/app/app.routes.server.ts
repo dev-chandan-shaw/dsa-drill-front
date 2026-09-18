@@ -40,8 +40,23 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Server,
   },
   {
+    // Pattern library: server-rendered per request (like home) so admin
+    // edits are visible immediately and crawlers always get full HTML.
+    // View-source equivalent of a prerender, without frozen build output.
     path: 'question-pattern',
-    renderMode: RenderMode.Prerender,
+    renderMode: RenderMode.Server,
+  },
+  {
+    path: 'question-pattern/:tagSlug',
+    renderMode: RenderMode.Server,
+  },
+  {
+    path: 'question-pattern/:tagSlug/:patternId',
+    renderMode: RenderMode.Server,
+  },
+  {
+    path: 'question-pattern/:tagSlug/:patternId/questions',
+    renderMode: RenderMode.Server,
   },
   {
     path: 'login',

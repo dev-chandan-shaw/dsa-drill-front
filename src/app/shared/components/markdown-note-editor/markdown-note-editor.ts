@@ -36,6 +36,8 @@ export class MarkdownNoteEditor {
   /** Cloudinary subfolder: 'notes' for problem notes, 'patterns' for admin patterns. */
   section = input('notes');
   label = input('Note');
+  /** Minimum body height (e.g. '380px'). Empty keeps the compact default. */
+  minHeight = input('');
 
   private readonly dialog = inject(MatDialog);
   private readonly editorArea = viewChild<ElementRef<HTMLTextAreaElement>>('editorArea');
