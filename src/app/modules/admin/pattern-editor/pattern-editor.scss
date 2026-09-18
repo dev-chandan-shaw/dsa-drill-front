@@ -8,12 +8,15 @@
 .editor-page {
   height: 100%;
   overflow-y: auto;
+  // Full-bleed admin page: neutralize the shared shell's centered 1080px
+  // box (children carry their own gutters).
+  max-width: none;
+  padding: 0;
 }
 
 .editor-head {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 20px 16px 0;
+  margin: 0;
+  padding: 20px 20px 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -36,13 +39,37 @@
   flex: 1;
 }
 
-.editor-single {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 16px 16px 40px;
+.editor-loading {
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+// Two-column workspace: the editing column matches the public detail width
+// (680px) for true WYSIWYG; associations dock in the right rail.
+.editor-grid {
+  margin: 0;
+  padding: 16px 20px 40px;
+  display: grid;
+  grid-template-columns: minmax(0, 680px) minmax(360px, 1fr);
+  gap: 24px;
+  align-items: start;
+  justify-content: center;
+}
+
+.editor-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.editor-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
 }
 
 .pane-field {
@@ -197,8 +224,7 @@
 }
 
 .state-card {
-  max-width: 1080px;
-  margin: 24px auto;
+  margin: 24px 20px;
   border: 1px dashed var(--mat-sys-outline-variant);
   border-radius: 10px;
   padding: 16px;
@@ -226,4 +252,10 @@
 .empty-subtitle {
   font-size: 0.85rem;
   margin-top: 2px;
+}
+
+@media (max-width: 1200px) {
+  .editor-grid {
+    grid-template-columns: 1fr;
+  }
 }

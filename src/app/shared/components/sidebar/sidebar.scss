@@ -8,9 +8,13 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 16px;
+  // No top padding: the header below owns the full 56px bar, exactly like
+  // the app header, so the two read as one continuous strip.
+  padding: 0 16px 16px;
   box-sizing: border-box;
-  width: 220px;
+  // Fill whatever hosts it: the 220px desktop slot or the mobile drawer.
+  // (A fixed px width here left a dead gutter inside the drawer.)
+  width: 100%;
   background-color: var(--mat-sys-surface-container);
   color: var(--mat-sys-on-surface);
   overflow-y: auto;
@@ -22,12 +26,23 @@
   gap: 8px;
   border-bottom: 1px solid var(--mat-sys-outline-variant);
   flex-shrink: 0;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
+  // Exactly the app header's 56px bar (no min-height slack), same logo
+  // size and tokens, so drawer and app headers read as one strip.
+  height: 56px;
+  padding: 0;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.sidebar-header + .sidebar-nav {
+  padding-top: 0;
 }
 
 .sidebar-nav {
   flex: 1;
+  // Breathing room below the app header for the headerless desktop
+  // sidebar. The drawer keeps its flush 56px merge (see override below).
+  padding-top: 16px;
 
   ul {
     list-style: none;
@@ -86,7 +101,7 @@
     margin: 0;
     font-family: 'Sora', Inter, system-ui, sans-serif;
     letter-spacing: -0.02em;
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
     color: var(--mat-sys-primary);
   }

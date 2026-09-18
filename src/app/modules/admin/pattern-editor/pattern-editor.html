@@ -1,8 +1,31 @@
 <section class="page-shell editor-page">
-  <header class="editor-head">
-    <div class="editor-title-row">
-      <span class="editor-spacer"></span>
-      @if (!isLoading() && !notFound()) {
+  @if (isLoading()) {
+    <div class="editor-loading" role="status" aria-label="Loading pattern editor">
+      <div class="skel skel-title"></div>
+      <div class="editor-grid" aria-hidden="true">
+        <div class="skel-stack">
+          <div class="skel" style="height: 56px"></div>
+          <div class="skel skel-block" style="--h: 380px"></div>
+          <div class="skel" style="height: 56px"></div>
+        </div>
+        <div class="skel-stack">
+          <div class="skel skel-block" style="--h: 170px"></div>
+          <div class="skel skel-block" style="--h: 250px"></div>
+        </div>
+      </div>
+    </div>
+  } @else if (notFound()) {
+    <div class="state-card" role="status">
+      This pattern doesn't exist.
+      <button type="button" class="link" (click)="back()">Back to patterns</button>
+    </div>
+  } @else {
+    <header class="editor-head">
+      <div class="editor-title-row">
+        <h1 class="dsa-display">
+          {{ editingPatternId() !== null ? 'Edit Pattern' : 'Add Pattern' }}
+        </h1>
+        <span class="editor-spacer"></span>
         <button
           mat-flat-button
           type="button"
@@ -11,117 +34,109 @@
         >
           {{ isSaving() ? 'Saving…' : editingPatternId() !== null ? 'Save changes' : 'Add pattern' }}
         </button>
-      }
-    </div>
-    <h1 class="dsa-display">
-      {{ editingPatternId() !== null ? 'Edit Pattern' : 'Add Pattern' }}
-    </h1>
-  </header>
-
-  @if (isLoading()) {
-    <div role="status" aria-label="Loading pattern editor">
-      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-    </div>
-  } @else if (loadError() && editingPatternId() === null && !notFound()) {
-    <div class="state-card" role="alert">
-      <div>
-        <div class="empty-title">Couldn't load editor data</div>
-        <div class="empty-subtitle">Check your connection and try again.</div>
       </div>
-      <button mat-flat-button type="button" (click)="retry()">Retry</button>
-    </div>
-  } @else if (notFound()) {
-    <div class="state-card" role="status">
-      This pattern doesn't exist.
-      <button type="button" class="link" (click)="back()">Back to patterns</button>
-    </div>
-  } @else {
-    <form class="editor-single" [formGroup]="patternForm">
-      <mat-form-field appearance="outline" class="pane-field">
-        <mat-label>Pattern name</mat-label>
-        <input matInput type="text" formControlName="name" required minlength="2" />
-        @if (patternForm.controls.name.invalid) {
-          <mat-error>Pattern name needs at least 2 characters.</mat-error>
-        }
-      </mat-form-field>
-
-      <app-markdown-note-editor
-        [control]="patternForm.controls.explanation"
-        section="patterns"
-        label="Explanation"
-        minHeight="380px"
-      />
-      @if (patternForm.controls.explanation.invalid) {
-        <p class="field-error">Explanation needs at least 5 characters.</p>
-      }
-
-      <section class="pick-section" aria-label="Problem tags">
-        <div class="pick-head">
-          <div>
-            <h2>Tags</h2>
-            @if (patternForm.controls.tagIds.invalid && patternForm.controls.tagIds.touched) {
-              <p class="field-error">Select at least one tag for this pattern.</p>
-            }
-          </div>
-          <button mat-stroked-button type="button" (click)="openTagsPane()">
-            <mat-icon aria-hidden="true">sell</mat-icon>
-            Select tags
-          </button>
+    </header>
+    @if (loadError()) {
+      <div class="state-card" role="alert">
+        <div>
+          <div class="empty-title">Couldn't load editor data</div>
+          <div class="empty-subtitle">Check your connection and try again.</div>
         </div>
-        @if (selectedTagIds.length) {
-          <div class="chip-row">
-            @for (tagId of selectedTagIds; track tagId) {
-              <span class="pick-chip">
-                {{ getTagNameById(tagId) }}
-                <button
-                  mat-icon-button
-                  type="button"
-                  class="chip-remove"
-                  [attr.aria-label]="'Remove tag ' + getTagNameById(tagId)"
-                  (click)="removeTag(tagId)"
-                >
-                  <mat-icon>close</mat-icon>
-                </button>
-              </span>
+        <button mat-flat-button type="button" (click)="retry()">Retry</button>
+      </div>
+    }
+    <form [formGroup]="patternForm">
+      <div class="editor-grid">
+        <div class="editor-main">
+          <mat-form-field appearance="outline" class="pane-field">
+            <mat-label>Pattern name</mat-label>
+            <input matInput type="text" formControlName="name" required minlength="2" />
+            @if (patternForm.controls.name.invalid) {
+              <mat-error>Pattern name needs at least 2 characters.</mat-error>
             }
-          </div>
-        } @else {
-          <p class="pick-empty">No tags selected yet.</p>
-        }
-      </section>
+          </mat-form-field>
 
-      <section class="pick-section" aria-label="Linked questions">
-        <div class="pick-head">
-          <div>
-            <h2>Linked questions ({{ linkedProblemIds.length }})</h2>
-            <p class="pick-sub">Only these questions show on the pattern page.</p>
-          </div>
-          <button mat-stroked-button type="button" (click)="openQuestionsPane()">
-            <mat-icon aria-hidden="true">add</mat-icon>
-            Add questions
-          </button>
+          <app-markdown-note-editor
+            [control]="patternForm.controls.explanation"
+            section="patterns"
+            label="Explanation"
+            minHeight="380px"
+          />
+          @if (patternForm.controls.explanation.invalid) {
+            <p class="field-error">Explanation needs at least 5 characters.</p>
+          }
         </div>
-        @if (linkedProblems().length) {
-          <ul class="linked-titles">
-            @for (problem of linkedProblems(); track problem.id) {
-              <li>
-                <span>{{ problem.title }}</span>
-                <button
-                  mat-icon-button
-                  type="button"
-                  class="chip-remove"
-                  [attr.aria-label]="'Unlink ' + problem.title"
-                  (click)="removeProblem(problem.id)"
-                >
-                  <mat-icon>close</mat-icon>
-                </button>
-              </li>
+
+        <aside class="editor-rail" aria-label="Pattern associations">
+          <section class="pick-section" aria-label="Problem tags">
+            <div class="pick-head">
+              <div>
+                <h2>Tags</h2>
+                @if (patternForm.controls.tagIds.invalid && patternForm.controls.tagIds.touched) {
+                  <p class="field-error">Select at least one tag for this pattern.</p>
+                }
+              </div>
+              <button mat-stroked-button type="button" (click)="openTagsPane()">
+                <mat-icon aria-hidden="true">sell</mat-icon>
+                Select tags
+              </button>
+            </div>
+            @if (selectedTagIds.length) {
+              <div class="chip-row">
+                @for (tagId of selectedTagIds; track tagId) {
+                  <span class="pick-chip">
+                    {{ getTagNameById(tagId) }}
+                    <button
+                      mat-icon-button
+                      type="button"
+                      class="chip-remove"
+                      [attr.aria-label]="'Remove tag ' + getTagNameById(tagId)"
+                      (click)="removeTag(tagId)"
+                    >
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </span>
+                }
+              </div>
+            } @else {
+              <p class="pick-empty">No tags selected yet.</p>
             }
-          </ul>
-        } @else {
-          <p class="pick-empty">No questions linked yet.</p>
-        }
-      </section>
+          </section>
+
+          <section class="pick-section" aria-label="Linked questions">
+            <div class="pick-head">
+              <div>
+                <h2>Linked questions ({{ linkedProblemIds.length }})</h2>
+                <p class="pick-sub">Only these questions show on the pattern page.</p>
+              </div>
+              <button mat-stroked-button type="button" (click)="openQuestionsPane()">
+                <mat-icon aria-hidden="true">add</mat-icon>
+                Add questions
+              </button>
+            </div>
+            @if (linkedProblems().length) {
+              <ul class="linked-titles">
+                @for (problem of linkedProblems(); track problem.id) {
+                  <li>
+                    <span>{{ problem.title }}</span>
+                    <button
+                      mat-icon-button
+                      type="button"
+                      class="chip-remove"
+                      [attr.aria-label]="'Unlink ' + problem.title"
+                      (click)="removeProblem(problem.id)"
+                    >
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <p class="pick-empty">No questions linked yet.</p>
+            }
+          </section>
+        </aside>
+      </div>
     </form>
   }
 </section>

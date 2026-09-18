@@ -4,6 +4,7 @@
   @if (data.target === 'image') {
     <mat-button-toggle-group
       hideSingleSelectionIndicator
+      class="mode-toggle"
       [value]="tab()"
       (change)="setTab($event.value)"
       aria-label="Insert mode"

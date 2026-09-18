@@ -50,6 +50,8 @@ hljs.registerLanguage('yaml', yaml);
 })
 export class MarkdownView {
   content = input<string>('');
+  /** 'reading' applies the Medium-style serif article treatment. */
+  variant = input<'compact' | 'reading'>('compact');
 
   private readonly markdown = inject(MarkdownService);
   private readonly host = inject(ElementRef);

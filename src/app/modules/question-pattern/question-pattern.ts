@@ -3,7 +3,6 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { IProblemTag } from '../home/models/question-tag';
 import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.service';
 import { ProblemPatternService } from '../../shared/services/public-api/problem-pattern.service';
@@ -24,7 +23,6 @@ export interface TopicEntry {
     RouterModule,
     MatButtonModule,
     MatIconModule,
-    MatProgressBarModule,
   ],
   templateUrl: './question-pattern.html',
   styleUrl: './question-pattern.scss',

@@ -33,6 +33,12 @@
   </div>
 } @else {
   <div class="page-shell" role="status" aria-label="Loading library problems">
+    <div class="tag-row" aria-hidden="true">
+      <div class="skel skel-pill"></div>
+      <div class="skel skel-pill"></div>
+      <div class="skel skel-pill"></div>
+      <div class="skel skel-pill"></div>
+    </div>
     <div class="skeleton-list" aria-hidden="true">
       @for (_ of skeletonRows; track $index) {
         <div class="skeleton-row"></div>

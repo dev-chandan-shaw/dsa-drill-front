@@ -77,4 +77,22 @@ describe('MarkdownView', () => {
     // (unlayered author CSS beats Tailwind's @layer base reset) is a
     // platform guarantee, confirmed against the installed preflight source.
   });
+
+  it('defaults to the compact variant', () => {
+    fixture.componentRef.setInput('content', 'hello');
+    fixture.detectChanges();
+
+    const body = fixture.nativeElement.querySelector('.markdown-body') as HTMLElement;
+    expect(body).toBeTruthy();
+    expect(body.classList.contains('markdown-body--reading')).toBe(false);
+  });
+
+  it('applies the reading variant class when requested', () => {
+    fixture.componentRef.setInput('content', 'hello');
+    fixture.componentRef.setInput('variant', 'reading');
+    fixture.detectChanges();
+
+    const body = fixture.nativeElement.querySelector('.markdown-body') as HTMLElement;
+    expect(body?.classList.contains('markdown-body--reading')).toBe(true);
+  });
 });

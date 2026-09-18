@@ -1,4 +1,12 @@
-import { Component, ElementRef, inject, input, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  computed,
+  inject,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -44,12 +52,17 @@ export class MarkdownNoteEditor {
 
   readonly previewing = signal(false);
   readonly isDragOver = signal(false);
+  /** Image upload stays available for patterns; notes are text-only. */
+  readonly allowImages = computed(() => this.section() !== 'notes');
 
   togglePreview() {
     this.previewing.update((value) => !value);
   }
 
   openInsertDialog(target: 'link' | 'image', files?: File[]) {
+    if (target === 'image' && !this.allowImages()) {
+      return;
+    }
     const dialogData: ImageInsertDialogData = {
       target,
       section: this.section(),
@@ -143,6 +156,9 @@ export class MarkdownNoteEditor {
   onDrop(event: DragEvent) {
     event.preventDefault();
     this.isDragOver.set(false);
+    if (!this.allowImages()) {
+      return;
+    }
     const files = event.dataTransfer?.files;
     if (files?.length) {
       this.openInsertDialog('image', [...files]);
@@ -150,6 +166,9 @@ export class MarkdownNoteEditor {
   }
 
   onPaste(event: ClipboardEvent) {
+    if (!this.allowImages()) {
+      return;
+    }
     const files = event.clipboardData?.files;
     if (files?.length && [...files].some((file) => file.type.startsWith('image/'))) {
       event.preventDefault();

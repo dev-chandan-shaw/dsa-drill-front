@@ -3,7 +3,6 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { IProblem, ProblemDifficulty } from '../../home/models/Question';
 import { IProblemPattern } from '../../home/models/problem-pattern';
 import { IProblemTag } from '../../home/models/question-tag';
@@ -24,7 +23,6 @@ import { linkedQuestions, primaryTagId } from '../pattern-utils';
     RouterModule,
     MatButtonModule,
     MatIconModule,
-    MatProgressBarModule,
     ProblemList,
     SheetSummaryCard,
   ],

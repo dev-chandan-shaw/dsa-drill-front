@@ -38,6 +38,27 @@ describe('MarkdownNoteEditor', () => {
     expect(component).toBeTruthy();
   });
 
+  it('hides the image button for notes (default section)', () => {
+    expect(component.allowImages()).toBe(false);
+    expect(
+      fixture.nativeElement.querySelector('button[aria-label="Insert image"]'),
+    ).toBeNull();
+  });
+
+  it('shows the image button for patterns', () => {
+    fixture.componentRef.setInput('section', 'patterns');
+    fixture.detectChanges();
+    expect(component.allowImages()).toBe(true);
+    expect(
+      fixture.nativeElement.querySelector('button[aria-label="Insert image"]'),
+    ).toBeTruthy();
+  });
+
+  it('ignores image inserts for notes', () => {
+    component.openInsertDialog('image');
+    expect(dialogOpen).not.toHaveBeenCalled();
+  });
+
   it('wraps selected text in bold markers', () => {
     const textarea = fixture.nativeElement.querySelector(
       '.md-textarea',

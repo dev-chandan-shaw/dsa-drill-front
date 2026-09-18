@@ -1,5 +1,9 @@
 @if (html()) {
-  <div class="markdown-body" [innerHTML]="html()"></div>
+  <div
+    class="markdown-body"
+    [class.markdown-body--reading]="variant() === 'reading'"
+    [innerHTML]="html()"
+  ></div>
 } @else {
   <p class="markdown-empty">Nothing to preview yet.</p>
 }

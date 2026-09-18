@@ -5,6 +5,10 @@ mat-dialog-content {
   min-width: min(420px, calc(100dvw - 64px));
 }
 
+.mode-toggle {
+  align-self: flex-start;
+}
+
 .upload-drop {
   border: 1px dashed var(--mat-sys-outline-variant);
   border-radius: 12px;

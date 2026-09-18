@@ -17,7 +17,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MarkdownNoteEditor } from '../../../shared/components/markdown-note-editor/markdown-note-editor';
 import { TagBasedProblemList } from '../../../shared/components/tag-based-problem-list/tag-based-problem-list';
 import { TagPicker } from '../../../shared/components/tag-picker/tag-picker';
@@ -43,7 +42,6 @@ import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.se
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
-    MatProgressBarModule,
     MarkdownNoteEditor,
     TagBasedProblemList,
     TagPicker,
@@ -75,6 +73,7 @@ export class PatternEditor implements OnInit {
   readonly loadError = signal(false);
   readonly notFound = signal(false);
   readonly editingPatternId = signal<number | null>(null);
+  readonly skeletonRows = Array.from({ length: 6 });
 
   private activeEditId: number | null | undefined = undefined;
 

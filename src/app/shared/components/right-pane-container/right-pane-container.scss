@@ -7,6 +7,9 @@
   max-width: 100dvw;
   background-color: var(--mat-sys-surface-container-low);
   color: var(--mat-sys-on-surface);
+  // Flush sheet edges: the M3 modal-drawer rounding looks broken against
+  // full-height app panes (notably the mobile nav drawer).
+  border-radius: 0;
 }
 
 .dsa-pane-body {

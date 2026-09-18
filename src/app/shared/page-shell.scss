@@ -33,6 +33,43 @@
   animation: dsa-pulse 1.4s ease-in-out infinite;
 }
 
+// Content-aware skeleton primitives. Compose these to mirror the surface
+// being loaded (titles, text lines, cards, covers) instead of reusing the
+// generic row bars everywhere. Widths tune per instance via --w.
+.skel {
+  border-radius: 12px;
+  background-color: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+  animation: dsa-pulse 1.4s ease-in-out infinite;
+}
+
+.skel-title {
+  height: 32px;
+  width: min(320px, 70%);
+  border-radius: 8px;
+}
+
+.skel-line {
+  height: 12px;
+  width: var(--w, 100%);
+  border-radius: 6px;
+}
+
+.skel-block {
+  min-height: var(--h, 120px);
+}
+
+.skel-pill {
+  height: 36px;
+  width: 120px;
+  border-radius: 999px;
+}
+
+.skel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 @keyframes dsa-pulse {
   0%,
   100% {

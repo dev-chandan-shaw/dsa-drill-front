@@ -318,3 +318,98 @@ html.dark .markdown-body {
   color: var(--mat-sys-on-surface-variant);
   font-size: 0.85rem;
 }
+
+// Medium-style reading treatment (pattern detail page only): serif body at
+// article size, sans headings without rules, underlined links, section dots.
+.markdown-body--reading {
+  font-family: Georgia, Cambria, 'Times New Roman', Times, serif;
+  font-size: 1.25rem;
+  line-height: 1.58;
+  letter-spacing: -0.003em;
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Sora', Inter, system-ui, sans-serif;
+    letter-spacing: -0.02em;
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  h1 {
+    font-size: 1.9rem;
+    margin: 1.2em 0 0.5em;
+  }
+
+  h2 {
+    font-size: 1.55rem;
+    margin: 1.4em 0 0.5em;
+  }
+
+  h3 {
+    font-size: 1.3rem;
+    margin: 1.3em 0 0.4em;
+  }
+
+  p,
+  ul,
+  ol {
+    margin: 1.1em 0;
+  }
+
+  li + li {
+    margin-top: 0.35em;
+  }
+
+  a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+
+  blockquote {
+    font-size: 1.15em;
+    padding: 0.2em 0 0.2em 1em;
+  }
+
+  code {
+    font-size: 0.78em;
+  }
+
+  pre {
+    font-size: 0.85rem;
+  }
+
+  table {
+    font-family: Inter, system-ui, sans-serif;
+    font-size: 0.85rem;
+  }
+
+  img {
+    margin: 1.2em 0;
+  }
+
+  hr {
+    border: none;
+    text-align: center;
+    margin: 1.6em 0;
+
+    &::after {
+      content: '···';
+      letter-spacing: 0.6em;
+      margin-right: -0.6em;
+      color: var(--mat-sys-on-surface-variant);
+    }
+  }
+
+  @media (max-width: 640px) {
+    font-size: 1.125rem;
+
+    pre {
+      font-size: 0.8rem;
+    }
+  }
+}

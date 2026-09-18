@@ -1,10 +1,18 @@
 @if (!hasLoaded() && !loadError()) {
   <div class="page-shell" role="status" aria-label="Loading pattern">
-    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-    <div class="skeleton-list" aria-hidden="true">
-      @for (_ of skeletonRows; track $index) {
-        <div class="skeleton-row"></div>
-      }
+    <div class="detail-skel" aria-hidden="true">
+      <div class="skel skel-title"></div>
+      <div class="skel-stack">
+        <div class="skel skel-line"></div>
+        <div class="skel skel-line" style="--w: 92%"></div>
+        <div class="skel skel-line" style="--w: 97%"></div>
+        <div class="skel skel-line" style="--w: 78%"></div>
+      </div>
+      <div class="skel skel-block" style="--h: 140px"></div>
+      <div class="skel-stack">
+        <div class="skel skel-line" style="--w: 95%"></div>
+        <div class="skel skel-line" style="--w: 84%"></div>
+      </div>
     </div>
   </div>
 } @else if (loadError() && !hasLoaded()) {
@@ -23,22 +31,12 @@
   </div>
 } @else if (pattern(); as pattern) {
   <article class="page-shell pattern-detail" aria-busy="false">
-    <nav class="crumbs" aria-label="Breadcrumb">
-      <a routerLink="/question-pattern">Topics</a>
-      <mat-icon aria-hidden="true">chevron_right</mat-icon>
-      @if (topic(); as topic) {
-        <a [routerLink]="['/question-pattern', topic.slug]">{{ topic.name }}</a>
-        <mat-icon aria-hidden="true">chevron_right</mat-icon>
-      }
-      <span aria-current="page">{{ pattern.name }}</span>
-    </nav>
-
     <header class="detail-head">
       <h1 class="dsa-display">{{ pattern.name }}</h1>
     </header>
 
     <div class="detail-body">
-      <app-markdown-view [content]="pattern.explanation" />
+      <app-markdown-view [content]="pattern.explanation" variant="reading" />
     </div>
 
     @if (questionCount() > 0) {

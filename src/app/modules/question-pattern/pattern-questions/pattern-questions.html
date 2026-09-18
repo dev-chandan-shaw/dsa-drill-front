@@ -1,10 +1,14 @@
 @if ((!hasLoaded() || isSheetLoading()) && !loadError()) {
-  <div class="page-shell" role="status" aria-label="Loading practice questions">
-    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-    <div class="skeleton-list" aria-hidden="true">
-      @for (_ of skeletonRows; track $index) {
-        <div class="skeleton-row"></div>
-      }
+  <div class="sheet-layout" role="status" aria-label="Loading practice questions">
+    <aside class="sheet-summary" aria-hidden="true">
+      <div class="skel skel-block" style="--h: 300px"></div>
+    </aside>
+    <div class="sheet-content" aria-hidden="true">
+      <div class="skeleton-list">
+        @for (_ of skeletonRows; track $index) {
+          <div class="skeleton-row"></div>
+        }
+      </div>
     </div>
   </div>
 } @else if (loadError() && !hasLoaded()) {

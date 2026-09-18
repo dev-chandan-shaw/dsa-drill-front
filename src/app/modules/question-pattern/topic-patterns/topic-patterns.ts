@@ -3,7 +3,6 @@ import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angula
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { IProblemPattern } from '../../home/models/problem-pattern';
 import { IProblemTag } from '../../home/models/question-tag';
@@ -28,7 +27,6 @@ export interface PatternNote {
     RouterModule,
     MatButtonModule,
     MatIconModule,
-    MatProgressBarModule,
   ],
   templateUrl: './topic-patterns.html',
   styleUrl: './topic-patterns.scss',

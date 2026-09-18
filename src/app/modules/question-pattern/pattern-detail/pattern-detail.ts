@@ -4,7 +4,6 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { IProblemPattern } from '../../home/models/problem-pattern';
 import { IProblemTag } from '../../home/models/question-tag';
 import { ProblemTagService } from '../../../shared/services/public-api/proglem-tag.service';
@@ -23,7 +22,6 @@ import { markdownExcerpt } from '../markdown-excerpt';
     RouterModule,
     MatButtonModule,
     MatIconModule,
-    MatProgressBarModule,
     MarkdownView,
   ],
   templateUrl: './pattern-detail.html',

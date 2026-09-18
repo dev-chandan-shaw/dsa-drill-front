@@ -77,15 +77,17 @@
     >
       <mat-icon>link</mat-icon>
     </button>
-    <button
-      mat-icon-button
-      type="button"
-      matTooltip="Insert image"
-      aria-label="Insert image"
-      (click)="openInsertDialog('image')"
-    >
-      <mat-icon>image</mat-icon>
-    </button>
+    @if (allowImages()) {
+      <button
+        mat-icon-button
+        type="button"
+        matTooltip="Insert image"
+        aria-label="Insert image"
+        (click)="openInsertDialog('image')"
+      >
+        <mat-icon>image</mat-icon>
+      </button>
+    }
     <span class="md-toolbar-divider" aria-hidden="true"></span>
     <button
       mat-icon-button
