@@ -17,13 +17,26 @@ export class ThemeService {
   private readonly storage = inject(StorageService);
   private readonly document = inject(DOCUMENT);
 
-  readonly isDark = signal(true);
+  // Seed from whatever the pre-paint inline script already applied to the
+  // DOM, so there's no window where this signal disagrees with what's
+  // painted. On the server there's no class yet, so default to dark
+  // (matches the SSR/boot-shell default).
+  readonly isDark = signal(this.readInitialDark());
+
+  private readInitialDark(): boolean {
+    if (isPlatformBrowser(this.platformId)) {
+      return this.document.documentElement.classList.contains('dark');
+    }
+    return true;
+  }
 
   init(): void {
     if (!isPlatformBrowser(this.platformId)) {
       return;
     }
-    this.isDark.set(this.resolveInitialDark());
+    // isDark is already correct (seeded from the DOM above). Just make
+    // sure future writes (colorScheme, cleanup of legacy classes) are
+    // applied once, without re-deciding or re-toggling the class.
     this.apply();
   }
 
@@ -35,25 +48,6 @@ export class ThemeService {
     this.isDark.set(dark);
     this.storage.set(THEME_STORAGE_KEY, dark ? 'dark' : 'light');
     this.apply();
-  }
-
-  private resolveInitialDark(): boolean {
-    const stored = this.storage.get(THEME_STORAGE_KEY);
-    if (stored === 'light') {
-      return false;
-    }
-    if (stored === 'dark') {
-      return true;
-    }
-    // No stored preference: respect the OS, defaulting to dark.
-    try {
-      if (typeof window.matchMedia === 'function') {
-        return !window.matchMedia('(prefers-color-scheme: light)').matches;
-      }
-    } catch {
-      // Ignore and fall through to the default.
-    }
-    return true;
   }
 
   private apply(): void {
