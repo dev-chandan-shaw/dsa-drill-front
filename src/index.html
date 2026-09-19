@@ -1,7 +1,27 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
+    <script>
+      // Pre-paint theme: same rule as ThemeService (stored pref > OS > dark).
+      // First executable in <head> so it runs before any paintable content
+      // exists — no wrong-theme flash even on a slow parse.
+      (function () {
+        try {
+          var stored = localStorage.getItem('dsa-drill-theme');
+          var dark =
+            stored === 'dark'
+              ? true
+              : stored === 'light'
+                ? false
+                : !window.matchMedia('(prefers-color-scheme: light)').matches;
+          document.documentElement.classList.toggle('dark', dark);
+          document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+        } catch (e) {
+          /* keep server-rendered default */
+        }
+      })();
+    </script>
     <title>DSA Drill</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -115,25 +135,6 @@
         }
       }
     </style>
-    <script>
-      // Pre-paint theme: same rule as ThemeService (stored pref > OS > dark).
-      // Runs before first paint to avoid any flash.
-      (function () {
-        try {
-          var stored = localStorage.getItem('dsa-drill-theme');
-          var dark =
-            stored === 'dark'
-              ? true
-              : stored === 'light'
-                ? false
-                : !window.matchMedia('(prefers-color-scheme: light)').matches;
-          document.documentElement.classList.toggle('dark', dark);
-          document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
-        } catch (e) {
-          /* keep server-rendered default */
-        }
-      })();
-    </script>
   </head>
   <body>
     <app-root>
