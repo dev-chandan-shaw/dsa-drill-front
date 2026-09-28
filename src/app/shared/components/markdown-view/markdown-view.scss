@@ -45,7 +45,6 @@
     font-size: 0.95rem;
   }
 
-  p,
   ul,
   ol,
   blockquote,
@@ -354,12 +353,6 @@ html.dark .markdown-body {
     margin: 1.3em 0 0.4em;
   }
 
-  p,
-  ul,
-  ol {
-    margin: 1.1em 0;
-  }
-
   li + li {
     margin-top: 0.35em;
   }
@@ -371,8 +364,8 @@ html.dark .markdown-body {
   }
 
   blockquote {
-    font-size: 1.15em;
     padding: 0.2em 0 0.2em 1em;
+    font-size: 18px;
   }
 
   code {
@@ -406,7 +399,6 @@ html.dark .markdown-body {
   }
 
   @media (max-width: 640px) {
-    font-size: 1.125rem;
 
     pre {
       font-size: 0.8rem;
