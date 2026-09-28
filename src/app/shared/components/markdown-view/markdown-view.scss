@@ -1,6 +1,6 @@
 .markdown-body {
   font-size: 0.875rem;
-  line-height: 1.65;
+  line-height: 1.6;
   overflow-wrap: break-word;
   color: var(--mat-sys-on-surface);
 
@@ -19,7 +19,7 @@
   h5,
   h6 {
     font-weight: 600;
-    line-height: 1.3;
+    line-height: 1.25;
     margin: 1em 0 0.5em;
   }
 
@@ -53,9 +53,23 @@
     margin: 0.6em 0;
   }
 
+  // Compact editing rhythm: paragraphs sit tighter than other blocks so the
+  // small editor preview doesn't feel airy. Single Enter still breaks the
+  // line (pre-wrap below); a blank line adds just this small paragraph gap.
+  p {
+    margin: 0.35em 0;
+  }
+
   ul,
   ol {
-    padding-left: 1.6em;
+    padding-left: 2em;
+  }
+
+  // Nested lists sit flush (GitHub): no extra vertical margin.
+  li > ul,
+  li > ol {
+    margin-top: 0;
+    margin-bottom: 0;
   }
 
   // Markers: Tailwind preflight strips list-style globally, so restore the
@@ -81,6 +95,27 @@
     margin-top: 0.2em;
   }
 
+  // Preserve author whitespace: single newlines stay visible as line breaks
+  // and consecutive spaces are not collapsed (HTML would otherwise join
+  // "line one\nline two" into one line and "a    b" into "a b").
+  // This is purely presentational — the parser still emits pure GFM with
+  // soft breaks, so SSR HTML and existing specs are unaffected. `pre` keeps
+  // its native `pre` handling (horizontal scroll for code blocks); inline
+  // content inherits pre-wrap from its block parent.
+  p,
+  li,
+  blockquote,
+  th,
+  td,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    white-space: pre-wrap;
+  }
+
   // Task lists (marked emits plain checkboxes without classes).
   ul:has(> li > input[type='checkbox']) {
     list-style: none;
@@ -100,6 +135,10 @@
     padding: 0.1em 0 0.1em 0.9em;
     margin-left: 0;
     color: var(--mat-sys-on-surface-variant);
+
+    > :last-child {
+      margin-bottom: 0;
+    }
   }
 
   del {
@@ -108,23 +147,27 @@
 
   code {
     font-family: 'JetBrains Mono', ui-monospace, monospace;
-    font-size: 0.82em;
+    font-size: 0.85em;
     background-color: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
-    border-radius: 4px;
-    padding: 0.1em 0.35em;
+    border-radius: 6px;
+    padding: 0.2em 0.4em;
   }
 
   pre {
     overflow-x: auto;
-    border-radius: 8px;
-    padding: 12px 14px;
+    border-radius: 6px;
+    padding: 16px;
     background-color: color-mix(in srgb, var(--mat-sys-on-surface) 6%, transparent);
 
     code {
       background: none;
       padding: 0;
       font-size: 0.8rem;
-      line-height: 1.6;
+      line-height: 1.45;
+      // True viewer behavior: long code lines scroll, never wrap.
+      white-space: pre;
+      overflow-wrap: normal;
+      word-break: normal;
     }
   }
 
@@ -157,6 +200,10 @@
     background-color: color-mix(in srgb, var(--mat-sys-on-surface) 7%, transparent);
   }
 
+  tr {
+    border-top: 1px solid var(--mat-sys-outline-variant);
+  }
+
   tbody tr:nth-child(even) {
     background-color: color-mix(in srgb, var(--mat-sys-on-surface) 3%, transparent);
   }
@@ -173,9 +220,16 @@
   }
 
   hr {
-    border: none;
-    border-top: 1px solid var(--mat-sys-outline-variant);
+    height: 0.25em;
+    padding: 0;
     margin: 1em 0;
+    background-color: var(--mat-sys-outline-variant);
+    border: 0;
+  }
+
+  b,
+  strong {
+    font-weight: 600;
   }
 
   // ---- syntax highlighting (GitHub palette, both themes) ----
@@ -322,7 +376,7 @@ html.dark .markdown-body {
 // article size, sans headings without rules, underlined links, section dots.
 .markdown-body--reading {
   font-family: Georgia, Cambria, 'Times New Roman', Times, serif;
-  font-size: 1.25rem;
+  font-size: 18px;
   line-height: 1.58;
   letter-spacing: -0.003em;
 
@@ -357,6 +411,13 @@ html.dark .markdown-body {
     margin-top: 0.35em;
   }
 
+  // Rich-text-like paragraph rhythm: one blank line (Enter twice) must read
+  // as a real paragraph gap, not a single line break. Base `p` margin above
+  // covers this; the reading size needs a roomier article measure.
+  p {
+    margin: 0.9em 0;
+  }
+
   a {
     text-decoration: underline;
     text-underline-offset: 3px;
@@ -366,6 +427,21 @@ html.dark .markdown-body {
   blockquote {
     padding: 0.2em 0 0.2em 1em;
     font-size: 18px;
+
+    // Keep quotes snug: the roomy article `p` margin above must not leak
+    // inside the quote (higher specificity than the base reset, which ties
+    // with the reading `p` rule and loses by source order).
+    p {
+      margin: 0.3em 0;
+    }
+
+    > :first-child {
+      margin-top: 0;
+    }
+
+    > :last-child {
+      margin-bottom: 0;
+    }
   }
 
   code {

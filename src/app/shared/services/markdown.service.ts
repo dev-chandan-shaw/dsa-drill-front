@@ -20,7 +20,9 @@ export class MarkdownService {
       return '';
     }
     const html = marked.parse(source, { gfm: true }) as string;
-    return sanitizeHtml(html, {
+    
+    const compact = html.replace(/>\s*\n\s*</g, '><');
+    return sanitizeHtml(compact, {
       allowedTags: sanitizeHtml.defaults.allowedTags.concat([
         'img',
         'input',

@@ -57,4 +57,20 @@ describe('MarkdownService', () => {
     const html = service.render('```python\nx = 1\n```');
     expect(html).toContain('class="language-python"');
   });
+
+  it('strips inter-tag newlines but keeps inner soft breaks (pre-wrap safety)', () => {
+    const html = service.render('> line one\n> line two');
+    expect(html).toContain('<blockquote><p>line one\nline two</p></blockquote>');
+    expect(html).not.toMatch(/>\n</);
+  });
+
+  it('joins list items without inter-tag whitespace', () => {
+    const html = service.render('- alpha\n- beta');
+    expect(html).toContain('<ul><li>alpha</li><li>beta</li></ul>');
+  });
+
+  it('preserves inline spaces between elements', () => {
+    const html = service.render('click [guide](https://example.com) `code`');
+    expect(html).toContain('</a> <code>');
+  });
 });
