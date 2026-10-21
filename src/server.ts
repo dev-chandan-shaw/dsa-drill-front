@@ -13,7 +13,7 @@ const app = express();
 const angularApp = new AngularNodeAppEngine();
 
 const BACKEND_API_URL = process.env['BACKEND_API_URL'] ?? 'https://dsa-drill.duckdns.org/api';
-const SITE_URL = 'https://dsa-drill.vercel.app';
+const SITE_URL = 'https://dsa-drill.duckdns.org';
 const SITEMAP_TTL_MS = 3600 * 1000;
 let cachedSitemap: string | null = null;
 let sitemapCachedAt = 0;
