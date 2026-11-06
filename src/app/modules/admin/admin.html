@@ -214,15 +214,6 @@
                         <span class="mini-chip">{{ getTagNameById(tagId) }}</span>
                       }
                     </div>
-                    <div
-                      class="pattern-explanation"
-                      [class.clamped]="!isPatternExpanded(pattern.id)"
-                    >
-                      <app-markdown-view [content]="pattern.explanation" />
-                    </div>
-                    <button type="button" class="link" (click)="togglePatternExpanded(pattern.id)">
-                      {{ isPatternExpanded(pattern.id) ? 'Show less' : 'Show more' }}
-                    </button>
                   </div>
                   <div class="row-actions">
                     <button
