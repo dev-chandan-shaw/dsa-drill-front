@@ -15,11 +15,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { Header } from '../shared/components/header/header';
 import { Sidebar } from '../shared/components/sidebar/sidebar';
+import { NotePane } from './library/personal/note-pane';
 import { PaneSide, RightPaneService, RightPaneSize } from '../shared/services/right-pane-service';
 
 @Component({
   selector: 'app-modules',
-  imports: [RouterOutlet, Header, Sidebar],
+  imports: [RouterOutlet, Header, Sidebar, NotePane],
   templateUrl: './modules.html',
   styleUrl: './modules.scss',
 })

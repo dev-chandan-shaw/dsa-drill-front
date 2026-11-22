@@ -44,7 +44,7 @@ import { SeoService } from '../../shared/services/seo.service';
               @for (section of subject.sections; track section.code) {
                 <a
                   [routerLink]="['/library', subject.code, section.code]"
-                  [attr.aria-current]="page.section?.code === section.code ? 'page' : null"
+                   [attr.aria-current]="page.section?.code === section.code ? 'page' : null"
                   >{{ section.title }}</a
                 >
               }
@@ -69,7 +69,8 @@ import { SeoService } from '../../shared/services/seo.service';
                 </div>
               } @else if (page.tree; as tree) {
                 @if (tree.groups.length) {
-                  <div class="collection"><app-library-tree [groups]="tree.groups" /></div>
+                  <div class="collection"><app-library-tree [groups]="tree.groups"
+                    [shaded]="page.subject.code === 'hld' || page.subject.code === 'lld'" /></div>
                 } @else {
                   <div class="library-state">
                     <p>
@@ -92,7 +93,7 @@ import { SeoService } from '../../shared/services/seo.service';
               @for (subject of page.subjects; track subject.code) {
                 <a
                   class="subject-card"
-                  [routerLink]="['/library', subject.code, subject.sections[0]?.code]"
+                  [routerLink]="['/library', subject.code]"
                 >
                   <h2>{{ subject.title }}</h2>
                   <p>{{ subject.description }}</p>
@@ -118,6 +119,7 @@ export class LibraryPage implements OnInit {
   readonly data = signal<LibraryPageData | null>(null);
   readonly loading = signal(false);
   readonly treeError = signal(false);
+  readonly designOverview = signal(false);
   private readonly pageLocation = computed(() => {
     const page = this.data();
     return page ? `${page.subject?.code ?? ''}/${page.section?.code ?? ''}` : null;
@@ -138,13 +140,15 @@ export class LibraryPage implements OnInit {
   ngOnInit() {
     this.route.data.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(({ library }) => {
       const page = library as LibraryPageData;
+      const overview = !!page.subject && page.subject.code !== 'dsa' && !this.route.snapshot.paramMap.has('section');
+      this.designOverview.set(overview);
       this.data.set(page);
       this.seo.setPageMeta({
         title: `${page.subject?.title ?? 'Library'} - DSA Drill`,
         description:
           page.subject?.description ??
           'Learn DSA, low-level design, and high-level design through concepts, patterns, and worked examples.',
-        path: page.subject ? `/library/${page.subject.code}/${page.section?.code}` : '/library',
+        path: page.subject ? `/library/${page.subject.code}${overview ? '' : `/${page.section?.code}`}` : '/library',
         robots: page.error ? 'noindex' : 'index,follow',
       });
       this.loadTree(page);
@@ -159,8 +163,9 @@ export class LibraryPage implements OnInit {
       return;
     }
     this.loading.set(!page.tree);
-    this.api
-      .tree(page.subject.code, page.section.code)
+    const {subject, section} = page;
+    const source = this.api.tree(subject.code,section.code);
+    source
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (tree) => {
@@ -171,7 +176,7 @@ export class LibraryPage implements OnInit {
         error: () => {
           if (request !== this.treeRequest) return;
           this.loading.set(false);
-          this.treeError.set(!page.tree);
+           this.treeError.set(!page.tree);
         },
       });
   }

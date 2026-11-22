@@ -3,10 +3,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { ProblemSheetService } from '../../shared/services/public-api/problem-sheet.service';
-import { SavedProblemSheetService } from '../../shared/services/public-api/saved-problem-sheet.service';
 import { ToastService } from '../../shared/services/toast-service';
 import { RightPaneService, RightPaneSize } from '../../shared/services/right-pane-service';
 import { FormPaneTemplate } from '../../shared/components/form-pane-template/form-pane-template';
@@ -15,7 +13,7 @@ import { IProblemSheetDetails, IProblemSheetSummary } from '../home/models/probl
 
 @Component({
   selector: 'app-library-sheets',
-  imports: [RouterLink, MatIconModule, MatButtonToggleModule, FormPaneTemplate, TagBasedProblemList],
+  imports: [RouterLink, MatIconModule, FormPaneTemplate, TagBasedProblemList],
   template: `
     <div class="sheets">
       @if (!isLoggedIn()) {
@@ -31,24 +29,10 @@ import { IProblemSheetDetails, IProblemSheetSummary } from '../home/models/probl
           <button class="sheet-action" type="button" (click)="loadLists()">Try again</button>
         </section>
       } @else {
-        <mat-button-toggle-group
-          class="sheet-view-toggle"
-          aria-label="Sheet lists"
-          [hideSingleSelectionIndicator]="true"
-          [value]="selectedView()"
-          (change)="selectedView.set($event.value)"
-        >
-          <mat-button-toggle value="mine">My lists</mat-button-toggle>
-          <mat-button-toggle value="saved">Saved</mat-button-toggle>
-        </mat-button-toggle-group>
-        @if ((selectedView() === 'mine' && !hasLoadedLists()) || (selectedView() === 'saved' && !hasLoadedSavedLists())) {
-          <div class="library-loading"><p role="status">{{ selectedView() === 'mine' ? 'Loading your lists…' : 'Loading saved lists…' }}</p></div>
-        } @else if (selectedView() === 'mine') {
+        @if (!hasLoadedLists()) {
+          <div class="library-loading"><p role="status">Loading your lists…</p></div>
+        } @else {
         <section class="sheet-section">
-          <header class="sheet-heading">
-            <h2>My lists</h2>
-            <p>Private lists you build as you study.</p>
-          </header>
           <form class="new-list" (submit)="createList($event)">
             <input
               type="text"
@@ -75,25 +59,6 @@ import { IProblemSheetDetails, IProblemSheetSummary } from '../home/models/probl
                   Add questions
                 </button>
                 </div>
-              }
-            </div>
-          }
-        </section>
-        } @else {
-        <section class="sheet-section">
-          <header class="sheet-heading">
-            <h2>Saved lists</h2>
-            <p>Lists you bookmarked to revisit.</p>
-          </header>
-          @if (savedLists().length === 0) {
-            <p class="sheet-empty">Lists you save will show up here.</p>
-          } @else {
-            <div class="sheet-rows">
-              @for (list of savedLists(); track list.id) {
-                <button class="sheet-row" type="button" (click)="openList(list.id)">
-                  <span>{{ list.title }}</span>
-                  <mat-icon aria-hidden="true">north_east</mat-icon>
-                </button>
               }
             </div>
           }
@@ -127,7 +92,6 @@ export class LibrarySheets implements OnDestroy {
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
   private readonly problemSheetService = inject(ProblemSheetService);
-  private readonly savedProblemSheetService = inject(SavedProblemSheetService);
   private readonly toastService = inject(ToastService);
   private readonly rightPane = inject(RightPaneService);
   private readonly destroyRef = inject(DestroyRef);
@@ -143,10 +107,7 @@ export class LibrarySheets implements OnDestroy {
   readonly isLoggedIn = this.authService.isLoggedIn();
   readonly lists = this.problemSheetService.problemSheets;
   readonly hasLoadedLists = this.problemSheetService.hasLoaded;
-  readonly savedLists = this.savedProblemSheetService.problemSheets;
-  readonly hasLoadedSavedLists = this.savedProblemSheetService.hasLoaded;
   readonly newTitle = signal('');
-  readonly selectedView = signal<'mine' | 'saved'>('mine');
   readonly isCreating = signal(false);
   readonly loadError = signal(false);
   private loaded = false;
@@ -162,10 +123,7 @@ export class LibrarySheets implements OnDestroy {
 
   loadLists() {
     this.loadError.set(false);
-    Promise.all([
-      this.problemSheetService.fetchProblemSheets(),
-      this.savedProblemSheetService.fetchProblemSheets(),
-    ]).catch(() => this.loadError.set(true));
+    this.problemSheetService.fetchProblemSheets().catch(() => this.loadError.set(true));
   }
 
   setNewTitle(event: Event) {

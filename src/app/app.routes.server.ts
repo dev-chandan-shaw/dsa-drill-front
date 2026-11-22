@@ -31,6 +31,8 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'library', renderMode: RenderMode.Server },
   { path: 'library/**', renderMode: RenderMode.Server },
   { path: 'admin/**', renderMode: RenderMode.Client },
+  { path: 'saved', renderMode: RenderMode.Client },
+  { path: 'my-notes', renderMode: RenderMode.Client },
   // Root renders Home (see modules.routes): server-rendered per request so
   // the question + tag lists are always fresh. TransferState carries the
   // server payload to the client — no background refetch needed.

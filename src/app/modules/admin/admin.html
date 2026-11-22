@@ -66,9 +66,9 @@
               </button>
             </div>
           } @else {
-            <div class="row-list bordered-list">
+            <div class="row-list shaded-list">
               @for (question of filteredQuestions(); track trackByQuestionId($index, question)) {
-                <div class="data-row">
+                <div class="data-row shaded-row">
                   <div class="data-main">
                     <h3>{{ question.order ?? question.id }}. {{ question.title }}</h3>
                     <div class="badge-row">
@@ -128,9 +128,9 @@
           } @else if (filteredTags().length === 0) {
             <div class="state-card">No tags available yet.</div>
           } @else {
-            <div class="row-list bordered-list">
+            <div class="row-list shaded-list">
               @for (tag of filteredTags(); track trackByTagId($index, tag)) {
-                <div class="data-row">
+                <div class="data-row shaded-row">
                   <div class="data-main">
                     <h3>{{ $index + 1 }}. {{ tag.name }}</h3>
                     <div class="badge-row">
@@ -203,12 +203,9 @@
           } @else if (filteredPatterns().length === 0) {
             <div class="state-card">No patterns available yet.</div>
           } @else {
-            <div class="row-list">
+            <div class="row-list shaded-list">
               @for (pattern of filteredPatterns(); track trackByPatternId($index, pattern)) {
-                @if ($index !== 0) {
-                  <mat-divider></mat-divider>
-                }
-                <div class="data-row data-row-top">
+                <div class="data-row data-row-top shaded-row">
                   <div class="data-main">
                     <h3>{{ pattern.name }}</h3>
                     <p class="muted dsa-mono">#{{ pattern.id }}</p>
@@ -261,12 +258,9 @@
               No sections yet. Create LLD, HLD, or any topic you want to publish under.
             </div>
           } @else {
-            <div class="row-list">
+            <div class="row-list shaded-list">
               @for (section of sections(); track trackBySectionId($index, section)) {
-                @if ($index !== 0) {
-                  <mat-divider></mat-divider>
-                }
-                <div class="data-row">
+                <div class="data-row shaded-row">
                   @if (section.coverImageUrl) {
                     <img
                       class="admin-thumb"
@@ -366,12 +360,9 @@
               }
             </div>
           } @else {
-            <div class="row-list">
+            <div class="row-list shaded-list">
               @for (post of filteredBlogPosts(); track trackByBlogPostId($index, post)) {
-                @if ($index !== 0) {
-                  <mat-divider></mat-divider>
-                }
-                <div class="data-row">
+                <div class="data-row shaded-row">
                   @if (post.coverImageUrl) {
                     <img class="admin-thumb" [src]="post.coverImageUrl" [alt]="post.title + ' cover'" />
                   }

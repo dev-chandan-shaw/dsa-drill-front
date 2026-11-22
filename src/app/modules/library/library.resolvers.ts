@@ -1,7 +1,7 @@
 import { inject, PLATFORM_ID, RESPONSE_INIT } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CanActivateFn, RedirectCommand, ResolveFn, Router } from '@angular/router';
-import { catchError, forkJoin, map, of } from 'rxjs';
+import { catchError, map, of } from 'rxjs';
 import { LibraryApi } from './library-api.service';
 import { CatalogSection, CatalogSubject, findSection, findSubject, LIBRARY_CATALOG } from './library-catalog';
 import { LibraryArticle, LibraryTree } from './library.models';
@@ -44,10 +44,8 @@ export const resolveLibraryArticle: ResolveFn<LibraryReaderData | RedirectComman
       tree: api.cachedTree(subjectCode, sectionCode),
       article: api.cachedArticle(subjectCode, sectionCode, route.paramMap.get('slug')!), error: null });
   }
-  return forkJoin({
-    tree: api.tree(subjectCode, sectionCode),
-    article: api.article(subjectCode, sectionCode, route.paramMap.get('slug')!),
-  }).pipe(map((data) => ({ ...data, subjects: LIBRARY_CATALOG, subject, section, error: null })),
+  return api.article(subjectCode, sectionCode, route.paramMap.get('slug')!)
+    .pipe(map(article => ({ article, tree: null, subjects: LIBRARY_CATALOG, subject, section, error: null })),
     catchError((error) => {
       if (response) response.status = error.status === 404 ? 404 : 503;
       return of({ subjects: LIBRARY_CATALOG, subject, section, tree: null, article: null,

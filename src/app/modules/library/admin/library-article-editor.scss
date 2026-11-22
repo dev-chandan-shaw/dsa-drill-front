@@ -37,3 +37,6 @@ fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
 .recovery-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .placement-reminder { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--library-muted); font: 12px/1.6 system-ui; margin-bottom: 20px; }
 @media(max-width:760px) { .editor-toolbar { padding: 12px 18px; gap: 10px; } .editor-actions { flex: 1 1 100%; margin: 0; } .article-editor-shell { padding: 24px 22px 60px 42px; } .settings-grid { grid-template-columns: 1fr; } .article-title-input, .preview-title { font-size: 36px; } }
+.article-metadata { display:grid; gap:12px; margin-top:40px; border-top:1px solid var(--library-line); padding-top:24px; }
+.article-metadata li { margin-block:8px; }
+.article-metadata li span { overflow-wrap:anywhere; }

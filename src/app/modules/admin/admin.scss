@@ -1,4 +1,5 @@
 @use '../../shared/difficulty-badge';
+@use '../../shared/page-heading';
 
 :host {
   display: block;
@@ -6,10 +7,14 @@
 }
 
 .admin-page {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 840px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 20px;
+  padding: 46px 40px 80px;
   height: 100%;
   min-height: 0;
   overflow: auto;
@@ -18,16 +23,14 @@
 .admin-page.managed {
   height: auto;
   overflow: visible;
-  padding: 46px 40px 70px;
+  padding: 46px 40px 80px;
   gap: 28px;
-  .admin-header h1 { font: 500 38px/1.2 Georgia,serif; letter-spacing: -.8px; color: var(--library-ink); }
-  .admin-header p { margin-top: 12px; font: 14px/1.7 system-ui; color: var(--library-muted); }
   .admin-workspace { border: 0; box-shadow: none; background: transparent; }
   .admin-workspace mat-card-content { padding: 0; }
-  .data-row { padding: 22px 0; }
+  .data-row { padding-block: 18px; }
   .data-main h3 { font-size: 16px; color: var(--library-ink); }
   .toolbar { padding: 0 0 24px; }
-  @media(max-width:700px) { padding: 30px 22px 60px; }
+  @media(max-width:720px) { padding: 30px 22px 60px; }
 }
 
 .admin-header {
@@ -37,18 +40,11 @@
   gap: 16px;
   flex-wrap: wrap;
 
-  h1 {
-    margin: 0;
-    font-family: 'Sora', Inter, system-ui, sans-serif;
-    letter-spacing: -0.02em;
-    font-size: 1.5rem;
-    color: var(--mat-sys-on-surface);
-  }
+}
 
-  p {
-    margin: 4px 0 0;
-    color: var(--mat-sys-on-surface-variant);
-  }
+.admin-title {
+  @include page-heading.typography;
+  max-width: 760px;
 }
 
 .admin-header-actions {
@@ -136,19 +132,11 @@ mat-tab-group {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 8px 4px;
+  padding-block: 18px;
 }
 
 .data-row-top {
   align-items: flex-start;
-}
-
-.bordered-list {
-  gap: 0;
-
-  > .data-row {
-    border-top: 1px solid var(--library-line, var(--mat-sys-outline-variant));
-  }
 }
 
 .data-main {
@@ -319,7 +307,6 @@ mat-tab-group {
 
 @media (max-width: 768px) {
   .admin-page {
-    padding: 12px;
     height: auto;
     overflow: visible;
   }
@@ -335,5 +322,11 @@ mat-tab-group {
 
   .toolbar .grow {
     max-width: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .admin-page {
+    padding: 30px 22px 60px;
   }
 }

@@ -16,7 +16,7 @@ export interface CatalogSubject {
 
 /**
  * The library catalog is intentionally defined in the frontend. The database
- * only stores Markdown articles and their topic groups, keyed by these codes.
+ * stores design articles by level and kind, and DSA patterns by question tag.
  */
 export const LIBRARY_CATALOG: CatalogSubject[] = [
   {
@@ -70,6 +70,8 @@ export const articleSections = LIBRARY_CATALOG.flatMap((subject) =>
       ...section,
       subject: subject.code,
       label: `${subject.title} / ${section.title}`,
+      writeLabel: subject.code === 'dsa' ? 'DSA pattern' :
+        `${subject.code.toUpperCase()} ${section.code === 'concepts' ? 'concept' : 'case study'}`,
     })),
 );
 

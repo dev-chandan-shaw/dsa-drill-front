@@ -42,6 +42,7 @@ export interface LibraryArticle {
   next: ArticleSummary | null;
 }
 export interface ArticleDraft {
+  primaryTagId?: number|null;
   tagIds: number[];
   id: number;
   version: number;
@@ -62,6 +63,7 @@ export interface ArticleDraft {
   savedAt: string;
 }
 export interface SaveArticleDraft {
+  primaryTagId?: number|null;
   tagIds: number[];
   version: number | null;
   subject: string;

@@ -38,6 +38,7 @@ import {
   ],
   templateUrl: './markdown-note-editor.html',
   styleUrl: './markdown-note-editor.scss',
+  host: { '[class.fill-height]': 'fillHeight()' },
 })
 export class MarkdownNoteEditor {
   control = input.required<FormControl<string | null>>();
@@ -46,6 +47,8 @@ export class MarkdownNoteEditor {
   label = input('Note');
   /** Minimum body height (e.g. '380px'). Empty keeps the compact default. */
   minHeight = input('');
+  fillHeight = input(false);
+  maxLength = input<number|null>(null);
 
   private readonly dialog = inject(MatDialog);
   private readonly editorArea = viewChild<ElementRef<HTMLTextAreaElement>>('editorArea');

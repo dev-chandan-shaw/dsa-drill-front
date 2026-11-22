@@ -31,12 +31,14 @@
     </button>
   </div>
 }
+@if(error()){<p role="alert">{{error()}}</p>}
 @for (question of filteredProblems(); let rowIndex = $index; track question.id) {
   <div class="problem-row" [class.zebra]="rowIndex % 2 === 0">
     <button
       mat-icon-button
       type="button"
       (click)="toggleSolved(question.id)"
+      [matTooltip]="problemStatuses()[question.id]?.solved ? 'Mark unsolved' : 'Mark solved'"
       [attr.aria-pressed]="!!problemStatuses()[question.id]?.solved"
       [attr.aria-label]="(problemStatuses()[question.id]?.solved ? 'Mark unsolved: ' : 'Mark solved: ') + question.title"
     >
@@ -44,7 +46,7 @@
         problemStatuses()[question.id]?.solved ? 'check_box' : 'check_box_outline_blank'
       }}</mat-icon>
     </button>
-    <a [href]="question.link" target="_blank" rel="noopener" class="problem-title">
+    <a [routerLink]="['/library/dsa/questions',question.id]" class="problem-title">
       {{ question.order ?? question.id }}. {{ question.title }}
     </a>
     <span class="difficulty-badge difficulty-{{ question.difficulty.toLowerCase() }}">
@@ -54,19 +56,13 @@
       mat-icon-button
       type="button"
       (click)="toggleMarkForRevision(question.id)"
+      [matTooltip]="problemStatuses()[question.id]?.revision ? 'Remove revision mark' : 'Mark for revision'"
       [attr.aria-pressed]="!!problemStatuses()[question.id]?.revision"
       [attr.aria-label]="(problemStatuses()[question.id]?.revision ? 'Remove revision mark for ' : 'Mark for revision: ') + question.title"
     >
       <mat-icon>{{ problemStatuses()[question.id]?.revision ? 'star' : 'star_border' }}</mat-icon>
     </button>
-    <button
-      mat-icon-button
-      type="button"
-      (click)="editNote(question.id)"
-      [attr.aria-label]="(problemStatuses()[question.id]?.note ? 'Edit note for ' : 'Add note for ') + question.title"
-    >
-      <mat-icon>{{ problemStatuses()[question.id]?.note ? 'edit_note' : 'note_add' }}</mat-icon>
-    </button>
+    <app-item-actions type="PROBLEM" [id]="question.id" [title]="question.title" [row]="!detail()" [questionNote]="problemStatuses()[question.id]?.note"/>
   </div>
 } @empty {
   <div class="empty-state">
@@ -74,25 +70,7 @@
     <div class="empty-title">No problems found</div>
     <div class="empty-subtitle">Try a different keyword or clear the search.</div>
     @if (hasActiveFilters) {
-      <button mat-button type="button" (click)="clearListFilters()">Clear filters</button>
+      <button mat-icon-button type="button" (click)="clearListFilters()" matTooltip="Clear filters" aria-label="Clear filters"><mat-icon>filter_alt_off</mat-icon></button>
     }
   </div>
 }
-
-<ng-template #noteTemplate>
-  <app-form-pane-template
-    [form]="noteForm"
-    [isSaving]="isNoteSaving()"
-    [isEditMode]="selectedProblemId !== null"
-    [title]="getNoteTitle()"
-    [autoSaveMode]="true"
-    [saveState]="noteAutoSave?.state() ?? 'idle'"
-    [savedAt]="noteAutoSave?.savedAt() ?? null"
-    (cancelForm)="closeNotePane()"
-    (retrySave)="retryNoteSave()"
-  >
-    <form class="pane-form" [formGroup]="noteForm">
-      <app-markdown-note-editor [control]="noteForm.controls.note" section="notes" label="Note" />
-    </form>
-  </app-form-pane-template>
-</ng-template>

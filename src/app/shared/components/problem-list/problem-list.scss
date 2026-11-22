@@ -90,6 +90,8 @@
 }
 
 @media (max-width: 640px) {
+  .problem-row { flex-wrap: wrap; }
+  .problem-title { min-width: 120px; }
   .search-field {
     max-width: none;
   }

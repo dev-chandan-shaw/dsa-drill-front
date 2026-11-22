@@ -1,4 +1,6 @@
-import { Routes } from '@angular/router';
+import { Router, Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { ReaderState } from './library/personal/reader-state';
 import { adminGuard } from '../core/guards/admin-guard';
 import { legacyAdminArticleRedirect, legacyLibraryRedirect, resolveLibraryArticle, resolveLibraryPage } from './library/library.resolvers';
 import { resolvePatternLibrary } from './question-pattern/pattern-library.resolver';
@@ -11,9 +13,13 @@ import {
 export const routes: Routes = [
   {
     path: '',
+    canActivateChild: [() => inject(ReaderState).close()],
+    canDeactivate: [() => inject(ReaderState).close()],
     loadComponent: () => import('./modules').then((m) => m.Modules),
     children: [
       // The library is the canonical entry point for learning and practice.
+      {path:'saved',loadComponent:()=>import('./library/personal/personal-page').then(m=>m.PersonalPage),runGuardsAndResolvers:'always'},
+      {path:'my-notes',loadComponent:()=>import('./library/personal/personal-page').then(m=>m.PersonalPage),data:{notes:true},runGuardsAndResolvers:'always'},
       {
         path: '',
         redirectTo: 'library',
@@ -21,7 +27,7 @@ export const routes: Routes = [
       },
       {
         path: 'home',
-        redirectTo: 'library',
+        redirectTo: ({queryParams}) => /^\d+$/.test(queryParams['problemId']) ? `library/dsa/questions/${queryParams['problemId']}` : 'library',
         pathMatch: 'full',
       },
       {
@@ -44,6 +50,10 @@ export const routes: Routes = [
         loadComponent: () => import('./library/library-patterns').then((m) => m.LibraryPatterns),
       },
       {
+        path:'library/dsa/questions/:id',
+        loadComponent:()=>import('./library/question-detail').then(m=>m.QuestionDetail),
+      },
+      {
         path: 'library/:subject/:section/:slug',
         loadComponent: () => import('./library/library-reader').then((m) => m.LibraryReader),
         resolve: { library: resolveLibraryArticle }, runGuardsAndResolvers: 'always',
@@ -59,12 +69,14 @@ export const routes: Routes = [
           { path: 'questions', loadComponent: () => import('./admin/admin').then((m) => m.Admin), data: { adminSection: 'problems' } },
           { path: 'tags', loadComponent: () => import('./admin/admin').then((m) => m.Admin), data: { adminSection: 'tags' } },
           { path: 'patterns', loadComponent: () => import('./library/admin/library-admin').then((m) => m.LibraryAdmin), data: { view: 'patterns' } },
-          { path: 'articles/new', pathMatch: 'full', redirectTo: 'articles/new/edit' },
+          { path: 'articles/new', pathMatch: 'full', redirectTo: ({queryParams}) =>
+            inject(Router).createUrlTree(['/admin/articles/new/edit'],{queryParams}) },
           { path: 'articles/:id/edit', loadComponent: () => import('./library/admin/library-article-editor').then((m) => m.LibraryArticleEditor), canDeactivate: [(component: { canLeave: () => Promise<boolean> }) => component.canLeave()] },
           { path: 'library', pathMatch: 'full', redirectTo: 'articles' },
           { path: 'library/articles/new', pathMatch: 'full', redirectTo: 'articles/new/edit' },
           { path: 'library/articles/:id/edit', redirectTo: ({ params }) => `articles/${params['id']}/edit` },
-          { path: 'patterns/new', pathMatch: 'full', redirectTo: 'articles/new/edit?subject=dsa&section=patterns' },
+          { path: 'patterns/new', pathMatch: 'full', redirectTo: () =>
+            inject(Router).createUrlTree(['/admin/articles/new/edit'],{queryParams:{subject:'dsa',section:'patterns'}}) },
           { path: 'blogs/new', pathMatch: 'full', redirectTo: 'articles/new/edit' },
           { path: 'patterns/:id/edit', canActivate: [legacyAdminArticleRedirect], data: { sourceType: 'pattern' }, loadComponent: () => import('./admin/pattern-editor/pattern-editor').then((m) => m.PatternEditor) },
           { path: 'blogs/:id/edit', canActivate: [legacyAdminArticleRedirect], data: { sourceType: 'blog' }, loadComponent: () => import('./admin/blog-editor/blog-editor').then((m) => m.BlogEditor) },

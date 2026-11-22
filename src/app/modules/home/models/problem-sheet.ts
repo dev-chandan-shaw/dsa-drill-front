@@ -9,4 +9,5 @@ export interface IProblemSheetDetails {
   problemIds: number[];
   isPublic: boolean;
   isOwner?: boolean;
+  visibilityConfigured?: boolean;
 }

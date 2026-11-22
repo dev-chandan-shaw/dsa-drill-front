@@ -8,7 +8,4 @@
 .pattern-topic:hover::before { background: linear-gradient(0deg, rgb(0 0 0 / 50%), rgb(0 0 0 / 8%)); }
 .pattern-topic:focus-visible { outline: 2px solid var(--library-accent); outline-offset: 4px; }
 .pattern-list { max-width: 760px; }
-.pattern-topic-header { padding-bottom: 24px; border-bottom: 1px solid var(--library-line); }
-.pattern-topic-header h1 { margin-bottom: 0; }
-.pattern-row { display: block; border-bottom: 1px solid var(--library-line); }
-.pattern-row:last-child { border-bottom: 0; }
+.pattern-row { display: block; }

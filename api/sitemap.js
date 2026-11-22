@@ -52,7 +52,11 @@ function buildSitemap(tags, patterns, blogSections, blogPosts, subjects = [], ar
       for (const section of subject.sections ?? []) urls.push({ path: `/library/${subject.code}/${section.code}`, priority: '0.9' });
     }
     for (const article of articles) urls.push({ path: `/library/${article.subject}/${article.section}/${article.slug}`, priority: '0.8' });
-    for (const tag of tags) if (tag.slug) urls.push({ path: `/problems/${tag.slug}`, priority: '0.7' });
+    for (const pattern of patterns) if (pattern.slug) urls.push({ path: `/library/dsa/patterns/${pattern.slug}`, priority: '0.8' });
+    for (const tag of tags) if (tag.slug) {
+      urls.push({ path: `/problems/${tag.slug}`, priority: '0.7' });
+      urls.push({ path: `/library/dsa/patterns/topics/${tag.slug}`, priority: '0.7' });
+    }
     return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((entry) => `  <url><loc>${escapeXml(SITE + entry.path)}</loc><changefreq>weekly</changefreq><priority>${entry.priority}</priority></url>`).join('\n')}\n</urlset>`;
   }
   const patternCounts = new Map();
@@ -117,13 +121,16 @@ function buildSitemap(tags, patterns, blogSections, blogPosts, subjects = [], ar
 
 module.exports = async (req, res) => {
   if (!cachedXml || Date.now() - cachedAt > CACHE_TTL_MS) {
-    const [tags, patterns, blogSections, blogPosts, articles] = await Promise.all([
+    const [tags, patterns, blogSections, blogPosts, designArticles] = await Promise.all([
       getJson('/public/problem-tags'),
       getJson('/public/problem-patterns'),
       getJson('/public/blog-sections'),
       getJson('/public/blog-posts'),
-      getJson('/public/library/articles'),
+      getJson('/public/system-design'),
     ]);
+    const articles = designArticles.filter(article => article.slug && ['HLD','LLD'].includes(article.level)).map(article => ({
+      subject: article.level.toLowerCase(), section: article.kind === 'CONCEPT' ? 'concepts' : 'case-studies', slug: article.slug,
+    }));
     cachedXml = buildSitemap(tags, patterns, blogSections, blogPosts, LIBRARY_CATALOG, articles);
     cachedAt = Date.now();
   }

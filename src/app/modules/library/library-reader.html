@@ -29,6 +29,7 @@
               <p class="article-description">{{ article.summary.excerpt }}</p>
             }
             <div class="article-meta">
+              <app-item-actions [type]="article.summary.subject==='dsa'?'PATTERN':'DESIGN'" [id]="article.summary.id" [title]="article.summary.title"/>
             </div>
           </header>
           @if (article.coverImageUrl) {
@@ -45,20 +46,7 @@
             <section class="related-section" id="linked-questions">
               <h2>Put it into practice</h2>
               <p class="muted">Questions connected to this article.</p>
-              <ul>
-                @for (problem of article.problems; track problem.id) {
-                  <li>
-                    <a [href]="problem.link" target="_blank" rel="noopener">{{ problem.title }}</a
-                    ><small>{{
-                      problem.difficulty === 'MED'
-                        ? 'Medium'
-                        : problem.difficulty === 'EASY'
-                          ? 'Easy'
-                          : 'Hard'
-                    }}</small>
-                  </li>
-                }
-              </ul>
+              <app-problem-list [problems]="article.problems" [showFilters]="false" [preserveOrder]="true"/>
             </section>
           }
           @if (article.relatedArticles.length) {

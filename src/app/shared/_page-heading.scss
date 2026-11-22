@@ -1,0 +1,14 @@
+@mixin typography {
+  h1 {
+    font: 500 clamp(36px, 5vw, 54px)/1.12 Georgia, serif;
+    letter-spacing: -1.6px;
+    margin: 0 0 18px;
+    color: var(--library-ink, var(--mat-sys-on-surface));
+  }
+
+  p {
+    font: 19px/1.65 Georgia, serif;
+    color: var(--library-muted, var(--mat-sys-on-surface-variant));
+    max-width: 610px;
+  }
+}

@@ -37,7 +37,6 @@ describe('CustomProblemSheet', () => {
     fixture.detectChanges();
     // ngOnInit fires real service calls: satisfy them with empty payloads.
     httpMock.expectOne(`${environment.apiUrl}/public/problem-tags`).flush([]);
-    httpMock.expectOne(`${environment.apiUrl}/public/problems`).flush([]);
     await fixture.whenStable();
   });
 
@@ -50,6 +49,7 @@ describe('CustomProblemSheet', () => {
   });
 
   it('keeps the summary card add action and preserves existing selections', () => {
+    component.loadError.set(false);
     component.problemSheet.set({ id: 'mine', title: 'My sheet', problemIds: [1, 2], isOwner: true, isPublic: false });
     component.isOwner.set(true);
     fixture.detectChanges();
@@ -84,6 +84,7 @@ describe('CustomProblemSheet', () => {
   });
 
   it('automatically opens the picker when arriving from the My lists Add questions action', () => {
+    component.loadError.set(false);
     Object.defineProperty(TestBed.inject(ActivatedRoute).snapshot, 'queryParamMap', {
       value: convertToParamMap({ addQuestions: 'true' }),
     });

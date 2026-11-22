@@ -16,6 +16,12 @@
   }
 
   <div class="sidebar-nav">
+    <a class="nav-item" routerLink="/library" routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }" (click)="navigate()">
+      <mat-icon class="nav-icon" aria-hidden="true">local_library</mat-icon>
+      <span class="nav-label">Library</span>
+    </a>
+    <div class="nav-children" role="group" aria-label="Library subjects">
     @for (subject of subjects; track subject.code) {
       <a
         class="nav-item"
@@ -27,10 +33,15 @@
           {{ subject.icon }}
         </mat-icon>
 
-        <span class="nav-label">{{ subject.title }}</span>
+        <span class="nav-label">{{ subject.code === 'lld' ? 'LLD' : subject.code === 'hld' ? 'HLD' : subject.title }}</span>
       </a>
     }
+    </div>
 
+    @if (signedIn()) {
+      <a class="nav-item" routerLink="/saved" routerLinkActive="active" (click)="navigate()"><mat-icon>bookmark</mat-icon> Saved</a>
+      <a class="nav-item" routerLink="/my-notes" routerLinkActive="active" (click)="navigate()"><mat-icon>edit_note</mat-icon> My Notes</a>
+    }
     @if (isAdmin()) {
       <a
         class="nav-item"

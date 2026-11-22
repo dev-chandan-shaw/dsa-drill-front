@@ -19,10 +19,11 @@ export class Sidebar {
   private readonly rightPaneService = inject(RightPaneService);
   private readonly authService = inject(AuthService);
   readonly isAdmin = this.authService.isAdmin();
+  readonly signedIn = this.authService.isLoggedIn();
 
   readonly subjects = LIBRARY_CATALOG;
   readonly adminSections = [
-    { title: 'Articles', path: '/admin/articles', icon: 'article' },
+    { title: 'Publishing', path: '/admin/articles', icon: 'article' },
     { title: 'Questions', path: '/admin/questions', icon: 'code' },
     { title: 'Tags', path: '/admin/tags', icon: 'sell' },
   ];

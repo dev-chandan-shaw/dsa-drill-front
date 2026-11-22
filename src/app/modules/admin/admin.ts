@@ -40,7 +40,6 @@ import { FormPaneTemplate } from '../../shared/components/form-pane-template/for
 import { MarkdownView } from '../../shared/components/markdown-view/markdown-view';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -62,7 +61,6 @@ type BlogStatusFilter = 'ALL' | 'DRAFT' | 'PUBLISHED';
     MarkdownView,
     MatButtonModule,
     MatCardModule,
-    MatDividerModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
@@ -72,7 +70,7 @@ type BlogStatusFilter = 'ALL' | 'DRAFT' | 'PUBLISHED';
     CoverUploader,
   ],
   templateUrl: './admin.html',
-  styleUrl: './admin.scss',
+  styleUrls: ['./admin.scss', '../library/library-list.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Admin implements OnInit {

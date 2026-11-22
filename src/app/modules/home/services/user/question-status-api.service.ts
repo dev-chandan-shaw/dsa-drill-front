@@ -1,4 +1,4 @@
-import { inject, Injectable, signal, PLATFORM_ID } from '@angular/core';
+import { effect, inject, Injectable, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import {
@@ -31,6 +31,16 @@ export class ProblemStatusApiService {
   public readonly problemStatuses = this._problemStatuses.asReadonly();
   public readonly hasLoaded = signal(false);
   private statusesRequest: Observable<IUserQuestionStatus[]> | null = null;
+  private owner?:number;
+
+  constructor() {
+    effect(()=>this.syncOwner());
+  }
+
+  private syncOwner() {
+    const id=this.authService.getLoggedInUser()()?.id;
+    if(this.owner!==id){this.owner=id; this.clearStatuses();}
+  }
 
   fetchProblemStatuses(force = false) {
     // Per-user data must never touch TransferState: prerendered HTML is
@@ -42,6 +52,7 @@ export class ProblemStatusApiService {
       return of<IUserQuestionStatus[]>([]);
     }
 
+    this.syncOwner();
     if (this.hasLoaded() && !force) {
       return of(Object.values(this._problemStatuses()));
     }
@@ -50,8 +61,10 @@ export class ProblemStatusApiService {
       return this.statusesRequest;
     }
 
-    const request$ = this._http.get<IUserQuestionStatus[]>(`${this._problemStatusEndpoint}`).pipe(
+    const owner = this.authService.getLoggedInUser()()?.id;
+    const request$ = this._http.get<IUserQuestionStatus[]>(`${this._problemStatusEndpoint}`, {transferCache:false}).pipe(
       tap((statuses) => {
+        if (owner !== this.authService.getLoggedInUser()()?.id) return;
         this._problemStatuses.set(
           statuses.reduce((acc: Record<number, IUserQuestionStatus>, status) => {
             acc[status.problemId] = status;
@@ -60,9 +73,7 @@ export class ProblemStatusApiService {
         );
         this.hasLoaded.set(true);
       }),
-      finalize(() => {
-        this.statusesRequest = null;
-      }),
+      finalize(() => { if(this.statusesRequest===request$)this.statusesRequest=null; }),
       shareReplay({ bufferSize: 1, refCount: false }),
     );
 
@@ -75,6 +86,18 @@ export class ProblemStatusApiService {
     this.hasLoaded.set(false);
     this.statusesRequest = null;
   }
+
+  setProgress(problemId: number, field: 'solved'|'revision', value: boolean) {
+    return this.authService.ensureLoggedIn().pipe(switchMap(ok => {
+      if(!ok)return of(null);
+      this.syncOwner();
+      const owner=this.owner;
+      return this._http.put<void>(`${environment.apiUrl}/user/library/problems/${problemId}/${field}`,{value})
+        .pipe(tap(()=>{if(owner===this.authService.getLoggedInUser()()?.id)this.applyLocalStatus({problemId,[field]:value});}));
+    }));
+  }
+
+  cacheNote(problemId:number,note:string|undefined) { this.applyLocalStatus({problemId,note}); }
 
   updateProblemStatus(status: UserQuestionStatusDto): Observable<boolean> {
     return this.authService.ensureLoggedIn().pipe(

@@ -1,0 +1,22 @@
+.shaded-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shaded-list > .shaded-row {
+  padding-inline: 18px;
+  background: var(--library-soft);
+  border-radius: 10px;
+}
+
+.shaded-list > .shaded-row:hover,
+.shaded-list > .shaded-row:focus-within {
+  background: color-mix(in srgb, var(--library-ink) 4%, var(--library-soft));
+}
+
+@media (max-width: 540px) {
+  .shaded-list > .shaded-row {
+    padding-inline: 12px;
+  }
+}

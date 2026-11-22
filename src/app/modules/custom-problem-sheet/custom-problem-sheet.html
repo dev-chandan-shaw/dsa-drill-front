@@ -1,4 +1,6 @@
-@if (!hasLoaded()) {
+@if (loadError()) {
+  <p role="alert">This sheet is unavailable or is no longer shared with you.</p>
+} @else if (!hasLoaded()) {
   <div class="sheet-layout" role="status" aria-label="Loading custom problems list">
     <aside class="sheet-summary" aria-hidden="true">
       <div class="skel skel-block" style="--h: 300px"></div>
@@ -37,24 +39,20 @@
           >
             <mat-icon>add</mat-icon>
           </button>
-        } @else {
-          <button
-            card-action
-            mat-icon-button
-            type="button"
-            (click)="toggleSavedSheet()"
-            [matTooltip]="isProblemSheetSaved() ? 'Unsave problem sheet' : 'Save problem sheet'"
-            [attr.aria-label]="isProblemSheetSaved() ? 'Unsave problem sheet' : 'Save problem sheet'"
-            [attr.aria-pressed]="isProblemSheetSaved()"
-          >
-            <mat-icon>{{ isProblemSheetSaved() ? 'bookmark' : 'bookmark_border' }}</mat-icon>
-          </button>
         }
       </app-sheet-summary-card>
+      @if(problemSheet();as sheet){
+        <app-item-actions type="SHEET" [id]="sheet.id" [title]="sheet.title"/>
+        @if (isOwner()) {
+          <button mat-button type="button" [disabled]="changingVisibility()" (click)="toggleVisibility()">
+            {{ sharedByLink() ? 'Make private' : 'Share by link' }}
+          </button>
+        }
+      }
     </aside>
 
     <div class="sheet-content">
-      <app-problem-list [problems]="problems()"></app-problem-list>
+      <app-problem-list [problems]="problems()" [preserveOrder]="true"></app-problem-list>
     </div>
   </div>
 }

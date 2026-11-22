@@ -6,8 +6,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatMenuModule } from '@angular/material/menu';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { LibraryApi } from '../library-api.service';
+import { editorId, LibraryApi } from '../library-api.service';
 import { ArticleSummary } from '../library.models';
 import { articleSections, CatalogSubject, findSubject, LIBRARY_CATALOG } from '../library-catalog';
 import { SeoService } from '../../../shared/services/seo.service';
@@ -15,8 +16,8 @@ import { SeoService } from '../../../shared/services/seo.service';
 interface SelectedSection { subject: string; section: string; }
 
 @Component({
-  selector: 'app-library-admin', imports: [RouterLink, DatePipe, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatIconModule],
-  templateUrl: './library-content-admin.html', styleUrls: ['../library.scss', './library-admin.scss'],
+   selector: 'app-library-admin', imports: [RouterLink, DatePipe, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatIconModule, MatMenuModule],
+   templateUrl: './library-content-admin.html', styleUrls: ['../library.scss', './library-admin.scss', '../library-list.scss'],
 })
 export class LibraryAdmin implements OnInit {
   private readonly api = inject(LibraryApi);
@@ -31,6 +32,8 @@ export class LibraryAdmin implements OnInit {
   readonly loading = signal(true);
   readonly error = signal('');
   readonly sections = articleSections;
+  readonly editorId = editorId;
+  readonly destinations = computed(() => this.patternsOnly ? this.sections.filter(s=>s.subject==='dsa') : this.sections);
   readonly patternsOnly = this.route.snapshot.data['view'] === 'patterns';
   readonly scopedArticles = computed(() => {
     const section = this.selectedSection();
@@ -42,13 +45,6 @@ export class LibraryAdmin implements OnInit {
     || (this.status() === 'drafts' && !a.publishedAt) || (this.status() === 'published' && !!a.publishedAt)
     || (this.status() === 'changes' && !!a.publishedAt && a.unpublishedChanges)));
   readonly sectionOptions = computed(() => this.sections.filter((s) => !this.selectedSubject() || s.subject === this.selectedSubject()));
-  readonly newArticleSection = computed(() => {
-    if (this.patternsOnly) return { subject: 'dsa', section: 'patterns' };
-    const selected = this.selectedSection();
-    if (selected) return { subject: selected.subject, section: selected.section };
-    const first = this.selectedSubject() ? this.sectionOptions()[0] : null;
-    return first ? { subject: first.subject, section: first.code } : null;
-  });
   readonly selectedSectionValue = computed(() => {
     const value = this.selectedSection();
     return value ? `${value.subject}/${value.section}` : null;

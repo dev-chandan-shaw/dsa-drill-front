@@ -32,17 +32,12 @@ describe('Library article autosave and publishing', () => {
   });
   afterEach(() => fixture.destroy());
 
-  it('requires an uploaded cover only when the article has no inline image', async () => {
+  it('publishes plain Markdown without requiring an image', async () => {
+    api['saveDraft'].mockReturnValue(of({...draft,coverImageUrl:null,version:4}));
+    api['publish'].mockReturnValue(of({...draft,coverImageUrl:null,version:5}));
     editor.form.controls.coverImageUrl.setValue(null);
-    expect(editor.needsCover()).toBe(true);
     await editor.publish();
-    expect(api['publish']).not.toHaveBeenCalled();
-    expect(editor.error()).toContain('Upload a cover image');
-    editor.form.controls.content.setValue('![Diagram](https://example.com/diagram.png)\n\nExplanation.');
-    expect(editor.needsCover()).toBe(false);
-    editor.form.controls.content.setValue('Text-only article.');
-    editor.form.controls.coverImageUrl.setValue('https://example.com/uploaded.png');
-    expect(editor.needsCover()).toBe(false);
+    expect(api['publish']).toHaveBeenCalledWith(7,4);
   });
 
   it('offers a cover upload for image-free articles without mistaking code for images', () => {
@@ -128,6 +123,16 @@ describe('Library article autosave and publishing', () => {
     api['publish'].mockReturnValue(of({ ...pattern, version: 5 }));
     await editor.publish();
     expect(api['saveDraft'].mock.calls[0][1]).toMatchObject({ tagIds: [1], problemIds: [] });
-    expect(api['publish']).toHaveBeenCalledWith(7, 4);
+    expect(api['publish']).toHaveBeenCalledWith(7, 4, 'pattern');
+  });
+
+  it('saves practice questions in the order picked by the editor', async () => {
+    editor.form.patchValue({subject:'dsa',section:'patterns'});
+    editor.chooseTopic(1);
+    editor.addQuestion(7); editor.addQuestion(4); editor.addQuestion(10);
+    editor.moveQuestion(2,-1); editor.removeQuestion(4);
+    api['saveDraft'].mockReturnValue(of({...draft,subject:'dsa',section:'patterns',version:4}));
+    await editor.saveDraft();
+    expect(api['saveDraft'].mock.calls[0][1]).toMatchObject({primaryTagId:1,tagIds:[1],problemIds:[7,10]});
   });
 });

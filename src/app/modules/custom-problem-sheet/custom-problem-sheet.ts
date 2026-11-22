@@ -4,7 +4,6 @@ import {
   DestroyRef,
   effect,
   inject,
-  linkedSignal,
   OnInit,
   signal,
   TemplateRef,
@@ -28,16 +27,17 @@ import { AuthService } from '../../core/services/auth/auth.service';
 import { IProblem, ProblemDifficulty } from '../home/models/Question';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { FormPaneTemplate } from '../../shared/components/form-pane-template/form-pane-template';
-import { finalize, map, of, switchMap } from 'rxjs';
+import { catchError, finalize, forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { ProblemSheetService } from '../../shared/services/public-api/problem-sheet.service';
-import { SavedProblemSheetService } from '../../shared/services/public-api/saved-problem-sheet.service';
 import { IProblemSheetDetails } from '../home/models/problem-sheet';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ItemActions } from '../library/personal/item-actions';
 
 @Component({
   selector: 'app-custom-problem-sheet',
   imports: [
     CommonModule,
+    ItemActions,
     ProblemList,
     MatButtonModule,
     MatIconModule,
@@ -57,7 +57,6 @@ export class CustomProblemSheet implements OnInit {
   private readonly statusService = inject(ProblemStatusApiService);
   private readonly authService = inject(AuthService);
   private readonly problemSheetService = inject(ProblemSheetService);
-  private readonly savedProblemSheetService = inject(SavedProblemSheetService);
 
   private readonly rightPaneService = inject(RightPaneService);
   private readonly toastService = inject(ToastService);
@@ -78,14 +77,20 @@ export class CustomProblemSheet implements OnInit {
   });
 
   problemSheet = signal<IProblemSheetDetails | null>(null);
-  problems = linkedSignal(() =>
-    this.allProblems().filter((p) => this.problemSheet()?.problemIds.includes(p.id)),
-  );
+  problems = computed(() => {
+    const byId = new Map(this.allProblems().map(p => [p.id,p]));
+    return (this.problemSheet()?.problemIds ?? []).flatMap(id => byId.get(id) ?? []);
+  });
   allProblems = signal<IProblem[]>([]);
   sheetId = signal<string | null>(null);
   sheetName = signal<string>('');
   isOwner = signal(false);
-  isProblemSheetSaved = signal(false);
+  readonly loadError = signal(false);
+  readonly changingVisibility = signal(false);
+  readonly sharedByLink = computed(() => {
+    const sheet = this.problemSheet();
+    return !!sheet && (sheet.isPublic || sheet.visibilityConfigured === false);
+  });
   readonly tags = this.tagService.problemTags;
   readonly problemStatuses = this.statusService.problemStatuses;
 
@@ -163,48 +168,22 @@ export class CustomProblemSheet implements OnInit {
   ngOnInit() {
     this.tagService.fetchProblemTags().subscribe();
 
-    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
-      const sheetId = params.get('sheetId');
-      this.sheetId.set(sheetId);
-
-      // Reset state on every sheetId change
-      this.problemSheet.set(null);
-      this.allProblems.set([]);
-      this.isSheetLoading.set(true);
-
-      this.questionService.fetchProblems().subscribe({
-        next: () => this.allProblems.set(this.questionService.problems()),
-      });
-
-      if (sheetId) {
-        const id = sheetId;
-        this.problemSheetService
-          .getProblemSheetById(id, this.authService.isLoggedIn()())
-          .pipe(
-            switchMap((sheet) => {
-              if (this.authService.isLoggedIn()()) {
-                return this.savedProblemSheetService.getAllProblemSheets().pipe(map(() => sheet));
-              } else {
-                return of(sheet);
-              }
-            }),
-          )
-          .subscribe({
-            next: (sheet) => {
-              this.sheetName.set(sheet.title);
-              this.problemSheet.set(sheet);
-              this.isOwner.set(!!sheet.isOwner);
-              this.isProblemSheetSaved.set(this.savedProblemSheetService.isProblemSheetSaved(id));
-            },
-            error: () => {
-              this.toastService.showError('Failed to load sheet');
-              this.isSheetLoading.set(false);
-            },
-            complete: () => this.isSheetLoading.set(false),
-          });
-      } else {
-        this.isSheetLoading.set(false);
-      }
+    this.route.paramMap.pipe(
+      map(params=>params.get('sheetId')),
+      tap(id=>{
+        this.sheetId.set(id); this.problemSheet.set(null); this.isOwner.set(false);
+        this.sheetName.set(''); this.loadError.set(false); this.isSheetLoading.set(true);
+      }),
+      switchMap(id=>id ? this.authService.loadCurrentUser().pipe(
+        switchMap(user=>forkJoin({sheet:this.problemSheetService.getProblemSheetById(id,!!user),problems:this.questionService.fetchProblems()})),
+        catchError(()=>of(null)),
+      ) : of(null)),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(result=>{
+      this.isSheetLoading.set(false);
+      if(!result){this.loadError.set(true);return;}
+      this.sheetName.set(result.sheet.title); this.problemSheet.set(result.sheet);
+      this.isOwner.set(!!result.sheet.isOwner); this.allProblems.set(result.problems);
     });
   }
 
@@ -219,28 +198,24 @@ export class CustomProblemSheet implements OnInit {
     this.rightPaneService.open(template, RightPaneSize.MEDIUM, { title: 'Add questions' });
   }
 
-  saveProblemSheet() {
-    if (this.sheetId()) {
-      this.savedProblemSheetService.saveProblemSheet(this.sheetId() ?? '').subscribe();
-    }
-  }
-
-  unsaveProblemSheet(id: string) {
-    this.savedProblemSheetService.unsaveProblemSheet(id).subscribe();
-  }
-
-  toggleSavedSheet() {
-    if (this.isProblemSheetSaved()) {
-      this.unsaveProblemSheet(this.sheetId() ?? '');
-      this.isProblemSheetSaved.set(false);
-    } else {
-      this.saveProblemSheet();
-      this.isProblemSheetSaved.set(true);
-    }
-  }
-
   closeProblemSelector() {
     this.rightPaneService.close();
+  }
+
+  toggleVisibility() {
+    const sheet = this.problemSheet();
+    if (!sheet?.isOwner || this.changingVisibility()) return;
+    this.changingVisibility.set(true);
+    this.problemSheetService.updateVisibility(sheet.id, !this.sharedByLink())
+      .pipe(finalize(() => this.changingVisibility.set(false)), takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: result => {
+          if (result.id !== this.sheetId()) return;
+          this.problemSheet.set(result);
+          this.toastService.showSuccess(result.isPublic ? 'Anyone with the link can open this sheet' : 'Sheet is now private');
+        },
+        error: () => this.toastService.showError('Could not update sheet visibility'),
+      });
   }
 
   applyProblemSelection() {
@@ -268,10 +243,6 @@ export class CustomProblemSheet implements OnInit {
         next: () => {
           this.toastService.showSuccess('Problems added successfully');
           this.problemSheet.update((current) => current ? { ...current, problemIds: selectedProblemIds } : current);
-          const updatedProblems = this.allProblems().filter((p) =>
-            selectedProblemIds.includes(p.id),
-          );
-          this.problems.set(updatedProblems);
           this.rightPaneService.close();
         },
         error: () => {

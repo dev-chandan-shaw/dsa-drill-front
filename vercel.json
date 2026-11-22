@@ -55,6 +55,14 @@
     {
       "source": "/problems-sheet/:path*",
       "destination": "/index.csr.html"
+    },
+    {
+      "source": "/saved",
+      "destination": "/index.csr.html"
+    },
+    {
+      "source": "/my-notes",
+      "destination": "/index.csr.html"
     }
   ],
   "functions": {

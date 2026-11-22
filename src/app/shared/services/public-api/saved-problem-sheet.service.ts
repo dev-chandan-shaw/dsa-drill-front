@@ -19,7 +19,7 @@ export class SavedProblemSheetService {
   }
 
   getAllProblemSheets() {
-    return this.http.get<IProblemSheetSummary[]>(this.baseUrl);
+    return this.http.get<IProblemSheetSummary[]>(this.baseUrl, {transferCache:false});
   }
 
   saveProblemSheet(id: string) {

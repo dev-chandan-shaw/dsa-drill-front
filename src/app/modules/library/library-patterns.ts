@@ -13,7 +13,7 @@ import { resolveTopicCover } from '../question-pattern/topic-covers';
 @Component({
   selector: 'app-library-patterns',
   imports: [RouterLink, ArticleListItem],
-  styleUrls: ['./library.scss', './library-patterns.scss'],
+  styleUrls: ['./library.scss', './library-patterns.scss', './library-list.scss'],
   template: `
     <section [class.library-shell]="topicSlug()" [class.subject-shell]="topicSlug()">
       @if (loading()) {
@@ -22,10 +22,13 @@ import { resolveTopicCover } from '../question-pattern/topic-covers';
         <p role="alert">Could not load patterns. <button class="library-button" type="button" (click)="load()">Try again</button></p>
       } @else if (topicSlug()) {
         @if (topic(); as tag) {
-          <header class="library-head pattern-topic-header"><h1>{{ tag.name }} patterns</h1></header>
-          <div class="pattern-list">
+          <header class="library-head">
+            <h1>{{ tag.name }} patterns</h1>
+            <p>Explore approaches and worked examples for {{ tag.name }}.</p>
+          </header>
+          <div class="pattern-list shaded-list">
             @for (pattern of topicPatterns(); track pattern.summary.id) {
-              <app-article-list-item class="pattern-row" [article]="pattern.summary" />
+              <app-article-list-item class="pattern-row shaded-row" [article]="pattern.summary" />
             } @empty { <p>No published patterns in this topic yet. <a routerLink="/library/dsa/patterns">Browse other topics</a>.</p> }
           </div>
         } @else {
@@ -44,7 +47,7 @@ import { resolveTopicCover } from '../question-pattern/topic-covers';
                 <span class="pattern-topic-count">{{ entry.count }} {{ entry.count === 1 ? 'pattern' : 'patterns' }}</span>
               </div>
             </a>
-          } @empty { <p>No question tags yet. Topics will appear here when tags are added.</p> }
+          } @empty { <p>No published patterns yet. Topics will appear here when patterns are published.</p> }
         </div>
       }
     </section>
@@ -66,7 +69,7 @@ export class LibraryPatterns implements OnInit {
   readonly topicPatterns = computed(() => this.patterns().filter((p) => p.tagIds.includes(this.topic()?.id ?? -1)));
   readonly topics = computed(() => this.tags().map((tag) => ({
     tag, cover: resolveTopicCover(tag), count: this.patterns().filter((p) => p.tagIds.includes(tag.id)).length,
-  })).sort((a, b) => a.tag.name.localeCompare(b.tag.name)));
+  })).filter((entry) => entry.count > 0).sort((a, b) => a.tag.name.localeCompare(b.tag.name)));
   ngOnInit() {
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       this.topicSlug.set(params.get('topicSlug'));

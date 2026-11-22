@@ -4,6 +4,7 @@ import { MatIconRegistry } from '@angular/material/icon';
 import { RightPaneContainer } from './shared/components/right-pane-container/right-pane-container';
 import { AuthService } from './core/services/auth/auth.service';
 import { ThemeService } from './theme/theme.service';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-root',
@@ -27,8 +28,8 @@ export class App implements OnInit {
     // (Login button) into the prerendered HTML that every logged-in visitor sees
     // flash before hydration. Server output stays neutral (reserved placeholders);
     // the client revalidates on boot and the snapshot hydrates instantly.
-    // if (isPlatformBrowser(this.platformId)) {
+    if (isPlatformBrowser(this.platformId)) {
       this.authService.loadCurrentUser().subscribe();
-    // }
+    }
   }
 }

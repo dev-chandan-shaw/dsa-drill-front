@@ -8,11 +8,13 @@ import { SeoService } from '../../shared/services/seo.service';
 import { LibraryReaderData } from './library.resolvers';
 import { articlePath } from './library.models';
 import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.service';
-import { catchError, concat, forkJoin, map, of, switchMap } from 'rxjs';
+import { catchError, map, of, startWith, switchMap } from 'rxjs';
 import { LibraryApi } from './library-api.service';
+import { ItemActions } from './personal/item-actions';
+import { ProblemList } from '../../shared/components/problem-list/problem-list';
 
 @Component({
-  selector: 'app-library-reader', imports: [RouterLink, MarkdownView],
+  selector: 'app-library-reader', imports: [RouterLink, MarkdownView,ItemActions,ProblemList],
   templateUrl: './library-reader.html', styleUrls: ['./library.scss', './library-reader.scss'],
 })
 export class LibraryReader implements OnInit {
@@ -26,7 +28,7 @@ export class LibraryReader implements OnInit {
   private readonly tagsApi = inject(ProblemTagService);
   private readonly api = inject(LibraryApi);
   private readonly platform = inject(PLATFORM_ID);
-  private scrolledArticle: number | null = null;
+  private scrolledArticle: string | null = null;
   readonly tags = this.tagsApi.problemTags;
   readonly data = signal<LibraryReaderData | null>(null);
   readonly headings = signal<{ id: string; text: string; level: number }[]>([]);
@@ -40,18 +42,19 @@ export class LibraryReader implements OnInit {
       const article = this.data()?.article;
       if (!article) return;
       this.resize();
-      const enteredArticle = this.scrolledArticle !== article.summary.id;
+      const path = articlePath(article.summary);
+      const enteredArticle = this.scrolledArticle !== path;
       if (enteredArticle) {
         this.host.nativeElement.closest('.content')?.scrollTo({ top: 0 });
-        this.scrolledArticle = article.summary.id;
+        this.scrolledArticle = path;
       }
       const elements = this.host.nativeElement.querySelectorAll<HTMLElement>('.article-content h1[id], .article-content h2[id], .article-content h3[id]');
-      const observer = new IntersectionObserver((entries) => {
+      const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver((entries) => {
         const visible = entries.find((entry) => entry.isIntersecting);
         if (visible) this.activeHeading.set(visible.target.id);
       }, { root: this.host.nativeElement.closest('.content'), rootMargin: '-4% 0px -65% 0px' });
-      elements.forEach((element) => observer.observe(element));
-      cleanup(() => observer.disconnect());
+      elements.forEach((element) => observer?.observe(element));
+      cleanup(() => observer?.disconnect());
       if (enteredArticle && this.route.snapshot.fragment) this.scrollTo(this.route.snapshot.fragment, false);
     });
   }
@@ -61,16 +64,14 @@ export class LibraryReader implements OnInit {
         const page = library as LibraryReaderData;
         if (!isPlatformBrowser(this.platform)) return of(page);
         const params = this.route.snapshot.paramMap;
-        return concat(of(page), forkJoin({
-          tree: this.api.tree(params.get('subject')!, params.get('section')!).pipe(catchError(() => of(page.tree))),
-          article: this.api.article(params.get('subject')!, params.get('section')!, params.get('slug')!),
-        }).pipe(
-          map((result): LibraryReaderData => ({ ...page, ...result, error: null })),
-          catchError((error) => of(page.article && error.status !== 404 ? page : {
+        return this.api.article(params.get('subject')!, params.get('section')!, params.get('slug')!).pipe(
+          map((article): LibraryReaderData => ({ ...page, article, error: null })),
+          catchError((error) => of({
             ...page, article: null,
             error: error.status === 404 ? 'This article does not exist or is not published.' : 'Unable to load this article. Please try again.',
           })),
-        ));
+          startWith({...page,article:null}),
+        );
       }),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe((page) => {
