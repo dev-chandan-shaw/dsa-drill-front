@@ -1,0 +1,9 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.admin-main {
+  min-width: 0;
+  min-height: calc(100dvh - 56px);
+}

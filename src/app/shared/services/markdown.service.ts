@@ -14,7 +14,7 @@ const CODE_CLASS_PATTERN = /^language-[\w-]+$/;
   providedIn: 'root',
 })
 export class MarkdownService {
-  render(content: string | null | undefined): string {
+  render(content: string | null | undefined, article = false): string {
     const source = content ?? '';
     if (!source.trim()) {
       return '';
@@ -44,7 +44,8 @@ export class MarkdownService {
         // Links always open elsewhere; never in the app tab.
         a: (tagName, attribs): sanitizeHtml.Tag => ({
           tagName,
-          attribs: { ...attribs, target: '_blank', rel: 'noopener' },
+          attribs: article && (attribs['href']?.startsWith('#') || /^\/(?!\/)/.test(attribs['href'] ?? ''))
+            ? attribs : { ...attribs, target: '_blank', rel: 'noopener' },
         }),
         // Keep syntax-language hints for the highlighter, drop anything else.
         code: (tagName, attribs): sanitizeHtml.Tag => {
@@ -56,5 +57,23 @@ export class MarkdownService {
         },
       },
     });
+  }
+
+  /** Generated anchors work identically in SSR, preview, and the public reader. */
+  renderArticle(content: string) {
+    const headings: { id: string; text: string; level: number }[] = [];
+    const used = new Map<string, number>();
+    const html = this.render(content, true).replace(/<h([1-6])>([\s\S]*?)<\/h\1>/g, (_match, level: string, body: string) => {
+      const text = body.replace(/<[^>]*>/g, '')
+        .replace(/&#(\d+);/g, (_: string, n: string) => String.fromCodePoint(Number(n)))
+        .replace(/&(?:amp|lt|gt|quot|#39);/g, (entity: string) =>
+          ({ '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" })[entity] ?? entity);
+      const base = 'section-' + (text.toLowerCase().normalize('NFKD').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '') || 'heading');
+      const count = used.get(base) ?? 0; used.set(base, count + 1);
+      const id = count ? `${base}-${count + 1}` : base;
+      headings.push({ id, text, level: Number(level) });
+      return `<h${level} id="${id}" tabindex="-1">${body}</h${level}>`;
+    });
+    return { html, headings };
   }
 }

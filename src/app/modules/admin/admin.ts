@@ -22,12 +22,18 @@ import {
 } from '../question-pattern/topic-covers';
 import { IProblemPattern } from '../home/models/problem-pattern';
 import { IApiResponse } from '../../shared/models/ApiResponse';
+import { IBlogSection, IBlogSectionDto } from '../../shared/models/blog-section';
+import { IBlogPostSummary } from '../../shared/models/blog-post';
 import { PublicProblemService } from '../../shared/services/public-api/problem.service';
 import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.service';
 import { ProblemPatternService } from '../../shared/services/public-api/problem-pattern.service';
 import { AdminProblemService } from './services/admin-problem';
 import { AdminProblemTagService } from './services/admin-problem-tag';
 import { AdminProblemPatternService } from './services/admin-problem-pattern';
+import { AdminBlogSectionService } from './services/admin-blog-section';
+import { AdminBlogPostService } from './services/admin-blog-post';
+import { CoverUploader } from '../../shared/components/cover-uploader/cover-uploader';
+import { slugify } from '../../shared/utils/slugify';
 import { RightPaneService, RightPaneSize } from '../../shared/services/right-pane-service';
 import { ToastService } from '../../shared/services/toast-service';
 import { FormPaneTemplate } from '../../shared/components/form-pane-template/form-pane-template';
@@ -43,7 +49,8 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ConfirmDialogService } from '../../shared/services/confirm-dialog.service';
 
-type AdminTab = 'problems' | 'tags' | 'patterns';
+type AdminTab = 'problems' | 'tags' | 'patterns' | 'sections' | 'blogs';
+type BlogStatusFilter = 'ALL' | 'DRAFT' | 'PUBLISHED';
 
 @Component({
   selector: 'app-admin',
@@ -62,6 +69,7 @@ type AdminTab = 'problems' | 'tags' | 'patterns';
     MatSelectModule,
     MatTabsModule,
     MatTooltipModule,
+    CoverUploader,
   ],
   templateUrl: './admin.html',
   styleUrl: './admin.scss',
@@ -70,6 +78,7 @@ type AdminTab = 'problems' | 'tags' | 'patterns';
 export class Admin implements OnInit {
   @ViewChild('problemFormTemplate') problemFormTemplate!: TemplateRef<unknown>;
   @ViewChild('tagFormTemplate') tagFormTemplate!: TemplateRef<unknown>;
+  @ViewChild('sectionFormTemplate') sectionFormTemplate!: TemplateRef<unknown>;
 
   private readonly fb = inject(FormBuilder);
   private readonly platformId = inject(PLATFORM_ID);
@@ -80,6 +89,8 @@ export class Admin implements OnInit {
   private readonly adminProblemService = inject(AdminProblemService);
   private readonly adminProblemTagService = inject(AdminProblemTagService);
   private readonly adminProblemPatternService = inject(AdminProblemPatternService);
+  private readonly adminBlogSectionService = inject(AdminBlogSectionService);
+  private readonly adminBlogPostService = inject(AdminBlogPostService);
   private readonly rightPaneService = inject(RightPaneService);
   private readonly toastService = inject(ToastService);
   private readonly confirmationService = inject(ConfirmDialogService);
@@ -94,13 +105,36 @@ export class Admin implements OnInit {
   readonly isSavingTag = signal(false);
   readonly isDeleting = signal(false);
 
-  readonly activeTab = signal<AdminTab>('problems');
+  readonly sections = signal<IBlogSection[]>([]);
+  readonly blogPosts = signal<IBlogPostSummary[]>([]);
+  readonly isLoadingSections = signal(false);
+  readonly isLoadingBlogs = signal(false);
+  readonly isSavingSection = signal(false);
+  readonly editingSectionId = signal<number | null>(null);
+  readonly editingSectionSlugLocked = signal(false);
+  readonly blogSearchTerm = signal('');
+  readonly selectedBlogSectionId = signal<number | null>(null);
+  readonly selectedBlogStatus = signal<BlogStatusFilter>('ALL');
+  readonly blogSectionFilterControl = new FormControl<number | null>(null);
+  readonly blogStatusFilterControl = new FormControl<BlogStatusFilter>('ALL', {
+    nonNullable: true,
+  });
 
-  private static readonly tabOrder: AdminTab[] = ['problems', 'tags', 'patterns'];
+  readonly activeTab = signal<AdminTab>('problems');
+  readonly managedSection = signal<'problems' | 'tags' | null>(null);
+
+  private static readonly tabOrder: AdminTab[] = [
+    'problems',
+    'tags',
+    'patterns',
+    'sections',
+    'blogs',
+  ];
 
   readonly tabIndex = computed(() => Admin.tabOrder.indexOf(this.activeTab()));
 
   setTabIndex(index: number) {
+    if (this.managedSection()) return;
     const tab = Admin.tabOrder[index];
     if (tab) {
       this.activeTab.set(tab);
@@ -182,6 +216,24 @@ export class Admin implements OnInit {
     return this.tags().filter((tag) => tag.name.toLowerCase().includes(normalizedSearch));
   });
 
+  readonly filteredBlogPosts = computed(() => {
+    const normalizedSearch = this.blogSearchTerm().toLowerCase().trim();
+    const selectedSection = this.selectedBlogSectionId();
+    const selectedStatus = this.selectedBlogStatus();
+
+    return this.blogPosts().filter((post) => {
+      const matchesSearch =
+        !normalizedSearch ||
+        post.title.toLowerCase().includes(normalizedSearch) ||
+        post.slug.toLowerCase().includes(normalizedSearch);
+      const matchesSection = selectedSection === null || post.sectionId === selectedSection;
+      const matchesStatus =
+        selectedStatus === 'ALL' ||
+        (selectedStatus === 'PUBLISHED' ? post.published : !post.published);
+      return matchesSearch && matchesSection && matchesStatus;
+    });
+  });
+
   readonly filteredPatterns = computed(() => {
     const normalizedSearch = this.patternSearchTerm().toLowerCase().trim();
     const selectedTagId = this.selectedPatternTagId();
@@ -221,6 +273,14 @@ export class Admin implements OnInit {
     coverGlyph: [''],
   });
 
+  readonly sectionForm = this.fb.nonNullable.group({
+    name: ['', [Validators.required, Validators.minLength(2)]],
+    slug: [''],
+    description: [''],
+    displayOrder: [0],
+    coverImageUrl: this.fb.control<string | null>(null),
+  });
+
   readonly coverSwatches = COVER_SWATCHES;
 
   constructor() {
@@ -234,6 +294,18 @@ export class Admin implements OnInit {
     this.patternTagFilterControl.valueChanges.subscribe((value) => {
       this.selectedPatternTagId.set(value);
     });
+    this.blogSectionFilterControl.valueChanges.subscribe((value) => {
+      this.selectedBlogSectionId.set(value);
+    });
+    this.blogStatusFilterControl.valueChanges.subscribe((value) => {
+      this.selectedBlogStatus.set(value ?? 'ALL');
+    });
+    this.sectionForm.controls.name.valueChanges.subscribe((name) => {
+      const slug = this.sectionForm.controls.slug;
+      if (!slug.disabled && !slug.value.trim()) {
+        slug.setValue(slugify(name), { emitEvent: false });
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -244,7 +316,9 @@ export class Admin implements OnInit {
     // Admin owns its data: force a fresh load so deep-links and
     // post-save states never render stale/empty lists.
     // The pattern editor returns with ?tab=patterns to land back on its tab.
-    this.setActiveTab(this.route.snapshot.queryParamMap.get('tab') ?? undefined);
+    const section = this.route.snapshot.data['adminSection'];
+    this.managedSection.set(section === 'problems' || section === 'tags' ? section : null);
+    this.setActiveTab(this.managedSection() ?? this.route.snapshot.queryParamMap.get('tab') ?? undefined);
     this.problemService
       .fetchProblems(true)
       .pipe(take(1))
@@ -257,16 +331,26 @@ export class Admin implements OnInit {
       .subscribe({
         error: () => this.toastService.showError('Unable to load tags'),
       });
+    if (!this.managedSection()) {
     this.problemPatternService
       .fetchProblemPatterns(true)
       .pipe(take(1))
       .subscribe({
         error: () => this.toastService.showError('Unable to load patterns'),
       });
+    this.loadSections();
+    this.loadBlogPosts();
+    }
   }
 
   setActiveTab(tab: string | number | undefined) {
-    if (tab === 'problems' || tab === 'tags' || tab === 'patterns') {
+    if (
+      tab === 'problems' ||
+      tab === 'tags' ||
+      tab === 'patterns' ||
+      tab === 'sections' ||
+      tab === 'blogs'
+    ) {
       this.activeTab.set(tab);
     }
   }
@@ -281,6 +365,18 @@ export class Admin implements OnInit {
 
   setPatternSearchTerm(value: string) {
     this.patternSearchTerm.set(value);
+  }
+
+  setBlogSearchTerm(value: string) {
+    this.blogSearchTerm.set(value);
+  }
+
+  clearBlogFilters() {
+    this.blogSearchTerm.set('');
+    this.selectedBlogSectionId.set(null);
+    this.blogSectionFilterControl.setValue(null, { emitEvent: false });
+    this.selectedBlogStatus.set('ALL');
+    this.blogStatusFilterControl.setValue('ALL', { emitEvent: false });
   }
 
   setPatternTagFilter(value: number | null) {
@@ -613,6 +709,214 @@ export class Admin implements OnInit {
         },
         error: () => this.toastService.showError('Unable to delete pattern'),
       });
+  }
+
+  openAddSectionPane() {
+    this.editingSectionId.set(null);
+    this.editingSectionSlugLocked.set(false);
+    const nextOrder =
+      this.sections().reduce((max, section) => Math.max(max, section.displayOrder), 0) + 10;
+    this.sectionForm.reset({
+      name: '',
+      slug: '',
+      description: '',
+      displayOrder: nextOrder,
+      coverImageUrl: null,
+    });
+    this.rightPaneService.open(this.sectionFormTemplate, RightPaneSize.SMALL, {
+      title: 'Add Section',
+    });
+  }
+
+  openEditSectionPane(section: IBlogSection) {
+    this.editingSectionId.set(section.id);
+    this.editingSectionSlugLocked.set(section.publishedPostCount > 0);
+    this.sectionForm.reset({
+      name: section.name,
+      slug: section.slug,
+      description: section.description ?? '',
+      displayOrder: section.displayOrder,
+      coverImageUrl: section.coverImageUrl,
+    });
+    this.rightPaneService.open(this.sectionFormTemplate, RightPaneSize.SMALL, {
+      title: `Edit Section: ${section.name}`,
+    });
+  }
+
+  submitSection() {
+    if (this.sectionForm.invalid || this.isSavingSection()) {
+      this.sectionForm.markAllAsTouched();
+      return;
+    }
+    const value = this.sectionForm.getRawValue();
+    const editingId = this.editingSectionId();
+    const payload: IBlogSectionDto = {
+      ...(editingId !== null ? { id: editingId } : {}),
+      name: value.name,
+      slug: value.slug || undefined,
+      description: value.description || null,
+      coverImageUrl: value.coverImageUrl || null,
+      displayOrder: Number(value.displayOrder) || 0,
+    };
+
+    this.isSavingSection.set(true);
+    this.adminBlogSectionService
+      .save(payload)
+      .pipe(
+        finalize(() => this.isSavingSection.set(false)),
+        take(1),
+      )
+      .subscribe({
+        next: () => {
+          this.toastService.showSuccess(
+            'Section saved',
+            editingId !== null ? 'Section updated.' : 'Section added.',
+          );
+          this.rightPaneService.close();
+          this.loadSections();
+          this.loadBlogPosts();
+        },
+        error: (err) => {
+          this.toastService.showError(err?.error?.message ?? 'Unable to save section');
+        },
+      });
+  }
+
+  confirmDeleteSection(section: IBlogSection) {
+    if (section.postCount > 0) {
+      this.toastService.showError("Move or delete this section's posts first");
+      return;
+    }
+    this.confirmationService
+      .confirm({
+        title: 'Delete section',
+        message: `Delete "${section.name}"? This cannot be undone.`,
+        confirmLabel: 'Delete',
+      })
+      .pipe(take(1))
+      .subscribe((accepted) => {
+        if (accepted) {
+          this.deleteSection(section.id);
+        }
+      });
+  }
+
+  private deleteSection(sectionId: number) {
+    if (this.isDeleting()) {
+      return;
+    }
+    this.isDeleting.set(true);
+    this.adminBlogSectionService
+      .delete(sectionId)
+      .pipe(
+        finalize(() => this.isDeleting.set(false)),
+        take(1),
+      )
+      .subscribe({
+        next: () => {
+          this.toastService.showSuccess('Section deleted');
+          this.loadSections();
+        },
+        error: (err) => {
+          this.toastService.showError(err?.error?.message ?? 'Unable to delete section');
+        },
+      });
+  }
+
+  confirmDeleteBlogPost(post: IBlogPostSummary) {
+    this.confirmationService
+      .confirm({
+        title: 'Delete blog post',
+        message: `Delete "${post.title}"? This cannot be undone.`,
+        confirmLabel: 'Delete',
+      })
+      .pipe(take(1))
+      .subscribe((accepted) => {
+        if (accepted) {
+          this.deleteBlogPost(post.id);
+        }
+      });
+  }
+
+  private deleteBlogPost(postId: number) {
+    if (this.isDeleting()) {
+      return;
+    }
+    this.isDeleting.set(true);
+    this.adminBlogPostService
+      .delete(postId)
+      .pipe(
+        finalize(() => this.isDeleting.set(false)),
+        take(1),
+      )
+      .subscribe({
+        next: () => {
+          this.toastService.showSuccess('Blog post deleted');
+          this.loadBlogPosts();
+          this.loadSections();
+        },
+        error: () => this.toastService.showError('Unable to delete blog post'),
+      });
+  }
+
+  toggleBlogPublished(post: IBlogPostSummary) {
+    const request$ = post.published
+      ? this.adminBlogPostService.unpublish(post.id)
+      : this.adminBlogPostService.publish(post.id);
+    request$.pipe(take(1)).subscribe({
+      next: () => {
+        this.toastService.showSuccess(post.published ? 'Post unpublished' : 'Post published');
+        this.loadBlogPosts();
+        this.loadSections();
+      },
+      error: () => this.toastService.showError('Unable to update publish state'),
+    });
+  }
+
+  getSectionNameById(sectionId: number): string {
+    return this.sections().find((section) => section.id === sectionId)?.name ?? `Section #${sectionId}`;
+  }
+
+  private loadSections() {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    this.isLoadingSections.set(true);
+    this.adminBlogSectionService
+      .getAll()
+      .pipe(
+        finalize(() => this.isLoadingSections.set(false)),
+        take(1),
+      )
+      .subscribe({
+        next: (sections) => this.sections.set(sections),
+        error: () => this.toastService.showError('Unable to load sections'),
+      });
+  }
+
+  private loadBlogPosts() {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    this.isLoadingBlogs.set(true);
+    this.adminBlogPostService
+      .getAll()
+      .pipe(
+        finalize(() => this.isLoadingBlogs.set(false)),
+        take(1),
+      )
+      .subscribe({
+        next: (posts) => this.blogPosts.set(posts),
+        error: () => this.toastService.showError('Unable to load blog posts'),
+      });
+  }
+
+  trackBySectionId(_: number, section: IBlogSection) {
+    return section.id;
+  }
+
+  trackByBlogPostId(_: number, post: IBlogPostSummary) {
+    return post.id;
   }
 
   trackByQuestionId(_: number, question: IProblem) {

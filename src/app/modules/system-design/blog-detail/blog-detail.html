@@ -1,0 +1,92 @@
+@if (loading()) {
+  <div class="page-shell" role="status" aria-label="Loading article">
+    <div class="article-skel" aria-hidden="true">
+      <div class="skel-stack">
+        <div class="skel skel-line" style="--w: 42%"></div>
+      </div>
+      <div class="skel skel-title" style="width: min(560px, 88%)"></div>
+      <div class="skel-stack">
+        <div class="skel skel-line" style="--w: 30%"></div>
+      </div>
+      <div class="skel skel-block" style="--h: 220px"></div>
+      <div class="skel-stack">
+        <div class="skel skel-line"></div>
+        <div class="skel skel-line" style="--w: 95%"></div>
+        <div class="skel skel-line" style="--w: 88%"></div>
+        <div class="skel skel-line" style="--w: 92%"></div>
+        <div class="skel skel-line" style="--w: 60%"></div>
+      </div>
+    </div>
+  </div>
+} @else if (loadError()) {
+  <div class="load-error" role="alert">
+    <mat-icon aria-hidden="true">cloud_off</mat-icon>
+    <div class="load-error-title">Couldn't load this article</div>
+    <div class="load-error-subtitle">Check your connection and try again.</div>
+    <button mat-flat-button type="button" (click)="retry()">Retry</button>
+  </div>
+} @else if (!post()) {
+  <div class="page-shell">
+    <div class="state-card" role="status">
+      This article doesn't exist or isn't published yet.
+      <a class="link" routerLink="/system-design">Browse all sections</a>
+    </div>
+  </div>
+} @else if (post(); as post) {
+  <article class="page-shell article-page">
+    <nav class="crumb" aria-label="Breadcrumb">
+      <a routerLink="/system-design">System Design</a>
+      <mat-icon aria-hidden="true">chevron_right</mat-icon>
+      <a [routerLink]="['/system-design', post.sectionSlug]">{{ post.sectionName }}</a>
+    </nav>
+
+    <header class="article-head">
+      <h1 class="dsa-display">{{ post.title }}</h1>
+      <div class="article-meta dsa-mono">
+        @if (post.publishedAt) {
+          <span>{{ post.publishedAt | date: 'mediumDate' }}</span>
+        }
+      </div>
+    </header>
+
+    @if (post.coverImageUrl) {
+      <div class="article-cover">
+        <img [src]="post.coverImageUrl" [alt]="post.title" />
+      </div>
+    }
+
+    <div class="article-body">
+      <app-markdown-view [content]="post.content" variant="reading" />
+    </div>
+
+    <footer class="article-foot">
+      <a class="back-link" [routerLink]="['/system-design', post.sectionSlug]">
+        <mat-icon aria-hidden="true">arrow_back</mat-icon>
+        All {{ post.sectionName }} articles
+      </a>
+
+      @if (olderPost() || newerPost()) {
+        <nav class="article-nav" aria-label="More articles">
+          @if (olderPost(); as older) {
+            <a
+              class="nav-card"
+              [routerLink]="['/system-design', older.sectionSlug, older.slug]"
+            >
+              <span class="nav-label dsa-mono">← Older</span>
+              <span class="nav-title">{{ older.title }}</span>
+            </a>
+          }
+          @if (newerPost(); as newer) {
+            <a
+              class="nav-card nav-next"
+              [routerLink]="['/system-design', newer.sectionSlug, newer.slug]"
+            >
+              <span class="nav-label dsa-mono">Newer →</span>
+              <span class="nav-title">{{ newer.title }}</span>
+            </a>
+          }
+        </nav>
+      }
+    </footer>
+  </article>
+}

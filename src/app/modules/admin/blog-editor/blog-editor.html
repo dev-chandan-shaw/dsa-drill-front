@@ -1,0 +1,153 @@
+<section class="page-shell editor-page">
+  @if (isLoading()) {
+    <div class="editor-loading" role="status" aria-label="Loading blog editor">
+      <div class="skel skel-title"></div>
+      <div class="editor-grid" aria-hidden="true">
+        <div class="skel-stack">
+          <div class="skel" style="height: 56px"></div>
+          <div class="skel skel-block" style="--h: 380px"></div>
+        </div>
+        <div class="skel-stack">
+          <div class="skel skel-block" style="--h: 210px"></div>
+          <div class="skel skel-block" style="--h: 190px"></div>
+        </div>
+      </div>
+    </div>
+  } @else if (notFound()) {
+    <div class="state-card" role="status">
+      This post doesn't exist.
+      <button type="button" class="link" (click)="back()">Back to blogs</button>
+    </div>
+  } @else {
+    <header class="editor-head">
+      <div class="editor-title-row">
+        <button mat-icon-button type="button" aria-label="Back to blogs" (click)="back()">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <h1 class="dsa-display">
+          {{ editingPostId() !== null ? 'Edit Blog' : 'Add Blog' }}
+        </h1>
+        @if (editingPostId() !== null) {
+          <span class="status-badge" [class.published]="published()">
+            {{ published() ? 'Published' : 'Draft' }}
+          </span>
+        }
+        <span class="editor-spacer"></span>
+        <button
+          mat-stroked-button
+          type="button"
+          [disabled]="isPublishing() || isSaving()"
+          (click)="togglePublish()"
+        >
+          <mat-icon aria-hidden="true">{{ published() ? 'visibility_off' : 'publish' }}</mat-icon>
+          {{ published() ? 'Unpublish' : 'Publish' }}
+        </button>
+        <button
+          mat-flat-button
+          type="button"
+          [disabled]="blogForm.invalid || isSaving() || isPublishing()"
+          (click)="save()"
+        >
+          {{ isSaving() ? 'Saving…' : 'Save' }}
+        </button>
+      </div>
+    </header>
+
+    @if (loadError()) {
+      <div class="state-card" role="alert">
+        <div>
+          <div class="empty-title">Couldn't load editor data</div>
+          <div class="empty-subtitle">Check your connection and try again.</div>
+        </div>
+      </div>
+    }
+
+    <form [formGroup]="blogForm">
+      <div class="editor-grid">
+        <div class="editor-main">
+          <mat-form-field appearance="outline" class="pane-field">
+            <mat-label>Title</mat-label>
+            <input matInput type="text" formControlName="title" required minlength="2" />
+            @if (blogForm.controls.title.invalid) {
+              <mat-error>Title needs at least 2 characters.</mat-error>
+            }
+          </mat-form-field>
+
+          <app-markdown-note-editor
+            [control]="blogForm.controls.content"
+            section="blogs"
+            label="Content"
+            minHeight="420px"
+          />
+          @if (blogForm.controls.content.invalid && blogForm.controls.content.touched) {
+            <p class="field-error">Content needs at least 5 characters.</p>
+          }
+
+          <mat-form-field appearance="outline" class="pane-field">
+            <mat-label>Excerpt (optional)</mat-label>
+            <textarea
+              matInput
+              rows="3"
+              formControlName="excerpt"
+              placeholder="Shown on cards and in search results. Derived from the content when empty."
+            ></textarea>
+          </mat-form-field>
+        </div>
+
+        <aside class="editor-rail" aria-label="Publishing details">
+          <section class="pick-section" aria-label="Section and slug">
+            <h2>Section</h2>
+            @if (sections().length) {
+              <mat-form-field appearance="outline" class="pane-field">
+                <mat-label>Section</mat-label>
+                <mat-select formControlName="sectionId">
+                  @for (section of sections(); track section.id) {
+                    <mat-option [value]="section.id">{{ section.name }}</mat-option>
+                  }
+                </mat-select>
+                @if (blogForm.controls.sectionId.invalid) {
+                  <mat-error>Choose a section.</mat-error>
+                }
+              </mat-form-field>
+            } @else {
+              <p class="pick-empty">
+                No sections yet. Create one in the admin Sections tab first.
+              </p>
+            }
+
+            <mat-form-field appearance="outline" class="pane-field">
+              <mat-label>Slug</mat-label>
+              <input matInput type="text" formControlName="slug" placeholder="auto-from-title" />
+              <mat-hint>
+                @if (published()) {
+                  Locked while published.
+                } @else {
+                  Auto-filled from the title when empty.
+                }
+              </mat-hint>
+            </mat-form-field>
+          </section>
+
+          <section class="pick-section" aria-label="Cover image">
+            <h2>Cover</h2>
+            <app-cover-uploader [control]="blogForm.controls.coverImageUrl" folder="blogs" />
+          </section>
+
+          <section class="pick-section" aria-label="Publishing">
+            <h2>Publishing</h2>
+            @if (published()) {
+              <p class="pick-sub">
+                This post is live. Edits go live when you save; the slug and
+                publication date stay fixed.
+              </p>
+            } @else {
+              <p class="pick-sub">
+                Drafts stay hidden from the public site until you publish.
+              </p>
+            }
+          </section>
+        </aside>
+      </div>
+    </form>
+  }
+</section>

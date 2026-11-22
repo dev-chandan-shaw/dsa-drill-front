@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ProblemList } from '../../shared/components/problem-list/problem-list';
 import { IProblem, ProblemDifficulty } from '../home/models/Question';
 import { PublicProblemService } from '../../shared/services/public-api/problem.service';
@@ -13,7 +13,7 @@ import { SeoService } from '../../shared/services/seo.service';
 
 @Component({
   selector: 'app-problem-sheet',
-  imports: [ProblemList, MatButtonModule, MatIconModule, SheetSummaryCard],
+  imports: [ProblemList, MatButtonModule, MatIconModule, SheetSummaryCard, RouterModule],
   templateUrl: './problem-sheet.html',
   styleUrl: './problem-sheet.scss',
 })

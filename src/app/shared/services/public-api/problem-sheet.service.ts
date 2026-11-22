@@ -21,8 +21,8 @@ export class ProblemSheetService {
     return this.http.get<IProblemSheetSummary[]>(this.baseUrl);
   }
 
-  getProblemSheetById(id: string) {
-    return this.http.get<IProblemSheetDetails>(`${this.publicBaseUrl}/${id}`);
+  getProblemSheetById(id: string, authenticated = false) {
+    return this.http.get<IProblemSheetDetails>(`${authenticated ? this.baseUrl : this.publicBaseUrl}/${id}`);
   }
 
   fetchProblemSheets() {
@@ -39,10 +39,10 @@ export class ProblemSheetService {
   }
 
   createProblemSheet(payLoad: IProblemSheetDetails) {
-    return this.http.post<IProblemSheetDetails>(this.baseUrl, payLoad);
+    return this.http.post<IProblemSheetDetails>(this.baseUrl, { ...payLoad, isPublic: payLoad.isPublic === true });
   }
 
   updateProblemSheet(payLoad: IProblemSheetDetails) {
-    return this.http.put<IProblemSheetDetails>(this.baseUrl, payLoad);
+    return this.http.put<IProblemSheetDetails>(this.baseUrl, { ...payLoad, isPublic: payLoad.isPublic === true });
   }
 }

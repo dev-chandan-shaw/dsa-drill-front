@@ -15,6 +15,21 @@
   overflow: auto;
 }
 
+.admin-page.managed {
+  height: auto;
+  overflow: visible;
+  padding: 46px 40px 70px;
+  gap: 28px;
+  .admin-header h1 { font: 500 38px/1.2 Georgia,serif; letter-spacing: -.8px; color: var(--library-ink); }
+  .admin-header p { margin-top: 12px; font: 14px/1.7 system-ui; color: var(--library-muted); }
+  .admin-workspace { border: 0; box-shadow: none; background: transparent; }
+  .admin-workspace mat-card-content { padding: 0; }
+  .data-row { padding: 22px 0; }
+  .data-main h3 { font-size: 16px; color: var(--library-ink); }
+  .toolbar { padding: 0 0 24px; }
+  @media(max-width:700px) { padding: 30px 22px 60px; }
+}
+
 .admin-header {
   display: flex;
   justify-content: space-between;
@@ -128,6 +143,14 @@ mat-tab-group {
   align-items: flex-start;
 }
 
+.bordered-list {
+  gap: 0;
+
+  > .data-row {
+    border-top: 1px solid var(--library-line, var(--mat-sys-outline-variant));
+  }
+}
+
 .data-main {
   min-width: 0;
   flex: 1;
@@ -202,6 +225,21 @@ mat-tab-group {
   gap: 8px;
   align-items: center;
   flex-wrap: wrap;
+}
+
+.admin-thumb {
+  width: 64px;
+  height: 40px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--mat-sys-outline-variant);
+}
+
+.blog-status.published {
+  border-color: color-mix(in srgb, var(--mat-sys-primary) 40%, transparent);
+  color: var(--mat-sys-primary);
+  background-color: color-mix(in srgb, var(--mat-sys-primary) 10%, transparent);
 }
 
 .pane-form {

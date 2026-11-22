@@ -1,92 +1,133 @@
 :host {
+  --sidebar-paper: #fff;
+  --sidebar-ink: #242424;
+  --sidebar-muted: #6b6b6b;
+  --sidebar-line: #e5e5e5;
+  --sidebar-soft: #f7f7f7;
+  --sidebar-accent: #1a8917;
+
   display: block;
   height: 100%;
   min-height: 0;
+}
+
+:host-context(html.dark) {
+  --sidebar-paper: #191919;
+  --sidebar-ink: #eee;
+  --sidebar-muted: #b0b0b0;
+  --sidebar-line: #363636;
+  --sidebar-soft: #242424;
+  --sidebar-accent: #75c873;
 }
 
 .sidebar {
   height: 100%;
   display: flex;
   flex-direction: column;
-  // No top padding: the header below owns the full 56px bar, exactly like
-  // the app header, so the two read as one continuous strip.
-  padding: 0 16px 16px;
+  padding: 0 18px 18px;
   box-sizing: border-box;
-  // Fill whatever hosts it: the 220px desktop slot or the mobile drawer.
-  // (A fixed px width here left a dead gutter inside the drawer.)
   width: 100%;
-  background-color: var(--mat-sys-surface-container);
-  color: var(--mat-sys-on-surface);
+  background-color: var(--sidebar-paper);
+  color: var(--sidebar-ink);
+  border-right: 1px solid var(--sidebar-line);
   overflow-y: auto;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
 .sidebar-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  gap: 4px;
   flex-shrink: 0;
-  // Exactly the app header's 56px bar (no min-height slack), same logo
-  // size and tokens, so drawer and app headers read as one strip.
-  height: 56px;
-  padding: 0;
-  margin-bottom: 12px;
+  min-height: 56px;
+  margin: 0 -4px;
+  border-bottom: 1px solid var(--sidebar-line);
   overflow: hidden;
+
+  .logo h1 {
+    font: 500 20px/1.2 Georgia, serif;
+    letter-spacing: -0.3px;
+    margin: 0;
+    color: var(--sidebar-ink);
+  }
 }
 
-.sidebar-header + .sidebar-nav {
-  padding-top: 0;
+.sidebar-shortcut {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 14px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--sidebar-muted);
+  cursor: pointer;
+  font: 12px/1.4 system-ui, -apple-system, sans-serif;
+
+  &:hover {
+    color: var(--sidebar-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
 }
 
 .sidebar-nav {
   flex: 1;
-  // Breathing room below the app header for the headerless desktop
-  // sidebar. The drawer keeps its flush 56px merge (see override below).
-  padding-top: 16px;
-
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
+  gap: 12px;
   width: 100%;
-  min-height: 44px;
-  padding: 10px 16px;
+  min-height: 40px;
+  padding: 10px 12px;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 0 5px 5px 0;
   background: none;
-  border: none;
-  cursor: pointer;
-  border-radius: 8px;
-  color: var(--mat-sys-on-surface);
+  color: var(--sidebar-muted);
   text-align: left;
-  font-size: 14px;
-  font-weight: 500;
+  cursor: pointer;
+  font: 14px/1.5 system-ui, -apple-system, sans-serif;
 
   &:hover {
-    background-color: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
-  }
-
-  &:active {
-    background-color: color-mix(in srgb, var(--mat-sys-on-surface) 12%, transparent);
+    background-color: var(--sidebar-soft);
+    color: var(--sidebar-ink);
   }
 
   &.active {
-    background-color: var(--mat-sys-secondary-container);
-    color: var(--mat-sys-on-secondary-container);
-    font-weight: 600;
+    background-color: var(--sidebar-soft);
+    color: var(--sidebar-ink);
+    border-left-color: var(--sidebar-accent);
   }
 }
 
+.nav-children {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: 20px;
+  padding-left: 10px;
+  border-left: 1px solid var(--sidebar-line);
+}
+
 .nav-icon {
-  margin-right: 12px;
+  font-size: 19px;
+  width: 19px;
+  height: 19px;
   flex-shrink: 0;
+  color: currentColor;
 }
 
 .nav-label {
@@ -96,149 +137,9 @@
   text-overflow: ellipsis;
 }
 
-.logo {
-  h1 {
-    margin: 0;
-    font-family: 'Sora', Inter, system-ui, sans-serif;
-    letter-spacing: -0.02em;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--mat-sys-primary);
-  }
-}
-
-.accordion-section {
-  margin-top: 1rem;
-  border-top: 1px solid var(--mat-sys-outline-variant);
-  padding-top: 1rem;
-
-  .accordion-header-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .accordion-header {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    min-height: 44px;
-    padding: 10px 12px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    border-radius: 8px;
-    color: var(--mat-sys-on-surface);
-    text-align: left;
-    font-size: 14px;
-    font-weight: 500;
-    gap: 4px;
-
-    &:hover {
-      background-color: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
-    }
-
-    .accordion-icon {
-      transition: transform 0.2s ease;
-      flex-shrink: 0;
-
-      &.open {
-        transform: rotate(90deg);
-      }
-    }
-
-    .accordion-label {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-  }
-
-  .accordion-content {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.25s ease;
-
-    &.open {
-      grid-template-rows: 1fr;
-    }
-
-    .accordion-inner {
-      overflow: hidden;
-      min-height: 0;
-      padding: 4px 0;
-    }
-
-    .loading,
-    .empty-state {
-      padding: 12px;
-      text-align: center;
-      color: var(--mat-sys-on-surface-variant);
-      font-size: 13px;
-    }
-
-    .sheets-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-
-      .sheet-item {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        min-height: 44px;
-        padding: 10px 16px;
-        background: none;
-        border: none;
-        cursor: pointer;
-        border-radius: 8px;
-        color: var(--mat-sys-on-surface);
-        font-size: 13px;
-        text-align: left;
-
-        &:hover {
-          background-color: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
-        }
-
-        &.active {
-          background-color: var(--mat-sys-secondary-container);
-          color: var(--mat-sys-on-secondary-container);
-          font-weight: 600;
-        }
-
-        .sheet-name {
-          flex: 1;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-      }
-    }
-  }
-}
-
-.link {
-  background: none;
-  border: none;
-  padding: 0;
-  color: var(--mat-sys-primary);
-  cursor: pointer;
-  font-size: inherit;
-}
-
-.pane-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.sheet-field {
-  width: 100%;
+.sidebar-note {
+  margin-top: auto;
+  padding: 26px 14px 8px;
+  color: var(--sidebar-muted);
+  font: 12px/1.8 system-ui, -apple-system, sans-serif;
 }

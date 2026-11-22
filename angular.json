@@ -30,6 +30,16 @@
                 "input": "public"
               },
               {
+                "glob": "*.css",
+                "input": "node_modules/@milkdown/crepe/lib/theme/common",
+                "output": "assets/milkdown"
+              },
+              {
+                "glob": "gapcursor.css",
+                "input": "node_modules/prosemirror-gapcursor/style",
+                "output": "assets/milkdown"
+              },
+              {
                 "glob": "**/*",
                 "input": "node_modules/monaco-editor/min/vs",
                 "output": "assets/monaco/vs"

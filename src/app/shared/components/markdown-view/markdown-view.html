@@ -2,7 +2,7 @@
   <div
     class="markdown-body"
     [class.markdown-body--reading]="variant() === 'reading'"
-    [innerHTML]="html()"
+    [innerHTML]="renderedHtml()"
   ></div>
 } @else {
   <p class="markdown-empty">Nothing to preview yet.</p>

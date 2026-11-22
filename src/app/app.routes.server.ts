@@ -28,6 +28,9 @@ async function getProblemTagParams(): Promise<{ sheetId: string }[]> {
 }
 
 export const serverRoutes: ServerRoute[] = [
+  { path: 'library', renderMode: RenderMode.Server },
+  { path: 'library/**', renderMode: RenderMode.Server },
+  { path: 'admin/**', renderMode: RenderMode.Client },
   // Root renders Home (see modules.routes): server-rendered per request so
   // the question + tag lists are always fresh. TransferState carries the
   // server payload to the client — no background refetch needed.
@@ -56,6 +59,20 @@ export const serverRoutes: ServerRoute[] = [
   },
   {
     path: 'question-pattern/:tagSlug/:patternId/questions',
+    renderMode: RenderMode.Server,
+  },
+  {
+    // System Design blog: server-rendered per request so admin edits are
+    // immediately visible to readers and crawlers.
+    path: 'system-design',
+    renderMode: RenderMode.Server,
+  },
+  {
+    path: 'system-design/:sectionSlug',
+    renderMode: RenderMode.Server,
+  },
+  {
+    path: 'system-design/:sectionSlug/:postSlug',
     renderMode: RenderMode.Server,
   },
   {

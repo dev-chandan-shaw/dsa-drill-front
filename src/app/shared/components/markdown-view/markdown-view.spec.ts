@@ -95,4 +95,13 @@ describe('MarkdownView', () => {
     const body = fixture.nativeElement.querySelector('.markdown-body') as HTMLElement;
     expect(body?.classList.contains('markdown-body--reading')).toBe(true);
   });
+
+  it('retains generated reading anchors in the DOM while stripping unsafe author HTML', () => {
+    fixture.componentRef.setInput('content', '## Factory\n\n<img src="https://example.com/a.png" onerror="alert(1)"><script>alert(1)</script>');
+    fixture.componentRef.setInput('variant', 'reading');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('#section-factory')?.textContent).toBe('Factory');
+    expect(fixture.nativeElement.querySelector('script')).toBeNull();
+    expect(fixture.nativeElement.querySelector('img')?.hasAttribute('onerror')).toBe(false);
+  });
 });

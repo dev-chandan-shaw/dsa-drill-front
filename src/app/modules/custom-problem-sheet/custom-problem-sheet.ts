@@ -20,7 +20,7 @@ import { ProblemList } from '../../shared/components/problem-list/problem-list';
 import { TagBasedProblemList } from '../../shared/components/tag-based-problem-list/tag-based-problem-list';
 import { PublicProblemService } from '../../shared/services/public-api/problem.service';
 import { ProblemTagService } from '../../shared/services/public-api/proglem-tag.service';
-import { RightPaneService } from '../../shared/services/right-pane-service';
+import { RightPaneService, RightPaneSize } from '../../shared/services/right-pane-service';
 import { ToastService } from '../../shared/services/toast-service';
 import { SeoService } from '../../shared/services/seo.service';
 import { ProblemStatusApiService } from '../home/services/user/question-status-api.service';
@@ -66,6 +66,16 @@ export class CustomProblemSheet implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   problemSelectorTemplate = viewChild('problemSelectorTemplate', { read: TemplateRef });
+  private openedQuestionPickerFor: string | null = null;
+  private readonly openRequestedQuestionPicker = effect(() => {
+    const sheet = this.problemSheet();
+    const template = this.problemSelectorTemplate();
+    if (sheet?.isOwner && template && this.route.snapshot.queryParamMap?.get('addQuestions') === 'true'
+      && this.openedQuestionPickerFor !== sheet.id) {
+      this.openedQuestionPickerFor = sheet.id;
+      this.openProblemSelector();
+    }
+  });
 
   problemSheet = signal<IProblemSheetDetails | null>(null);
   problems = linkedSignal(() =>
@@ -169,7 +179,7 @@ export class CustomProblemSheet implements OnInit {
       if (sheetId) {
         const id = sheetId;
         this.problemSheetService
-          .getProblemSheetById(id)
+          .getProblemSheetById(id, this.authService.isLoggedIn()())
           .pipe(
             switchMap((sheet) => {
               if (this.authService.isLoggedIn()()) {
@@ -203,8 +213,10 @@ export class CustomProblemSheet implements OnInit {
   });
 
   openProblemSelector() {
-    this.selectionForm.controls.problemIds.setValue(this.problems().map((p) => p.id));
-    this.rightPaneService.open(this.problemSelectorTemplate()!);
+    const template = this.problemSelectorTemplate();
+    if (!this.isOwner() || !template || this.isSelectionSaving()) return;
+    this.selectionForm.controls.problemIds.setValue(this.problemSheet()?.problemIds ?? []);
+    this.rightPaneService.open(template, RightPaneSize.MEDIUM, { title: 'Add questions' });
   }
 
   saveProblemSheet() {
@@ -237,7 +249,7 @@ export class CustomProblemSheet implements OnInit {
   }
 
   onProblemsSelected(selectedProblemIds: number[]) {
-    if (!this.sheetId()) {
+    if (!this.sheetId() || !this.isOwner() || this.isSelectionSaving()) {
       return;
     }
 
@@ -245,7 +257,7 @@ export class CustomProblemSheet implements OnInit {
       id: this.sheetId() ?? '',
       title: this.sheetName(),
       problemIds: selectedProblemIds,
-      isPublic: false,
+      isPublic: this.problemSheet()?.isPublic ?? false,
     };
 
     this.isSelectionSaving.set(true);
@@ -255,6 +267,7 @@ export class CustomProblemSheet implements OnInit {
       .subscribe({
         next: () => {
           this.toastService.showSuccess('Problems added successfully');
+          this.problemSheet.update((current) => current ? { ...current, problemIds: selectedProblemIds } : current);
           const updatedProblems = this.allProblems().filter((p) =>
             selectedProblemIds.includes(p.id),
           );

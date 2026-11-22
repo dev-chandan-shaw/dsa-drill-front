@@ -1,0 +1,241 @@
+@use './library-loading';
+
+:host {
+  --library-paper: #fff;
+  --library-ink: #242424;
+  --library-muted: #6b6b6b;
+  --library-line: #e5e5e5;
+  --library-soft: #f7f7f7;
+  --library-accent: #1a8917;
+  display: block;
+  min-height: 100%;
+  background: var(--library-paper);
+  color: var(--library-ink);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+:host-context(html.dark) {
+  --library-paper: #191919;
+  --library-ink: #eee;
+  --library-muted: #b0b0b0;
+  --library-line: #363636;
+  --library-soft: #242424;
+  --library-accent: #75c873;
+}
+
+.library-shell {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 46px 40px 80px;
+}
+
+.library-crumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  color: var(--library-muted);
+  font-size: 13px;
+  margin-bottom: 32px;
+}
+
+.subject-shell {
+  box-sizing: border-box;
+  max-width: 840px;
+}
+
+.library-crumb a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.library-crumb a:hover {
+  text-decoration: underline;
+}
+
+.library-head {
+  max-width: 760px;
+  margin-bottom: 34px;
+}
+
+.library-head h1 {
+  font: 500 clamp(36px, 5vw, 54px)/1.12 Georgia, serif;
+  letter-spacing: -1.6px;
+  margin: 0 0 18px;
+}
+
+.library-head p {
+  font: 19px/1.65 Georgia, serif;
+  color: var(--library-muted);
+  max-width: 610px;
+}
+
+.subject-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--library-line);
+  margin-top: 48px;
+}
+
+.subject-card {
+  display: flex;
+  flex-direction: column;
+  padding: 30px 26px 30px 0;
+  text-decoration: none;
+  color: inherit;
+  min-height: 290px;
+  border-bottom: 1px solid var(--library-line);
+}
+
+.subject-card+.subject-card {
+  border-left: 1px solid var(--library-line);
+  padding-left: 26px;
+}
+
+.subject-card:nth-child(3n + 1) {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.subject-card h2 {
+  font: 500 29px/1.2 Georgia, serif;
+  margin-bottom: 18px;
+  letter-spacing: -.5px;
+}
+
+.subject-card p {
+  color: var(--library-muted);
+  font-size: 15px;
+  line-height: 1.75;
+  margin-bottom: 30px;
+}
+
+.subject-card small {
+  color: var(--library-muted);
+  font-size: 12px;
+  margin-top: auto;
+  margin-bottom: 14px;
+}
+
+.subject-card strong {
+  font-weight: 500;
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.subject-card:hover h2 {
+  color: var(--library-accent);
+}
+
+.section-tabs {
+  display: flex;
+  gap: 30px;
+  border-bottom: 1px solid var(--library-line);
+  margin-bottom: 36px;
+  overflow-x: auto;
+}
+
+.section-tabs a {
+  padding: 0 0 16px;
+  color: var(--library-muted);
+  font-size: 14px;
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 1px solid transparent;
+}
+
+.section-tabs a[aria-current=page] {
+  color: var(--library-ink);
+  border-color: var(--library-ink);
+}
+
+.collection {
+  max-width: 760px;
+}
+
+.library-state {
+  padding: 64px 28px;
+  text-align: center;
+}
+
+.library-state h1 {
+  font: 32px Georgia, serif;
+  margin-bottom: 16px;
+}
+
+.library-state p {
+  color: var(--library-muted);
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+.library-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 17px;
+  border: 1px solid var(--library-line);
+  border-radius: 22px;
+  color: var(--library-ink);
+  background: var(--library-paper);
+  cursor: pointer;
+  text-decoration: none;
+  font: 14px/1.35 system-ui, sans-serif;
+}
+
+.library-button:hover {
+  border-color: var(--library-ink);
+}
+
+.library-button.primary {
+  background: var(--library-accent);
+  color: #fff;
+  border-color: transparent;
+}
+
+.library-button:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
+.library-error {
+  color: var(--mat-sys-error);
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 14px 0;
+}
+
+.muted {
+  color: var(--library-muted);
+}
+
+@media (max-width: 720px) {
+  .library-shell {
+    padding: 30px 22px 60px;
+  }
+
+  .subject-grid {
+    grid-template-columns: 1fr;
+    margin-top: 30px;
+  }
+
+  .subject-card,
+  .subject-card+.subject-card {
+    min-height: auto;
+    padding: 26px 0;
+    border-left: 0;
+  }
+
+  .subject-card h2 {
+    margin-bottom: 10px;
+  }
+
+  .subject-card p {
+    margin-bottom: 16px;
+  }
+
+  .section-tabs {
+    gap: 24px;
+  }
+}

@@ -1,0 +1,49 @@
+:host {
+  display: block;
+}
+
+.cover-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cover-upload-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.cover-upload-preview {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--mat-sys-outline-variant);
+
+  img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: color-mix(in srgb, #000 45%, transparent);
+    color: #fff;
+  }
+}
+
+.cover-upload-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cover-upload-error {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--mat-sys-error);
+}
