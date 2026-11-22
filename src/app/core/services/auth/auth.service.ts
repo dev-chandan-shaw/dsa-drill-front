@@ -170,9 +170,8 @@ export class AuthService {
       return;
     }
     this._loggedInUser.set(user);
-    if (user.role === 'ROLE_ADMIN') {
-      this._isAdmin.set(true);
-    }
+    this._isAdmin.set(user.role === 'ROLE_ADMIN');
+    this._isAuthResolved.set(true);
     this.persistUser(user);
   }
 

@@ -3,6 +3,29 @@
   height: 100%;
 }
 
+:host(.fill-height) {
+  min-height: 0;
+
+  .md-editor {
+    box-sizing: border-box;
+  }
+
+  .md-toolbar {
+    flex-shrink: 0;
+  }
+
+  .md-textarea,
+  .md-preview {
+    box-sizing: border-box;
+    min-height: 0;
+  }
+
+  .md-textarea {
+    resize: none;
+    overflow-y: auto;
+  }
+}
+
 .md-editor {
   display: flex;
   flex-direction: column;

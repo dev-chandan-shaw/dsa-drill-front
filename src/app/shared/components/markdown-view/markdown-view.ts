@@ -22,6 +22,7 @@ import sql from 'highlight.js/lib/languages/sql';
 import typescript from 'highlight.js/lib/languages/typescript';
 import yaml from 'highlight.js/lib/languages/yaml';
 import { MarkdownService } from '../../services/markdown.service';
+import { DomSanitizer } from '@angular/platform-browser';
 
 // Common DSA/problem languages only — keeps the lazy chunk small.
 hljs.registerLanguage('bash', bash);
@@ -55,7 +56,13 @@ export class MarkdownView {
 
   private readonly markdown = inject(MarkdownService);
   private readonly host = inject(ElementRef);
-  readonly html = computed(() => this.markdown.render(this.content()));
+  private readonly sanitizer = inject(DomSanitizer);
+  readonly html = computed(() => this.variant() === 'reading'
+    ? this.markdown.renderArticle(this.content()).html : this.markdown.render(this.content()));
+  // Author HTML has already been sanitized by MarkdownService. Trust that
+  // sanitized output so Angular retains our generated heading IDs for the TOC.
+  readonly renderedHtml = computed(() => this.variant() === 'reading'
+    ? this.sanitizer.bypassSecurityTrustHtml(this.html()) : this.html());
 
   constructor() {
     // afterRenderEffect only runs in the browser, so SSR output stays

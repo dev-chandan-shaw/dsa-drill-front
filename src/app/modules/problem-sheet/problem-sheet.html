@@ -1,3 +1,11 @@
+<nav class="page-crumbs" aria-label="Breadcrumb">
+  <a routerLink="/">Home</a>
+  @if (sheetTagName() !== '-') {
+    <mat-icon aria-hidden="true">chevron_right</mat-icon>
+    <span aria-current="page">{{ sheetTagName() }}</span>
+  }
+</nav>
+
 @if (!hasLoaded() && !loadError()) {
   <div class="sheet-layout" role="status" aria-label="Loading problems list">
     <aside class="sheet-summary" aria-hidden="true">

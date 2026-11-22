@@ -1,32 +1,39 @@
-<section class="admin-page">
+<section class="admin-page" [class.managed]="managedSection()">
   <header class="admin-header">
     <div class="admin-title">
-      <h1>Admin</h1>
-      <p>Manage problems, tags, and solving patterns from one place.</p>
+      <h1>{{ managedSection() === 'problems' ? 'Questions' : managedSection() === 'tags' ? 'Question tags' : 'Admin' }}</h1>
+      <p>{{ managedSection() === 'problems' ? 'Curate the practice questions connected to your learning content.' : managedSection() === 'tags' ? 'Keep the question bank organized by topic.' : 'Manage your learning content.' }}</p>
     </div>
     <div class="admin-header-actions">
+      @if (!managedSection() || managedSection() === 'problems') {
       <button mat-flat-button type="button" (click)="openAddProblemPane()">
         <mat-icon>add</mat-icon>
-        Add problem
+        {{ managedSection() ? 'Add question' : 'Add problem' }}
       </button>
+      }
+      @if (!managedSection() || managedSection() === 'tags') {
       <button mat-flat-button type="button" (click)="openAddTagPane()">
         <mat-icon>add</mat-icon>
         Add tag
       </button>
+      }
+      @if (!managedSection()) {
       <button mat-flat-button type="button" routerLink="/admin/patterns/new">
         <mat-icon>add</mat-icon>
         Add pattern
       </button>
+      }
     </div>
   </header>
 
   <mat-card class="admin-workspace">
     <mat-card-content>
       <mat-tab-group
-        [selectedIndex]="tabIndex()"
+        [selectedIndex]="managedSection() ? 0 : tabIndex()"
         (selectedIndexChange)="setTabIndex($event)"
         aria-label="Admin sections"
       >
+        @if (!managedSection() || managedSection() === 'problems') {
         <mat-tab [label]="'Problems (' + problems().length + ')'">
           <div class="toolbar">
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="grow">
@@ -59,12 +66,9 @@
               </button>
             </div>
           } @else {
-            <div class="row-list">
+            <div class="row-list shaded-list">
               @for (question of filteredQuestions(); track trackByQuestionId($index, question)) {
-                @if ($index !== 0) {
-                  <mat-divider></mat-divider>
-                }
-                <div class="data-row">
+                <div class="data-row shaded-row">
                   <div class="data-main">
                     <h3>{{ question.order ?? question.id }}. {{ question.title }}</h3>
                     <div class="badge-row">
@@ -103,7 +107,8 @@
             </div>
           }
         </mat-tab>
-
+        }
+        @if (!managedSection() || managedSection() === 'tags') {
         <mat-tab [label]="'Tags (' + tags().length + ')'">
           <div class="toolbar">
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="grow">
@@ -123,17 +128,14 @@
           } @else if (filteredTags().length === 0) {
             <div class="state-card">No tags available yet.</div>
           } @else {
-            <div class="row-list">
+            <div class="row-list shaded-list">
               @for (tag of filteredTags(); track trackByTagId($index, tag)) {
-                @if ($index !== 0) {
-                  <mat-divider></mat-divider>
-                }
-                <div class="data-row">
+                <div class="data-row shaded-row">
                   <div class="data-main">
                     <h3>{{ $index + 1 }}. {{ tag.name }}</h3>
                     <div class="badge-row">
                       <span class="mini-chip">{{ getProblemCountByTag(tag.id) }} problems</span>
-                      <span class="mini-chip">{{ getPatternCountByTag(tag.id) }} patterns</span>
+                      @if (!managedSection()) { <span class="mini-chip">{{ getPatternCountByTag(tag.id) }} patterns</span> }
                     </div>
                   </div>
                   <div class="row-actions">
@@ -163,7 +165,8 @@
             </div>
           }
         </mat-tab>
-
+        }
+        @if (!managedSection()) {
         <mat-tab [label]="'Patterns (' + patterns().length + ')'">
           <div class="toolbar">
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="grow">
@@ -200,12 +203,9 @@
           } @else if (filteredPatterns().length === 0) {
             <div class="state-card">No patterns available yet.</div>
           } @else {
-            <div class="row-list">
+            <div class="row-list shaded-list">
               @for (pattern of filteredPatterns(); track trackByPatternId($index, pattern)) {
-                @if ($index !== 0) {
-                  <mat-divider></mat-divider>
-                }
-                <div class="data-row data-row-top">
+                <div class="data-row data-row-top shaded-row">
                   <div class="data-main">
                     <h3>{{ pattern.name }}</h3>
                     <p class="muted dsa-mono">#{{ pattern.id }}</p>
@@ -242,6 +242,179 @@
             </div>
           }
         </mat-tab>
+
+        <mat-tab [label]="'Sections (' + sections().length + ')'">
+          <div class="toolbar">
+            <button mat-flat-button type="button" (click)="openAddSectionPane()">
+              <mat-icon>add</mat-icon>
+              Add section
+            </button>
+          </div>
+
+          @if (isLoadingSections()) {
+            <div class="state-card" role="status">Loading sections…</div>
+          } @else if (sections().length === 0) {
+            <div class="state-card">
+              No sections yet. Create LLD, HLD, or any topic you want to publish under.
+            </div>
+          } @else {
+            <div class="row-list shaded-list">
+              @for (section of sections(); track trackBySectionId($index, section)) {
+                <div class="data-row shaded-row">
+                  @if (section.coverImageUrl) {
+                    <img
+                      class="admin-thumb"
+                      [src]="section.coverImageUrl"
+                      [alt]="section.name + ' cover'"
+                    />
+                  }
+                  <div class="data-main">
+                    <h3>{{ section.displayOrder }}. {{ section.name }}</h3>
+                    <p class="muted dsa-mono">/system-design/{{ section.slug }}</p>
+                    @if (section.description) {
+                      <p class="muted">{{ section.description }}</p>
+                    }
+                    <div class="badge-row">
+                      <span class="mini-chip">{{ section.postCount }} posts</span>
+                      <span class="mini-chip">{{ section.publishedPostCount }} published</span>
+                    </div>
+                  </div>
+                  <div class="row-actions">
+                    <button
+                      mat-icon-button
+                      type="button"
+                      matTooltip="Edit section"
+                      [attr.aria-label]="'Edit section: ' + section.name"
+                      (click)="openEditSectionPane(section)"
+                    >
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button
+                      mat-icon-button
+                      type="button"
+                      color="warn"
+                      matTooltip="Delete section"
+                      [disabled]="isDeleting()"
+                      [attr.aria-label]="'Delete section: ' + section.name"
+                      (click)="confirmDeleteSection(section)"
+                    >
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </mat-tab>
+
+        <mat-tab [label]="'Blogs (' + blogPosts().length + ')'">
+          <div class="toolbar">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="grow">
+              <mat-label>Search by title or slug</mat-label>
+              <input
+                matInput
+                #blogSearchInput
+                type="text"
+                [value]="blogSearchTerm()"
+                (input)="setBlogSearchTerm(blogSearchInput.value)"
+              />
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="toolbar-select">
+              <mat-label>Section</mat-label>
+              <mat-select [formControl]="blogSectionFilterControl" placeholder="All sections">
+                <mat-option [value]="null">All sections</mat-option>
+                @for (section of sections(); track section.id) {
+                  <mat-option [value]="section.id">{{ section.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="toolbar-select">
+              <mat-label>Status</mat-label>
+              <mat-select [formControl]="blogStatusFilterControl">
+                <mat-option value="ALL">All statuses</mat-option>
+                <mat-option value="DRAFT">Draft</mat-option>
+                <mat-option value="PUBLISHED">Published</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <button mat-flat-button type="button" routerLink="/admin/blogs/new">
+              <mat-icon>add</mat-icon>
+              Add blog
+            </button>
+          </div>
+
+          @if (blogSearchTerm() || selectedBlogSectionId() !== null || selectedBlogStatus() !== 'ALL') {
+            <div class="chip-row">
+              <button type="button" class="chip chip-clear" (click)="clearBlogFilters()">
+                Clear blog filters
+              </button>
+            </div>
+          }
+
+          @if (isLoadingBlogs()) {
+            <div class="state-card" role="status">Loading blog posts…</div>
+          } @else if (filteredBlogPosts().length === 0) {
+            <div class="state-card">
+              No blog posts match the current filters.
+              @if (blogSearchTerm() || selectedBlogSectionId() !== null || selectedBlogStatus() !== 'ALL') {
+                <button type="button" class="link" (click)="clearBlogFilters()">Clear filters</button>
+              }
+            </div>
+          } @else {
+            <div class="row-list shaded-list">
+              @for (post of filteredBlogPosts(); track trackByBlogPostId($index, post)) {
+                <div class="data-row shaded-row">
+                  @if (post.coverImageUrl) {
+                    <img class="admin-thumb" [src]="post.coverImageUrl" [alt]="post.title + ' cover'" />
+                  }
+                  <div class="data-main">
+                    <h3>{{ post.title }}</h3>
+                    <p class="muted dsa-mono">
+                      {{ post.sectionName }} · /{{ post.slug }}
+                    </p>
+                    <div class="badge-row">
+                      <span class="mini-chip blog-status" [class.published]="post.published">
+                        {{ post.published ? 'Published' : 'Draft' }}
+                      </span>
+                      <span class="mini-chip">Updated {{ post.updatedAt | date: 'mediumDate' }}</span>
+                    </div>
+                  </div>
+                  <div class="row-actions">
+                    <button
+                      mat-icon-button
+                      type="button"
+                      [matTooltip]="post.published ? 'Unpublish post' : 'Publish post'"
+                      [attr.aria-label]="(post.published ? 'Unpublish ' : 'Publish ') + post.title"
+                      (click)="toggleBlogPublished(post)"
+                    >
+                      <mat-icon>{{ post.published ? 'visibility_off' : 'publish' }}</mat-icon>
+                    </button>
+                    <button
+                      mat-icon-button
+                      type="button"
+                      matTooltip="Edit post"
+                      [attr.aria-label]="'Edit post: ' + post.title"
+                      [routerLink]="['/admin/blogs', post.id, 'edit']"
+                    >
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button
+                      mat-icon-button
+                      type="button"
+                      color="warn"
+                      matTooltip="Delete post"
+                      [disabled]="isDeleting()"
+                      [attr.aria-label]="'Delete post: ' + post.title"
+                      (click)="confirmDeleteBlogPost(post)"
+                    >
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </mat-tab>
+        }
       </mat-tab-group>
     </mat-card-content>
   </mat-card>
@@ -360,6 +533,63 @@
         </div>
         <p class="cover-hint">Empty cover falls back to the curated topic art.</p>
       </div>
+    </form>
+  </app-form-pane-template>
+</ng-template>
+
+<ng-template #sectionFormTemplate>
+  <app-form-pane-template
+    [form]="sectionForm"
+    [isSaving]="isSavingSection()"
+    [isEditMode]="editingSectionId() !== null"
+    [title]="editingSectionId() !== null ? 'Edit Section' : 'Add Section'"
+    (addForm)="submitSection()"
+    (cancelForm)="closeRightPane()"
+    (saveForm)="submitSection()"
+  >
+    <form class="pane-form" [formGroup]="sectionForm">
+      <mat-form-field appearance="outline" class="pane-field">
+        <mat-label>Section name</mat-label>
+        <input matInput type="text" formControlName="name" required minlength="2" />
+        @if (sectionForm.controls.name.invalid) {
+          <mat-error>Section name needs at least 2 characters.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="pane-field">
+        <mat-label>Slug</mat-label>
+        <input
+          matInput
+          type="text"
+          formControlName="slug"
+          placeholder="auto-from-name"
+          [readonly]="editingSectionSlugLocked()"
+        />
+        <mat-hint>
+          @if (editingSectionSlugLocked()) {
+            Locked while this section has published posts.
+          } @else {
+            Auto-filled from the name when empty.
+          }
+        </mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="pane-field">
+        <mat-label>Description</mat-label>
+        <textarea matInput rows="3" formControlName="description"></textarea>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="pane-field">
+        <mat-label>Display order</mat-label>
+        <input matInput type="number" formControlName="displayOrder" />
+        <mat-hint>Lower numbers appear first on the public hub.</mat-hint>
+      </mat-form-field>
+
+      <app-cover-uploader
+        [control]="sectionForm.controls.coverImageUrl"
+        folder="sections"
+        label="Section cover"
+      />
     </form>
   </app-form-pane-template>
 </ng-template>

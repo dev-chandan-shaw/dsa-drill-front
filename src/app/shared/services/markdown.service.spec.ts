@@ -73,4 +73,19 @@ describe('MarkdownService', () => {
     const html = service.render('click [guide](https://example.com) `code`');
     expect(html).toContain('</a> <code>');
   });
+
+  it('generates unique article anchors while excluding code-block headings', () => {
+    const rendered = service.renderArticle('## **Factory** & Builder\n\n## Factory & Builder\n\n```md\n## Not a heading\n```');
+    expect(rendered.headings.map((h) => h.id)).toEqual(['section-factory-builder', 'section-factory-builder-2']);
+    expect(rendered.headings[0].text).toBe('Factory & Builder');
+    expect(rendered.html).toContain('id="section-factory-builder"');
+    expect(rendered.html).not.toContain('id="section-not-a-heading"');
+  });
+
+  it('keeps article cross-links in the current tab and external links in a new tab', () => {
+    const html = service.renderArticle('[Factory](/library/lld/concepts/factory) [Outside](https://example.com)').html;
+    const root = document.createElement('div'); root.innerHTML = html;
+    expect(root.querySelector('a[href^="/library"]')?.getAttribute('target')).toBeNull();
+    expect(root.querySelector('a[href^="https"]')?.getAttribute('target')).toBe('_blank');
+  });
 });

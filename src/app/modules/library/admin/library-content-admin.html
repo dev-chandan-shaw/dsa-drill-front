@@ -1,0 +1,104 @@
+<div class="library-shell subject-shell">
+  <header class="content-heading">
+    <div class="library-head">
+      <h1>{{ patternsOnly ? 'Question patterns' : 'Library publishing' }}</h1>
+      <p>
+        {{
+          patternsOnly
+            ? 'Write an explanation for a topic and choose its practice questions.'
+            : 'Choose where you want to write. Each destination starts with its own outline.'
+        }}
+      </p>
+    </div>
+  </header>
+  <mat-menu #addMenu="matMenu" xPosition="before">
+    @for(destination of destinations();track sectionValue(destination)){
+      <a mat-menu-item routerLink="/admin/articles/new/edit" [queryParams]="{subject:destination.subject,section:destination.code}">
+        {{destination.writeLabel}}
+      </a>
+    }
+  </mat-menu>
+      <div class="content-filters">
+      @if (!patternsOnly) {
+        <mat-form-field appearance="outline" subscriptSizing="dynamic"
+          ><mat-label>Subject</mat-label>
+          <mat-select [value]="selectedSubject()" (selectionChange)="setSubject($event.value)"
+            ><mat-option value="">All subjects</mat-option>
+            @for (subject of subjects; track subject.code) {
+              <mat-option [value]="subject.code">{{ subject.title }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic"
+          ><mat-label>Section</mat-label>
+          <mat-select
+            [value]="selectedSectionValue()"
+            (selectionChange)="selectSectionValue($event.value)"
+            ><mat-option [value]="null">All sections</mat-option>
+            @for (section of sectionOptions(); track sectionValue(section)) {
+              <mat-option [value]="sectionValue(section)">{{
+                selectedSubject() ? section.title : section.label
+              }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+        <button class="add-content" mat-flat-button type="button" [matMenuTriggerFor]="addMenu"
+          aria-label="Add content">
+          Add
+          <mat-icon iconPositionEnd>arrow_drop_down</mat-icon>
+        </button>
+      </div>
+  @if (error()) {
+    <p class="library-error" role="alert">
+      {{ error() }} <button mat-button type="button" (click)="load()">Reload</button>
+    </p>
+  }
+  @if (loading()) {
+    <p class="muted" role="status">Loading your content…</p>
+  } @else {
+    <nav class="status-tabs" aria-label="Article status">
+      @for (tab of statusTabs(); track tab.code) {
+        <button
+          type="button"
+          [attr.aria-pressed]="status() === tab.code"
+          (click)="status.set(tab.code)"
+        >
+          {{ tab.title }} <span>{{ tab.count }}</span>
+        </button>
+      }
+    </nav>
+    <div class="article-table shaded-list">
+      @for (article of visibleArticles(); track editorId(article)) {
+        <div class="article-admin-row shaded-row">
+          <div class="article-info">
+            <a class="article-title" [routerLink]="['/admin/articles', editorId(article), 'edit']">{{
+              article.title || 'Untitled article'
+            }}</a>
+            <p>{{ location(article) }}</p>
+            <small>Edited {{ article.updatedAt | date: 'MMM d, y' }}</small>
+          </div>
+          <span class="article-status" [class.is-published]="article.publishedAt">{{
+            article.publishedAt
+              ? article.unpublishedChanges
+                ? 'Unpublished changes'
+                : 'Published'
+              : 'Draft'
+          }}</span>
+          <a
+            mat-button
+            [routerLink]="['/admin/articles', editorId(article), 'edit']"
+            [attr.aria-label]="'Edit ' + article.title"
+            >Edit</a
+          >
+        </div>
+      } @empty {
+        <div class="empty-content">
+          <mat-icon aria-hidden="true">edit_note</mat-icon>
+          <h2>No {{ patternsOnly ? 'patterns' : 'articles' }} in this view</h2>
+          <p>Choose another filter or start a new explanation.</p>
+        </div>
+      }
+    </div>
+  }
+</div>

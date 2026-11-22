@@ -18,11 +18,11 @@ export class ProblemSheetService {
   readonly hasLoaded = signal(false);
 
   getAllProblemSheets() {
-    return this.http.get<IProblemSheetSummary[]>(this.baseUrl);
+    return this.http.get<IProblemSheetSummary[]>(this.baseUrl, {transferCache:false});
   }
 
-  getProblemSheetById(id: string) {
-    return this.http.get<IProblemSheetDetails>(`${this.publicBaseUrl}/${id}`);
+  getProblemSheetById(id: string, authenticated = false) {
+    return this.http.get<IProblemSheetDetails>(`${authenticated ? this.baseUrl : this.publicBaseUrl}/${encodeURIComponent(id)}`, {transferCache:!authenticated});
   }
 
   fetchProblemSheets() {
@@ -39,10 +39,14 @@ export class ProblemSheetService {
   }
 
   createProblemSheet(payLoad: IProblemSheetDetails) {
-    return this.http.post<IProblemSheetDetails>(this.baseUrl, payLoad);
+    return this.http.post<IProblemSheetDetails>(this.baseUrl, { ...payLoad, isPublic: payLoad.isPublic === true });
   }
 
   updateProblemSheet(payLoad: IProblemSheetDetails) {
-    return this.http.put<IProblemSheetDetails>(this.baseUrl, payLoad);
+    return this.http.put<IProblemSheetDetails>(this.baseUrl, { ...payLoad, isPublic: payLoad.isPublic === true });
+  }
+
+  updateVisibility(id: string, shared: boolean) {
+    return this.http.put<IProblemSheetDetails>(`${this.baseUrl}/${encodeURIComponent(id)}/visibility`, { shared });
   }
 }

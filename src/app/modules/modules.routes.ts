@@ -1,49 +1,118 @@
-import { Routes } from '@angular/router';
+import { Router, Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { ReaderState } from './library/personal/reader-state';
 import { adminGuard } from '../core/guards/admin-guard';
+import { legacyAdminArticleRedirect, legacyLibraryRedirect, resolveLibraryArticle, resolveLibraryPage } from './library/library.resolvers';
 import { resolvePatternLibrary } from './question-pattern/pattern-library.resolver';
+import {
+  resolveBlogPost,
+  resolveBlogSections,
+  resolveSectionPosts,
+} from './system-design/blog.resolvers';
 
 export const routes: Routes = [
   {
     path: '',
+    canActivateChild: [() => inject(ReaderState).close()],
+    canDeactivate: [() => inject(ReaderState).close()],
     loadComponent: () => import('./modules').then((m) => m.Modules),
     children: [
-      // Root renders Home directly (instead of redirecting) so the static
-      // index.html is a full page: better first paint + SEO, and a working
-      // SPA fallback shell for client-only deep links.
+      // The library is the canonical entry point for learning and practice.
+      {path:'saved',loadComponent:()=>import('./library/personal/personal-page').then(m=>m.PersonalPage),runGuardsAndResolvers:'always'},
+      {path:'my-notes',loadComponent:()=>import('./library/personal/personal-page').then(m=>m.PersonalPage),data:{notes:true},runGuardsAndResolvers:'always'},
       {
         path: '',
-        loadComponent: () => import('./home/home').then((m) => m.Home),
+        redirectTo: 'library',
         pathMatch: 'full',
       },
       {
         path: 'home',
-        loadComponent: () => import('./home/home').then((m) => m.Home),
+        redirectTo: ({queryParams}) => /^\d+$/.test(queryParams['problemId']) ? `library/dsa/questions/${queryParams['problemId']}` : 'library',
+        pathMatch: 'full',
+      },
+      {
+        path: 'library',
+        loadComponent: () => import('./library/library-page').then((m) => m.LibraryPage),
+        resolve: { library: resolveLibraryPage }, runGuardsAndResolvers: 'always',
+      },
+      {
+        path: 'library/:subject',
+        loadComponent: () => import('./library/library-page').then((m) => m.LibraryPage),
+        resolve: { library: resolveLibraryPage }, runGuardsAndResolvers: 'always',
+      },
+      {
+        path: 'library/:subject/:section',
+        loadComponent: () => import('./library/library-page').then((m) => m.LibraryPage),
+        resolve: { library: resolveLibraryPage }, runGuardsAndResolvers: 'always',
+      },
+      {
+        path: 'library/dsa/patterns/topics/:topicSlug',
+        loadComponent: () => import('./library/library-patterns').then((m) => m.LibraryPatterns),
+      },
+      {
+        path:'library/dsa/questions/:id',
+        loadComponent:()=>import('./library/question-detail').then(m=>m.QuestionDetail),
+      },
+      {
+        path: 'library/:subject/:section/:slug',
+        loadComponent: () => import('./library/library-reader').then((m) => m.LibraryReader),
+        resolve: { library: resolveLibraryArticle }, runGuardsAndResolvers: 'always',
       },
       {
         path: 'admin',
         canActivate: [adminGuard],
-        loadComponent: () => import('./admin/admin').then((m) => m.Admin),
+        canActivateChild: [adminGuard],
+        loadComponent: () => import('./admin/admin-workspace').then((m) => m.AdminWorkspace),
+        children: [
+          { path: '', pathMatch: 'full', redirectTo: ({ queryParams }) => queryParams['tab'] === 'tags' ? 'tags' : queryParams['tab'] === 'problems' ? 'questions' : queryParams['tab'] === 'patterns' ? 'patterns' : 'articles' },
+          { path: 'articles', loadComponent: () => import('./library/admin/library-admin').then((m) => m.LibraryAdmin), data: { view: 'articles' } },
+          { path: 'questions', loadComponent: () => import('./admin/admin').then((m) => m.Admin), data: { adminSection: 'problems' } },
+          { path: 'tags', loadComponent: () => import('./admin/admin').then((m) => m.Admin), data: { adminSection: 'tags' } },
+          { path: 'patterns', loadComponent: () => import('./library/admin/library-admin').then((m) => m.LibraryAdmin), data: { view: 'patterns' } },
+          { path: 'articles/new', pathMatch: 'full', redirectTo: ({queryParams}) =>
+            inject(Router).createUrlTree(['/admin/articles/new/edit'],{queryParams}) },
+          { path: 'articles/:id/edit', loadComponent: () => import('./library/admin/library-article-editor').then((m) => m.LibraryArticleEditor), canDeactivate: [(component: { canLeave: () => Promise<boolean> }) => component.canLeave()] },
+          { path: 'library', pathMatch: 'full', redirectTo: 'articles' },
+          { path: 'library/articles/new', pathMatch: 'full', redirectTo: 'articles/new/edit' },
+          { path: 'library/articles/:id/edit', redirectTo: ({ params }) => `articles/${params['id']}/edit` },
+          { path: 'patterns/new', pathMatch: 'full', redirectTo: () =>
+            inject(Router).createUrlTree(['/admin/articles/new/edit'],{queryParams:{subject:'dsa',section:'patterns'}}) },
+          { path: 'blogs/new', pathMatch: 'full', redirectTo: 'articles/new/edit' },
+          { path: 'patterns/:id/edit', canActivate: [legacyAdminArticleRedirect], data: { sourceType: 'pattern' }, loadComponent: () => import('./admin/pattern-editor/pattern-editor').then((m) => m.PatternEditor) },
+          { path: 'blogs/:id/edit', canActivate: [legacyAdminArticleRedirect], data: { sourceType: 'blog' }, loadComponent: () => import('./admin/blog-editor/blog-editor').then((m) => m.BlogEditor) },
+        ],
       },
       {
-        path: 'admin/patterns/new',
-        canActivate: [adminGuard],
+        path: 'system-design',
+        canActivate: [legacyLibraryRedirect],
         loadComponent: () =>
-          import('./admin/pattern-editor/pattern-editor').then((m) => m.PatternEditor),
+          import('./system-design/system-design').then((m) => m.SystemDesign),
+        resolve: { sections: resolveBlogSections },
       },
       {
-        path: 'admin/patterns/:id/edit',
-        canActivate: [adminGuard],
+        path: 'system-design/:sectionSlug',
+        canActivate: [legacyLibraryRedirect],
         loadComponent: () =>
-          import('./admin/pattern-editor/pattern-editor').then((m) => m.PatternEditor),
+          import('./system-design/section-posts/section-posts').then((m) => m.SectionPosts),
+        resolve: { sectionContent: resolveSectionPosts },
+      },
+      {
+        path: 'system-design/:sectionSlug/:postSlug',
+        canActivate: [legacyLibraryRedirect],
+        loadComponent: () =>
+          import('./system-design/blog-detail/blog-detail').then((m) => m.BlogDetail),
+        resolve: { postContent: resolveBlogPost },
       },
       {
         path: 'question-pattern',
+        canActivate: [legacyLibraryRedirect],
         loadComponent: () =>
           import('./question-pattern/question-pattern').then((m) => m.QuestionPattern),
         resolve: { library: resolvePatternLibrary },
       },
       {
         path: 'question-pattern/:tagSlug',
+        canActivate: [legacyLibraryRedirect],
         loadComponent: () =>
           import('./question-pattern/topic-patterns/topic-patterns').then(
             (m) => m.TopicPatterns,
@@ -52,12 +121,14 @@ export const routes: Routes = [
       },
       {
         path: 'question-pattern/:tagSlug/:patternId',
+        canActivate: [legacyLibraryRedirect],
         loadComponent: () =>
           import('./question-pattern/pattern-detail/pattern-detail').then((m) => m.PatternDetail),
         resolve: { library: resolvePatternLibrary },
       },
       {
         path: 'question-pattern/:tagSlug/:patternId/questions',
+        canActivate: [legacyLibraryRedirect],
         loadComponent: () =>
           import('./question-pattern/pattern-questions/pattern-questions').then(
             (m) => m.PatternQuestions,

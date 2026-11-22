@@ -1,5 +1,31 @@
 # DsaDrillFront
 
+## Knowledge library
+
+The library entry point is `/library`. Its subject cards and tabs come from
+`src/app/modules/library/library-catalog.ts`; the backend only stores Markdown
+articles and their topic groups, keyed by subject/section codes. Public articles
+have a topic outline, a readable serif content column, heading navigation, and
+previous/next links in learning order.
+
+Use `/admin` as the single administration workspace for articles, questions,
+and question tags. Add or change subjects and sections in the frontend catalog.
+New articles are filed automatically, so there is no topic-group setup. All form
+fields use Angular Material. The full-page
+article editor supports inline Markdown formatting, code, tables, images,
+Markdown import/export, source view, private draft autosave, preview, and
+explicit publication. Public pages always read the backend's published snapshot.
+
+The Markdown editor's JavaScript and styles load only in the writing experience.
+Its source is under `src/app/modules/library/`, alongside the public library
+pages, API client, models, and route resolvers.
+
+Deploy the backend catalog/revision migrations (including
+`V11__frontend_owned_catalog.sql`) before this frontend. See
+`../dsa-drill-backend/docs/library.md` for migration ordering and legacy-content
+mapping. Both the Node and Vercel sitemaps enumerate the frontend catalog and
+published article URLs.
+
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.4.
 
 ## Development server

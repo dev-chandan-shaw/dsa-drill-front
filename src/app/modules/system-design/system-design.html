@@ -1,0 +1,65 @@
+<section class="page-shell design-hub">
+  <header class="hub-head">
+    <p class="hub-eyebrow">System Design</p>
+    <h1 class="dsa-display">Design notes, from LLD to HLD</h1>
+    <p class="hub-lede">
+      Structured articles on low-level design, high-level design, and the
+      trade-offs behind real systems. Pick a section to start reading.
+    </p>
+  </header>
+
+  @if (loading()) {
+    <div class="section-grid" role="status" aria-label="Loading sections">
+      @for (_ of skeletonCards; track $index) {
+        <div class="section-card is-skeleton" aria-hidden="true">
+          <div class="skel skel-block" style="--h: 92px; border-radius: 0"></div>
+          <div class="section-body skel-stack">
+            <div class="skel skel-line" style="--w: 55%; height: 18px"></div>
+            <div class="skel skel-line"></div>
+            <div class="skel skel-line" style="--w: 78%"></div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (loadError()) {
+    <div class="load-error" role="alert">
+      <mat-icon aria-hidden="true">cloud_off</mat-icon>
+      <div class="load-error-title">Couldn't load sections</div>
+      <div class="load-error-subtitle">Check your connection and try again.</div>
+      <button mat-flat-button type="button" (click)="retry()">Retry</button>
+    </div>
+  } @else if (sections().length === 0) {
+    <div class="state-card" role="status">
+      Nothing published yet. Check back soon.
+    </div>
+  } @else {
+    <div class="section-grid">
+      @for (section of sections(); track trackBySectionId($index, section)) {
+        <a
+          class="section-card"
+          [routerLink]="['/system-design', section.slug]"
+          [attr.aria-label]="section.name + ': ' + section.publishedPostCount + ' articles'"
+        >
+          <div class="section-cover" [style.background]="coverBackground(section)">
+            @if (!section.coverImageUrl) {
+              <span class="section-cover-initials" aria-hidden="true">
+                {{ section.name.slice(0, 2) }}
+              </span>
+            }
+          </div>
+          <div class="section-body">
+            <h2>{{ section.name }}</h2>
+            @if (section.description) {
+              <p>{{ section.description }}</p>
+            }
+            <span class="section-count dsa-mono">
+              {{ section.publishedPostCount }}
+              {{ section.publishedPostCount === 1 ? 'article' : 'articles' }}
+            </span>
+          </div>
+          <mat-icon class="section-go" aria-hidden="true">arrow_forward</mat-icon>
+        </a>
+      }
+    </div>
+  }
+</section>

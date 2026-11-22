@@ -1,0 +1,93 @@
+@if (data(); as page) {
+  @if (loading()) {
+    <section
+      class="reader-shell article-skeleton"
+      role="status"
+      aria-label="Loading article content"
+      aria-busy="true"
+    >
+      <div class="reading-layout" aria-hidden="true">
+          <div class="reading-column skeleton-content">
+            <div class="skeleton-line skeleton-image"></div>
+            @for (paragraph of [0, 1, 2]; track paragraph) {
+              <div class="skeleton-paragraph">
+                @for (width of [100, 96, 100, 72]; track $index) {
+                  <div class="skeleton-line" [style.width.%]="width"></div>
+                }
+              </div>
+            }
+          </div>
+      </div>
+    </section>
+  } @else if (page.article; as article) {
+    <div class="reader-shell">
+      <div class="reading-layout">
+        <article class="reading-column">
+          <header class="article-header">
+            <h1>{{ article.summary.title }}</h1>
+            @if (article.summary.excerpt) {
+              <p class="article-description">{{ article.summary.excerpt }}</p>
+            }
+            <div class="article-meta">
+              <app-item-actions [type]="article.summary.subject==='dsa'?'PATTERN':'DESIGN'" [id]="article.summary.id" [title]="article.summary.title"/>
+            </div>
+          </header>
+          @if (article.coverImageUrl) {
+            <img
+              class="article-cover"
+              [src]="article.coverImageUrl"
+              [alt]="article.summary.title"
+            />
+          }
+          <div class="article-content">
+            <app-markdown-view [content]="article.content" variant="reading" />
+          </div>
+          @if (article.problems.length) {
+            <section class="related-section" id="linked-questions">
+              <h2>Put it into practice</h2>
+              <p class="muted">Questions connected to this article.</p>
+              <app-problem-list [problems]="article.problems" [showFilters]="false" [preserveOrder]="true"/>
+            </section>
+          }
+          @if (article.relatedArticles.length) {
+            <section class="related-section">
+              <h2>Connected ideas</h2>
+              <ul>
+                @for (related of article.relatedArticles; track related.id) {
+                  <li>
+                    <a [routerLink]="path(related)">{{ related.title }}</a>
+                  </li>
+                }
+              </ul>
+            </section>
+          }
+        </article>
+        <aside class="page-outline" aria-label="On this page">
+          @if (headings().length) {
+            <details [open]="!narrow()">
+              <summary>On this page</summary>
+              <nav>
+                @for (heading of headings(); track heading.id) {
+                  <a
+                    [href]="'#' + heading.id"
+                    (click)="jump($event, heading.id)"
+                    [class.nested]="heading.level === 3"
+                    [attr.aria-current]="activeHeading() === heading.id ? 'location' : null"
+                    >{{ heading.text }}</a
+                  >
+                }
+              </nav>
+            </details>
+          }
+        </aside>
+      </div>
+    </div>
+  } @else {
+    <section class="library-state">
+      <h1>Article unavailable</h1>
+      <p role="alert">{{ page.error }}</p>
+      <button class="library-button" type="button" (click)="retry()">Try again</button>
+      <a class="library-button" routerLink="/library">Browse the library</a>
+    </section>
+  }
+}

@@ -31,6 +31,16 @@
   </div>
 } @else if (pattern(); as pattern) {
   <article class="page-shell pattern-detail" aria-busy="false">
+    <nav class="page-crumbs" aria-label="Breadcrumb">
+      <a routerLink="/question-pattern">Question Patterns</a>
+      <mat-icon aria-hidden="true">chevron_right</mat-icon>
+      @if (canonicalTopic(); as topic) {
+        <a [routerLink]="['/question-pattern', topic.slug]">{{ topic.name }}</a>
+        <mat-icon aria-hidden="true">chevron_right</mat-icon>
+      }
+      <span aria-current="page">{{ pattern.name }}</span>
+    </nav>
+
     <header class="detail-head">
       <h1 class="dsa-display">{{ pattern.name }}</h1>
     </header>

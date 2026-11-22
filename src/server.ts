@@ -15,6 +15,11 @@ const angularApp = new AngularNodeAppEngine();
 const BACKEND_API_URL = process.env['BACKEND_API_URL'] ?? 'https://dsa-drill.duckdns.org/api';
 const SITE_URL = 'https://dsa-drill.duckdns.org';
 const SITEMAP_TTL_MS = 3600 * 1000;
+const LIBRARY_CATALOG = [
+  { code: 'dsa', sections: [{ code: 'questions' }, { code: 'patterns' }, { code: 'sheets' }] },
+  { code: 'lld', sections: [{ code: 'concepts' }, { code: 'case-studies' }] },
+  { code: 'hld', sections: [{ code: 'concepts' }, { code: 'case-studies' }] },
+];
 let cachedSitemap: string | null = null;
 let sitemapCachedAt = 0;
 
@@ -39,14 +44,30 @@ async function fetchJsonArray(path: string): Promise<any[]> {
 app.get('/sitemap.xml', async (_req, res, next) => {
   try {
     if (!cachedSitemap || Date.now() - sitemapCachedAt > SITEMAP_TTL_MS) {
-      const [tags, patterns] = await Promise.all([
+      const [tags, patterns, blogSections, blogPosts, designArticles] = await Promise.all([
         fetchJsonArray('/public/problem-tags'),
         fetchJsonArray('/public/problem-patterns'),
+        fetchJsonArray('/public/blog-sections'),
+        fetchJsonArray('/public/blog-posts'),
+        fetchJsonArray('/public/system-design'),
       ]);
+      const librarySubjects = LIBRARY_CATALOG;
       const urls: string[] = [
         `  <url>\n    <loc>${SITE_URL}/home</loc>\n    <changefreq>weekly</changefreq>\n    <priority>1</priority>\n  </url>`,
         `  <url>\n    <loc>${SITE_URL}/question-pattern</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>`,
       ];
+      if (librarySubjects.length) {
+        const escapeXml = (value: string) => value.replace(/[<>&"']/g, (character) =>
+          ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&apos;' })[character]!);
+        const paths = ['/library'];
+        for (const subject of librarySubjects) for (const section of subject.sections ?? [])
+          paths.push(`/library/${subject.code}/${section.code}`);
+        for (const article of designArticles) if (article.slug && ['HLD','LLD'].includes(article.level))
+          paths.push(`/library/${article.level.toLowerCase()}/${article.kind === 'CONCEPT' ? 'concepts' : 'case-studies'}/${article.slug}`);
+        for (const pattern of patterns) if (pattern.slug) paths.push(`/library/dsa/patterns/${pattern.slug}`);
+        for (const tag of tags) if (tag.slug) paths.push(`/problems/${tag.slug}`, `/library/dsa/patterns/topics/${tag.slug}`);
+        urls.splice(0, urls.length, ...paths.map((path) => `  <url><loc>${escapeXml(SITE_URL + path)}</loc><changefreq>weekly</changefreq></url>`));
+      } else {
       const patternCounts = new Map<number, number>();
       const tagIdsOf = (pattern: any): number[] => {
         if (Array.isArray(pattern?.tagIds) && pattern.tagIds.length) {
@@ -87,6 +108,28 @@ app.get('/sitemap.xml', async (_req, res, next) => {
           `  <url>\n    <loc>${SITE_URL}/question-pattern/${slug}/${pattern.id}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>`,
           `  <url>\n    <loc>${SITE_URL}/question-pattern/${slug}/${pattern.id}/questions</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.6</priority>\n  </url>`,
         );
+      }
+      if (blogSections.length || blogPosts.length) {
+        urls.push(
+          `  <url>\n    <loc>${SITE_URL}/system-design</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>`,
+        );
+      }
+      for (const section of blogSections) {
+        if (!section?.slug) {
+          continue;
+        }
+        urls.push(
+          `  <url>\n    <loc>${SITE_URL}/system-design/${section.slug}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>`,
+        );
+      }
+      for (const post of blogPosts) {
+        if (!post?.slug || !post?.sectionSlug) {
+          continue;
+        }
+        urls.push(
+          `  <url>\n    <loc>${SITE_URL}/system-design/${post.sectionSlug}/${post.slug}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>`,
+        );
+      }
       }
       cachedSitemap =
         `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`;

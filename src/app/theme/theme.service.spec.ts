@@ -6,9 +6,13 @@ describe('ThemeService', () => {
   let service: ThemeService;
 
   beforeEach(() => {
+    // Model the pre-paint script: ThemeService hydrates its initial DOM class.
+    document.documentElement.classList.add('dark');
     TestBed.configureTestingModule({});
     service = TestBed.inject(ThemeService);
   });
+
+  afterEach(() => document.documentElement.classList.remove('dark'));
 
   it('should default to dark mode', () => {
     expect(service.isDark()).toBe(true);

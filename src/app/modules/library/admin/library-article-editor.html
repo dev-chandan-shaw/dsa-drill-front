@@ -1,0 +1,306 @@
+<div class="editor-toolbar">
+  <a [routerLink]="isPattern() ? '/admin/patterns' : '/admin/articles'" class="editor-back">{{
+    isPattern() ? 'Your patterns' : 'Your articles'
+  }}</a>
+  <span class="save-indicator" role="status" aria-live="polite">{{
+    saveState() === 'saving'
+      ? 'Saving private draft…'
+      : saveState() === 'error'
+        ? 'Draft not saved'
+        : saveState() === 'unsaved'
+          ? 'Unsaved changes'
+          : draft()?.published && !draft()?.unpublishedChanges
+            ? 'All changes published'
+            : draft()
+              ? 'Saved as draft'
+              : 'New draft'
+  }}</span>
+  @if (!choosingTopic()) {
+  <div class="editor-actions">
+    <button mat-button type="button" (click)="togglePreview()" [attr.aria-pressed]="preview()">
+      {{ preview() ? 'Write' : 'Preview' }}
+    </button>
+    <button
+      mat-stroked-button
+      type="button"
+      (click)="saveNow()"
+      [disabled]="loading() || publishing() || conflict()"
+    >
+      Save draft
+    </button>
+    <button
+      mat-flat-button
+      type="button"
+      (click)="beginPublish()"
+      [disabled]="
+        loading() ||
+        publishing() ||
+        coverUploading() ||
+        conflict() ||
+        !destination() ||
+        !form.controls.title.value.trim() ||
+        !form.controls.content.value.trim()
+      "
+    >
+      {{ publishing() ? 'Publishing…' : draft()?.published ? 'Publish changes' : 'Publish' }}
+    </button>
+  </div>
+  }
+</div>
+<div class="article-editor-shell">
+  @if (error()) {
+    <div class="library-error" role="alert">
+      {{ error() }}
+      <div class="recovery-actions">
+        @if (conflict() || loadFailed()) {
+          <button class="library-button" type="button" (click)="reload()">
+            Reload latest draft
+          </button>
+        } @else {
+          <button class="library-button" type="button" (click)="saveNow()">Retry save</button>
+        }
+        <button class="library-button" type="button" (click)="exportMarkdown()">
+          Download Markdown
+        </button>
+        <button class="library-button" type="button" (click)="leaveWithoutSaving()">
+          Leave without saving
+        </button>
+      </div>
+    </div>
+  }
+  @if (loading()) {
+    <p role="status" class="muted">Loading your draft…</p>
+  } @else if (!loadFailed()) {
+    @if (!destination()) {
+      <h1>Choose where to write</h1>
+      <a routerLink="/admin/articles">Choose a publishing destination</a>
+    } @else if (choosingTopic()) {
+      <h1>Choose a topic for your pattern</h1>
+      <p>The pattern will appear alongside questions tagged with this topic.</p>
+      <div class="article-metadata">
+        @if (tags().length) {
+          <mat-form-field appearance="outline">
+            <mat-label>Primary topic</mat-label>
+            <mat-select [value]="startingTopic()" (selectionChange)="startingTopic.set($event.value)">
+              @for (tag of tags(); track tag.id) {
+                <mat-option [value]="tag.id">{{ tag.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <div><button mat-flat-button type="button" [disabled]="startingTopic()===null" (click)="startPattern()">Start draft</button></div>
+        } @else {
+          <p><a routerLink="/admin/tags">Create a question tag</a> before starting a pattern.</p>
+        }
+      </div>
+    } @else {
+      <p class="publication-status">{{ destination()?.label }} @if (topicName(); as topic) { · {{topic}} }</p>
+      @if (draft(); as draft) {
+        <p class="publication-status">
+          {{
+            draft.published
+              ? draft.unpublishedChanges
+                ? 'Published · You have unpublished changes'
+                : 'Published'
+              : 'Private draft'
+          }}
+          @if (draft.published) {
+            <a [routerLink]="path(draft)" target="_blank">View published article</a>
+            <button mat-button type="button" (click)="unpublish()" [disabled]="publishing()">
+              Unpublish
+            </button>
+          }
+          @if (draft.savedAt) {
+            <span>Draft saved {{ draft.savedAt | date: 'shortTime' }}</span>
+          }
+        </p>
+      }
+      <form [formGroup]="form">
+        <fieldset [disabled]="publishing()">
+          @if (preview()) {
+            <h1 class="preview-title">{{ form.controls.title.value || 'Untitled article' }}</h1>
+            @if (form.controls.coverImageUrl.value; as cover) {
+              <img class="preview-cover" [src]="cover" [alt]="form.controls.title.value" />
+            }
+            <app-markdown-view [content]="form.controls.content.value" variant="reading" />
+          } @else {
+            <textarea
+              #titleInput
+              class="article-title-input"
+              aria-label="Article title"
+              rows="1"
+              cdkTextareaAutosize
+              [cdkAutosizeMinRows]="1"
+              [cdkAutosizeMaxRows]="5"
+              maxlength="220"
+              formControlName="title"
+              placeholder="Title"
+            ></textarea>
+            <app-markdown-article-editor
+              [control]="form.controls.content"
+              [readonly]="publishing() || conflict()"
+            />
+          }
+        </fieldset>
+      </form>
+      <section class="article-metadata" [formGroup]="form" aria-label="Article details">
+        <mat-form-field appearance="outline"
+          ><mat-label>Summary</mat-label
+          ><textarea matInput rows="2" formControlName="excerpt"></textarea>
+        </mat-form-field>
+        @if (!isPattern() && !draft()?.everPublished) {
+          <mat-form-field appearance="outline"
+            ><mat-label>URL slug</mat-label><input matInput formControlName="slug" /><mat-hint
+              >Generated from the title if blank.</mat-hint
+            ></mat-form-field
+          >
+        }
+        @if (isPattern()) {
+          <mat-form-field appearance="outline"
+            ><mat-label>Primary topic</mat-label>
+            <mat-select
+              [value]="selectedTopic()"
+              (selectionChange)="chooseTopic($event.value)"
+              [disabled]="publishing()"
+            >
+              @for (tag of tags(); track tag.id) {
+                <mat-option [value]="tag.id">{{ tag.name }}</mat-option>
+              }</mat-select
+            ><mat-hint>Required to publish.</mat-hint>
+          </mat-form-field>
+          <h2>Practice questions</h2>
+          <p>Readers see these in the order below.</p>
+          <ol>
+            @for (
+              id of form.controls.problemIds.value;
+              track id;
+              let i = $index;
+              let last = $last
+            ) {
+              <li>
+                <span>{{ questionTitle(id) }}</span>
+                <button
+                  mat-button
+                  type="button"
+                  [disabled]="publishing() || i === 0"
+                  (click)="moveQuestion(i, -1)"
+                  [attr.aria-label]="'Move ' + questionTitle(id) + ' up'"
+                >
+                  ↑
+                </button>
+                <button
+                  mat-button
+                  type="button"
+                  [disabled]="publishing() || last"
+                  (click)="moveQuestion(i, 1)"
+                  [attr.aria-label]="'Move ' + questionTitle(id) + ' down'"
+                >
+                  ↓
+                </button>
+                <button
+                  mat-button
+                  type="button"
+                  [disabled]="publishing()"
+                  (click)="removeQuestion(id)"
+                >
+                  Remove
+                </button>
+              </li>
+            }
+          </ol>
+          <mat-form-field appearance="outline"
+            ><mat-label>Search question bank</mat-label
+            ><input
+              matInput
+              [value]="questionSearch()"
+              (input)="questionSearch.set($any($event.target).value)"
+          /></mat-form-field>
+          <mat-form-field appearance="outline"
+            ><mat-label>Add practice question</mat-label>
+            <mat-select
+              [value]="null"
+              (selectionChange)="addQuestion($event.value)"
+              [disabled]="publishing()"
+            >
+              @for (problem of filteredQuestions(); track problem.id) {
+                <mat-option [value]="problem.id">{{ problem.title }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+      </section>
+    }
+  }
+</div>
+<ng-template #publishSettings>
+  <section class="publish-pane" aria-labelledby="publish-heading">
+    <header class="publish-header">
+      <h2 id="publish-heading">Publish article</h2>
+      <button
+        mat-icon-button
+        type="button"
+        aria-label="Close publishing settings"
+        (click)="closePublishSettings()"
+        [disabled]="publishing() || coverUploading()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </header>
+    <div class="publish-body">
+      <p class="publish-description">Readers will find this in {{ destination()?.label }}.</p>
+      <h3 class="publish-article-title">{{ form.controls.title.value }}</h3>
+      @if (error()) {
+        <p role="alert">{{ error() }}</p>
+      }
+      <div class="publish-fields" [formGroup]="form">
+        @if (!articleHasImage()) {
+          <div>
+            <app-cover-uploader
+              [control]="form.controls.coverImageUrl"
+              folder="articles"
+              label="Cover image (optional)"
+              (uploadingChange)="onCoverUploadChange($event)"
+            />
+            <p class="publish-cover-hint">
+              Shown below the title and as the thumbnail in article lists.
+            </p>
+          </div>
+        }
+        @if (isPattern() && !selectedTopic()) {
+          <p>Choose a primary topic in Article details before publishing.</p>
+        }
+      </div>
+    </div>
+    <footer class="publish-actions">
+      <button
+        mat-button
+        type="button"
+        (click)="closePublishSettings()"
+        [disabled]="publishing() || coverUploading()"
+      >
+        Keep as draft
+      </button>
+      <button
+        mat-flat-button
+        type="button"
+        (click)="publish()"
+        [disabled]="
+          publishing() ||
+          coverUploading() ||
+          conflict() ||
+          !destination() ||
+          (isPattern() && !selectedTopic())
+        "
+      >
+        {{
+          coverUploading()
+            ? 'Uploading cover…'
+            : publishing()
+              ? 'Publishing…'
+              : draft()?.published
+                ? 'Publish changes'
+                : 'Publish article'
+        }}
+      </button>
+    </footer>
+  </section>
+</ng-template>

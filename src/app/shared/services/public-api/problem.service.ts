@@ -73,6 +73,10 @@ export class PublicProblemService {
     return this.http.get<IProblem>(`${this.apiUrl}/problems/slug/${slug}`);
   }
 
+  getVisibleProblem(id: string) {
+    return this.http.get<IProblem>(`${this.apiUrl}/problems/${encodeURIComponent(id)}`);
+  }
+
   getProblemsByTag(tagId: string, force = false): Observable<IProblem[]> {
     const key = problemsByTagKey(tagId);
 

@@ -1,0 +1,47 @@
+<div class="cover-upload">
+  <span class="cover-upload-label">{{ label() }}</span>
+
+  @if (control().value; as url) {
+    <div class="cover-upload-preview">
+      <img [src]="url" alt="Cover preview" />
+      <button
+        mat-icon-button
+        type="button"
+        aria-label="Remove cover image"
+        [disabled]="uploading() || control().disabled"
+        (click)="remove()"
+      >
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+  }
+
+  <div class="cover-upload-actions">
+    <input
+      #fileInput
+      type="file"
+      accept="image/png,image/jpeg,image/webp,image/gif"
+      hidden
+      (change)="onFilePicked($event)"
+    />
+    <button
+      mat-stroked-button
+      type="button"
+      [disabled]="uploading() || control().disabled"
+      (click)="fileInput.click()"
+    >
+      <mat-icon aria-hidden="true">upload</mat-icon>
+      @if (uploading()) {
+        Uploading…
+      } @else if (control().value) {
+        Replace cover
+      } @else {
+        Upload cover
+      }
+    </button>
+  </div>
+
+  @if (error()) {
+    <p class="cover-upload-error" role="alert">{{ error() }}</p>
+  }
+</div>

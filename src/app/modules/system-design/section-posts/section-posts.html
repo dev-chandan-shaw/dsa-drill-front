@@ -1,0 +1,82 @@
+@if (loading()) {
+  <div class="page-shell" role="status" aria-label="Loading articles">
+    <div class="section-head" aria-hidden="true">
+      <div class="skel skel-title"></div>
+      <div class="skel-stack">
+        <div class="skel skel-line" style="--w: 72%"></div>
+        <div class="skel skel-line" style="--w: 48%"></div>
+      </div>
+    </div>
+    <div class="post-grid" aria-hidden="true">
+      @for (_ of skeletonCards; track $index) {
+        <div class="post-card is-skeleton">
+          <div class="skel skel-block" style="--h: 132px; border-radius: 0"></div>
+          <div class="post-body skel-stack">
+            <div class="skel skel-line" style="--w: 70%; height: 18px"></div>
+            <div class="skel skel-line"></div>
+            <div class="skel skel-line" style="--w: 85%"></div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+} @else if (loadError()) {
+  <div class="load-error" role="alert">
+    <mat-icon aria-hidden="true">cloud_off</mat-icon>
+    <div class="load-error-title">Couldn't load this section</div>
+    <div class="load-error-subtitle">Check your connection and try again.</div>
+    <button mat-flat-button type="button" (click)="retry()">Retry</button>
+  </div>
+} @else if (!section()) {
+  <div class="page-shell">
+    <div class="state-card" role="status">
+      This section doesn't exist.
+      <a class="link" routerLink="/system-design">Browse all sections</a>
+    </div>
+  </div>
+} @else if (section(); as section) {
+  <section class="page-shell section-page">
+    <nav class="crumb" aria-label="Breadcrumb">
+      <a routerLink="/system-design">System Design</a>
+      <mat-icon aria-hidden="true">chevron_right</mat-icon>
+      <span aria-current="page">{{ section.name }}</span>
+    </nav>
+
+    <header class="section-head">
+      <h1 class="dsa-display">{{ section.name }}</h1>
+      @if (section.description) {
+        <p class="section-lede">{{ section.description }}</p>
+      }
+      <p class="section-meta dsa-mono">
+        {{ posts().length }} {{ posts().length === 1 ? 'article' : 'articles' }}
+      </p>
+    </header>
+
+    @if (posts().length === 0) {
+      <div class="state-card" role="status">No published articles in this section yet.</div>
+    } @else {
+      <div class="post-grid">
+        @for (post of posts(); track trackByPostId($index, post)) {
+          <a
+            class="post-card"
+            [routerLink]="['/system-design', section.slug, post.slug]"
+          >
+            <div class="post-cover" [style.background]="coverBackground(post)"></div>
+            <div class="post-body">
+              <h2>{{ post.title }}</h2>
+              @if (post.excerpt) {
+                <p class="post-excerpt">{{ post.excerpt }}</p>
+              }
+              <div class="post-meta dsa-mono">
+                @if (post.publishedAt) {
+                  <span>{{ post.publishedAt | date: 'mediumDate' }}</span>
+                }
+              </div>
+            </div>
+            <mat-icon class="post-go" aria-hidden="true">arrow_forward</mat-icon>
+          </a>
+        }
+      </div>
+    }
+  </section>
+}

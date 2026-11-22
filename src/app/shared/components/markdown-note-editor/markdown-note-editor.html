@@ -110,6 +110,7 @@
         rows="8"
         [formControl]="control()"
         [attr.aria-label]="label()"
+        [attr.maxlength]="maxLength()"
         placeholder="Type here...(Markdown is enabled)"
         (keydown)="onKeydown($event)"
         (paste)="onPaste($event)"

@@ -23,7 +23,7 @@ export class AuthApiService {
   }
 
   fetchCurrentUser() {
-    return this._http.get<IUser>(`${this._apiUrl}/auth/user`);
+    return this._http.get<IUser>(`${this._apiUrl}/auth/user`, { transferCache: false });
   }
 
   logout(): Observable<void> {

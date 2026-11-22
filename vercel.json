@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/library",
+      "destination": "/api/ssr"
+    },
+    {
+      "source": "/library/:path*",
+      "destination": "/api/ssr"
+    },
+    {
       "source": "/",
       "destination": "/api/ssr"
     },
@@ -10,6 +18,14 @@
     },
     {
       "source": "/question-pattern/:path*",
+      "destination": "/api/ssr"
+    },
+    {
+      "source": "/system-design",
+      "destination": "/api/ssr"
+    },
+    {
+      "source": "/system-design/:path*",
       "destination": "/api/ssr"
     },
     {
@@ -33,7 +49,19 @@
       "destination": "/index.csr.html"
     },
     {
+      "source": "/admin/:path*",
+      "destination": "/index.csr.html"
+    },
+    {
       "source": "/problems-sheet/:path*",
+      "destination": "/index.csr.html"
+    },
+    {
+      "source": "/saved",
+      "destination": "/index.csr.html"
+    },
+    {
+      "source": "/my-notes",
       "destination": "/index.csr.html"
     }
   ],

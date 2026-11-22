@@ -38,6 +38,8 @@ describe('Header auth states', () => {
   let authService: AuthService;
 
   function setup(seed: Record<string, string> = {}): void {
+    // The browser boot script applies the stored theme before Angular starts.
+    document.documentElement.classList.toggle('dark', seed['dsa-drill-theme'] === 'dark');
     const memory = createMemoryStorage(seed);
     TestBed.configureTestingModule({
       imports: [Header, NoopAnimationsModule],

@@ -99,3 +99,24 @@ body {
     color: var(--mat-sys-on-surface-variant);
   }
 }
+
+// Editorial typography is scoped to the new library reader and article editor.
+app-library-reader .markdown-body--reading,
+app-library-article-editor .markdown-body--reading {
+  color: var(--library-ink);
+  font: 21px/1.75 Georgia, Cambria, serif;
+  p { margin: 0 0 1.35em; white-space: normal; }
+  h1, h2, h3, h4, h5, h6 { color: var(--library-ink); font-family: Georgia, serif; border: 0; scroll-margin-top: 28px; margin: 1.65em 0 .65em; }
+  h2 { font-size: 29px; }
+  h3 { font-size: 24px; }
+  li { white-space: normal; }
+  pre { background: var(--library-soft); border: 1px solid var(--library-line); border-radius: 3px; margin: 28px 0; }
+  code { font-family: 'JetBrains Mono', monospace; }
+  a { color: var(--library-ink); text-decoration: underline; text-underline-offset: 3px; }
+  img { border-radius: 0; }
+  blockquote { border-left: 3px solid var(--library-ink); color: var(--library-muted); font-style: italic; }
+  @media (max-width: 760px) { font-size: 19px; h2 { font-size: 26px; } }
+}
+
+app-admin-workspace .admin-page.managed .mat-mdc-tab-header { display: none; }
+app-library-article-editor .title-field .mat-mdc-text-field-wrapper { padding-inline: 0; }

@@ -1,0 +1,77 @@
+/* Loaded only by the article editor. Math and AI features are intentionally disabled. */
+@import url('/assets/milkdown/prosemirror.css');
+@import url('/assets/milkdown/reset.css');
+@import url('/assets/milkdown/block-edit.css');
+@import url('/assets/milkdown/code-mirror.css');
+@import url('/assets/milkdown/gapcursor.css');
+@import url('/assets/milkdown/image-block.css');
+@import url('/assets/milkdown/link-tooltip.css');
+@import url('/assets/milkdown/list-item.css');
+@import url('/assets/milkdown/placeholder.css');
+@import url('/assets/milkdown/toolbar.css');
+@import url('/assets/milkdown/table.css');
+
+/* Keep controls outside the document flow, including on narrow screens. */
+.article-markdown-editor .milkdown { position: relative; }
+.article-markdown-editor .milkdown.article-insert-open .crepe-placeholder::before { content: none; }
+.article-markdown-editor .article-insert-controls {
+  position: absolute;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  background: var(--library-paper);
+}
+.article-markdown-editor .article-insert-options {
+  display: flex;
+  gap: 12px;
+  padding: 2px;
+  overflow-x: auto;
+}
+.article-markdown-editor .article-insert-controls[hidden],
+.article-markdown-editor .article-insert-options[hidden] { display: none; }
+.article-markdown-editor .article-insert-controls button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  padding: 7px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  color: var(--library-accent);
+  background: var(--library-paper);
+  cursor: pointer;
+}
+.article-markdown-editor .article-insert-controls .article-insert-toggle { color: var(--library-ink); }
+.article-markdown-editor .article-insert-controls svg { width: 100%; height: 100%; }
+.article-markdown-editor .article-insert-controls button:hover { background: var(--library-soft); }
+.article-markdown-editor .article-insert-controls button:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.article-markdown-editor .milkdown .milkdown-toolbar {
+  background: #292929;
+  color: #fff;
+  overflow: visible;
+  max-width: calc(100vw - 16px);
+  --crepe-color-hover: #414141;
+  --crepe-color-selected: #414141;
+}
+.article-markdown-editor .milkdown .milkdown-toolbar::after {
+  content: '';
+  position: absolute;
+  left: calc(50% - 7px);
+  bottom: -7px;
+  width: 14px;
+  height: 14px;
+  background: #292929;
+  transform: rotate(45deg);
+}
+.article-markdown-editor .milkdown .milkdown-toolbar .toolbar-item svg { fill: #fff; color: #fff; }
+.article-markdown-editor .milkdown .milkdown-toolbar .toolbar-item.active svg { fill: #b6e7a0; color: #b6e7a0; }
+.article-markdown-editor .milkdown .milkdown-toolbar .divider { background: #626262; margin-inline: 4px; }
+@media (max-width: 480px) {
+  .article-markdown-editor .article-insert-controls { gap: 6px; }
+  .article-markdown-editor .article-insert-controls .article-insert-toggle { width: 30px; height: 30px; flex-basis: 30px; }
+  .article-markdown-editor .article-insert-options { gap: 8px; }
+  .article-markdown-editor .milkdown .milkdown-toolbar .toolbar-item { margin: 4px 1px; }
+}
