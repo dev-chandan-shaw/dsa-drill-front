@@ -37,7 +37,7 @@ export const resolveLibraryArticle: ResolveFn<LibraryReaderData | RedirectComman
   const sectionCode = route.paramMap.get('section')!;
   const subject = findSubject(subjectCode);
   const section = findSection(subjectCode, sectionCode);
-  // Activate browser routes immediately; the reader loads or refreshes its own content.
+  // Activate browser routes immediately; the reader fetches content only on a cache miss.
   // SSR still resolves the full article for the initial HTML and status code.
   if (isPlatformBrowser(inject(PLATFORM_ID))) {
     return of({ subjects: LIBRARY_CATALOG, subject, section,

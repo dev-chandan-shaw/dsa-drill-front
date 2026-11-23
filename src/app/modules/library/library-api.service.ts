@@ -45,6 +45,7 @@ type ContentKind = 'pattern' | 'design';
 const kindFor = (subject: string): ContentKind => (subject === 'dsa' ? 'pattern' : 'design');
 const designSection = (kind: Design['kind']) => (kind === 'CONCEPT' ? 'concepts' : 'case-studies');
 const endpoint = (kind: ContentKind) => (kind === 'pattern' ? 'problem-patterns' : 'system-design');
+const ARTICLE_CACHE_TTL_MS = 5 * 60 * 1000;
 export const editorId = (article: Pick<ArticleSummary, 'id' | 'subject'>) =>
   article.subject === 'dsa' ? `p-${article.id}` : String(article.id);
 
@@ -93,7 +94,7 @@ export class LibraryApi {
   private readonly transfer = inject(TransferState);
   private readonly platform = inject(PLATFORM_ID);
   private readonly trees = new Map<string, LibraryTree>();
-  private readonly articles = new Map<string, LibraryArticle>();
+  private readonly articles = new Map<string, { article: LibraryArticle; expiresAt: number }>();
   private patternCache: PatternEntry[] | null = null;
   private get<T>(kind: ContentKind, path = '', admin = false) {
     const resource = `${endpoint(kind)}${path}`;
@@ -123,7 +124,12 @@ export class LibraryApi {
     return this.trees.get(`${subject}/${section}`) ?? null;
   }
   cachedArticle(subject: string, section: string, slug: string) {
-    return this.articles.get(`${subject}/${section}/${slug}`) ?? null;
+    const key = `${subject}/${section}/${slug}`;
+    const cached = this.articles.get(key);
+    if (!cached) return null;
+    if (cached.expiresAt > Date.now()) return cached.article;
+    this.articles.delete(key);
+    return null;
   }
   cachedPatterns() {
     return this.patternCache;
@@ -175,6 +181,9 @@ export class LibraryApi {
     );
   }
   article(subject: string, section: string, slug: string) {
+    const cached = this.cachedArticle(subject, section, slug);
+    if (cached) return of(cached);
+    const key = `${subject}/${section}/${slug}`;
     const source: Observable<Pattern | Design> =
       subject === 'dsa'
         ? this.get<Pattern>('pattern', `/by-slug/${encodeURIComponent(slug)}`)
@@ -198,10 +207,10 @@ export class LibraryApi {
           next: null,
         };
       }),
-      tap({
-        next: (a) => this.articles.set(`${subject}/${section}/${slug}`, a),
-        error: () => this.articles.delete(`${subject}/${section}/${slug}`),
-      }),
+      tap((article) => this.articles.set(key, {
+        article,
+        expiresAt: Date.now() + ARTICLE_CACHE_TTL_MS,
+      })),
     );
   }
   resolve(path: string) {

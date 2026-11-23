@@ -62,7 +62,7 @@ export class LibraryReader implements OnInit {
     this.route.data.pipe(
       switchMap(({ library }) => {
         const page = library as LibraryReaderData;
-        if (!isPlatformBrowser(this.platform)) return of(page);
+        if (!isPlatformBrowser(this.platform) || page.article) return of(page);
         const params = this.route.snapshot.paramMap;
         return this.api.article(params.get('subject')!, params.get('section')!, params.get('slug')!).pipe(
           map((article): LibraryReaderData => ({ ...page, article, error: null })),

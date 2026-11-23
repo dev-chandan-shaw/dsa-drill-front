@@ -71,6 +71,33 @@ describe('Library API integration', () => {
     ]);
   });
 
+  it('reuses article content on revisit until the cache expires', () => {
+    const url = `${base}/public/system-design/LLD/parking-lot`;
+    const load = () => api.article('lld', 'case-studies', 'parking-lot');
+    load().subscribe((article) => expect(article.content).toBe('Published Markdown'));
+    http.expectOne(url).flush({
+      id: 8,
+      slug: 'parking-lot',
+      title: 'Parking Lot',
+      level: 'LLD',
+      kind: 'CASE_STUDY',
+      status: 'PUBLISHED',
+      bodyMarkdown: 'Published Markdown',
+    });
+
+    load().subscribe((article) => expect(article.content).toBe('Published Markdown'));
+    http.expectNone(url);
+
+    const now = vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 5 * 60 * 1000);
+    try {
+      load().subscribe({ error: (error) => expect(error.status).toBe(404) });
+      http.expectOne(url).flush(null, { status: 404, statusText: 'Not Found' });
+      expect(api.cachedArticle('lld', 'case-studies', 'parking-lot')).toBeNull();
+    } finally {
+      now.mockRestore();
+    }
+  });
+
   it('updates existing patterns privately without using the design article ID namespace', () => {
     api
       .saveDraft(7, {
