@@ -37,7 +37,6 @@ import { slugify } from '../../shared/utils/slugify';
 import { RightPaneService, RightPaneSize } from '../../shared/services/right-pane-service';
 import { ToastService } from '../../shared/services/toast-service';
 import { FormPaneTemplate } from '../../shared/components/form-pane-template/form-pane-template';
-import { MarkdownView } from '../../shared/components/markdown-view/markdown-view';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -58,7 +57,6 @@ type BlogStatusFilter = 'ALL' | 'DRAFT' | 'PUBLISHED';
     RouterModule,
     ReactiveFormsModule,
     FormPaneTemplate,
-    MarkdownView,
     MatButtonModule,
     MatCardModule,
     MatFormFieldModule,

@@ -36,6 +36,7 @@ interface Pattern extends Content {
 interface Design extends Content {
   title: string;
   bodyMarkdown?: string;
+  readMinutes?: number;
   level: 'HLD' | 'LLD';
   kind: 'CONCEPT' | 'CASE_STUDY';
   urlLocked?: boolean;
@@ -61,7 +62,8 @@ function summary(row: Pattern | Design): ArticleSummary {
     coverImageUrl: row.coverImageUrl,
     groupId: null,
     displayOrder: 0,
-    readMinutes: Math.max(1, Math.ceil((body?.split(/\s+/).length ?? 0) / 220)),
+    readMinutes: (!pattern ? row.readMinutes : undefined) ??
+      (body?.trim() ? Math.ceil(body.trim().split(/\s+/).length / 220) : 0),
     updatedAt,
     publishedAt: row.status === 'PUBLISHED' ? updatedAt || 'published' : null,
     unpublishedChanges: !!row.hasUnpublishedChanges,

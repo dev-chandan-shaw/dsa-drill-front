@@ -48,6 +48,7 @@ describe('Library API integration', () => {
   it('keeps concepts and case studies in their configured section', () => {
     api.tree('lld', 'case-studies').subscribe((tree) => {
       expect(tree.groups[0].articles.map((a) => a.slug)).toEqual(['parking-lot']);
+      expect(tree.groups[0].articles[0].readMinutes).toBe(6);
     });
     http.expectOne(`${base}/public/system-design?level=LLD`).flush([
       {
@@ -65,6 +66,7 @@ describe('Library API integration', () => {
         level: 'LLD',
         kind: 'CASE_STUDY',
         status: 'PUBLISHED',
+        readMinutes: 6,
       },
     ]);
   });
