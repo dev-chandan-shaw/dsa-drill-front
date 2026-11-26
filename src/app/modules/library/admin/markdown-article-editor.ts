@@ -52,6 +52,9 @@ import { MatButtonModule } from '@angular/material/button';
     }
     .article-markdown-editor .milkdown .ProseMirror { padding:0 0 160px; min-height:540px; font:21px/1.75 Georgia,serif; outline:0; }
     .article-markdown-editor .milkdown .ProseMirror p { margin:0 0 .8em; padding:0; line-height:1.75; }
+    .article-markdown-editor .milkdown .ProseMirror .label-wrapper:has(> .label.bullet) { flex:none; height:1lh; width:1em; }
+    .article-markdown-editor .milkdown .ProseMirror .label-wrapper > .label.bullet { display:grid; place-items:center; width:100%; height:100%; padding:0; color:var(--library-ink); }
+    .article-markdown-editor .milkdown .ProseMirror .label.bullet svg { fill:currentColor; }
     .article-markdown-editor .milkdown .ProseMirror h2 { font-size:29px; }
     .article-markdown-editor .milkdown .ProseMirror h3 { font-size:24px; }
     .article-markdown-editor .milkdown .milkdown-toolbar { font-family:system-ui,sans-serif; }
@@ -85,8 +88,9 @@ export class MarkdownArticleEditor implements OnDestroy {
   private async mount() {
     try {
       await this.loadStyles();
-      const [{ Crepe, CrepeFeature }, { replaceAll }, { createArticleInsertMenu, articleToolbar }, { articleHeadingBehavior }] = await Promise.all([
+      const [{ Crepe, CrepeFeature }, { replaceAll }, { createArticleInsertMenu, articleToolbar }, { articleHeadingBehavior }, { articleListBehavior, articleListItemConfig }, { articleUnderline }] = await Promise.all([
         import('@milkdown/crepe'), import('@milkdown/kit/utils'), import('./article-editor-menus'), import('./article-heading-behavior'),
+        import('./article-list-behavior'), import('./article-underline'),
       ]);
       if (this.destroyed) return;
       const upload = async (file: File) => {
@@ -104,10 +108,11 @@ export class MarkdownArticleEditor implements OnDestroy {
           [CrepeFeature.Placeholder]: { text: 'Tell the reader what matters…' },
           [CrepeFeature.CodeMirror]: { theme: [] },
           [CrepeFeature.Cursor]: { virtual: false },
+          [CrepeFeature.ListItem]: articleListItemConfig,
           [CrepeFeature.Toolbar]: articleToolbar,
         },
       });
-      instance.editor.use(createArticleInsertMenu(upload)).use(articleHeadingBehavior);
+      instance.editor.use(createArticleInsertMenu(upload)).use(articleHeadingBehavior).use(articleListBehavior).use(articleUnderline);
       instance.on((listener) => listener.markdownUpdated((_ctx, markdown) => {
         this.commit(markdown);
       }));

@@ -1,10 +1,11 @@
 import { commandsCtx, editorViewCtx } from '@milkdown/kit/core';
 import { imageBlockSchema } from '@milkdown/kit/component/image-block';
-import { headingSchema, wrapInBlockTypeCommand, blockquoteSchema, setBlockTypeCommand } from '@milkdown/kit/preset/commonmark';
+import { headingSchema, wrapInBlockTypeCommand, blockquoteSchema, setBlockTypeCommand, isMarkSelectedCommand } from '@milkdown/kit/preset/commonmark';
 import { Plugin, PluginKey, TextSelection } from '@milkdown/kit/prose/state';
 import type { EditorView } from '@milkdown/kit/prose/view';
 import { $prose } from '@milkdown/kit/utils';
 import type { ToolbarFeatureConfig } from '@milkdown/crepe/feature/toolbar';
+import { toggleUnderlineCommand, underlineSchema } from './article-underline';
 
 const icon = (body: string) => `<svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">${body}</svg>`;
 const lineIcon = (body: string) => icon(`<g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${body}</g>`);
@@ -16,10 +17,17 @@ export const articleToolbar: ToolbarFeatureConfig = {
     const items = builder.build().flatMap(group => group.items);
     builder.clear();
     const formatting = builder.addGroup('formatting', 'Formatting');
-    for (const key of ['bold', 'italic', 'link']) {
+    for (const key of ['bold', 'italic']) {
       const item = items.find(item => item.key === key)!;
       formatting.addItem(key, item);
     }
+    formatting.addItem('underline', {
+      label: 'Underline',
+      icon: lineIcon('<path d="M6 4v7a6 6 0 0 0 12 0V4M5 21h14"/>'),
+      active: ctx => ctx.get(commandsCtx).call(isMarkSelectedCommand.key, underlineSchema.type(ctx)),
+      onRun: ctx => { ctx.get(commandsCtx).call(toggleUnderlineCommand.key); },
+    });
+    formatting.addItem('link', items.find(item => item.key === 'link')!);
     const blocks = builder.addGroup('blocks', 'Text style');
     for (const level of [2, 3]) {
       blocks.addItem(`heading-${level}`, {

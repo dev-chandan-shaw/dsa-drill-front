@@ -4,7 +4,11 @@ import { TextSelection } from '@milkdown/kit/prose/state';
 import type { EditorView } from '@milkdown/kit/prose/view';
 import { createArticleInsertMenu, articleToolbar } from './article-editor-menus';
 import { articleHeadingBehavior } from './article-heading-behavior';
+import { articleListBehavior, articleListItemConfig } from './article-list-behavior';
+import { articleUnderline } from './article-underline';
 import { closeHistory, undo, redo } from '@milkdown/kit/prose/history';
+import { replaceAll } from '@milkdown/kit/utils';
+import { MarkdownService } from '../../../shared/services/markdown.service';
 
 describe('Article empty-line insert menu', () => {
   let crepe: Crepe;
@@ -14,6 +18,17 @@ describe('Article empty-line insert menu', () => {
   const button = (label: string) => root.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`)!;
   const controls = () => root.querySelector<HTMLElement>('.article-insert-controls')!;
   const fileInput = () => root.querySelector<HTMLInputElement>('input[aria-label="Upload article image"]')!;
+  const pressEnter = () =>
+    view.dom.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+  const placeCaretAfter = (markdown: string, text: string) => {
+    crepe.editor.action(replaceAll(markdown));
+    const { doc } = view.state;
+    doc.descendants((node, pos) => {
+      if (node.isTextblock && node.textContent === text) {
+        view.dispatch(view.state.tr.setSelection(TextSelection.create(doc, pos + 1 + node.content.size)));
+      }
+    });
+  };
   const chooseImage = () => {
     const file = new File(['image'], 'diagram.png', { type: 'image/png' });
     Object.defineProperty(fileInput(), 'files', { configurable: true, value: [file] });
@@ -31,9 +46,12 @@ describe('Article empty-line insert menu', () => {
       [CrepeFeature.BlockEdit]: false, [CrepeFeature.AI]: false,
       [CrepeFeature.Latex]: false, [CrepeFeature.TopBar]: false,
       [CrepeFeature.CodeMirror]: false,
-    }, featureConfigs: { [CrepeFeature.Toolbar]: articleToolbar, [CrepeFeature.Cursor]: { virtual: false } } });
+    }, featureConfigs: {
+      [CrepeFeature.Toolbar]: articleToolbar, [CrepeFeature.Cursor]: { virtual: false },
+      [CrepeFeature.ListItem]: articleListItemConfig,
+    } });
     upload = vi.fn(async () => 'https://example.com/diagram.png');
-    crepe.editor.use(createArticleInsertMenu(upload)).use(articleHeadingBehavior);
+    crepe.editor.use(createArticleInsertMenu(upload)).use(articleHeadingBehavior).use(articleListBehavior).use(articleUnderline);
     await crepe.create();
     view = crepe.editor.action(ctx => ctx.get(editorViewCtx));
     view.focus();
@@ -149,6 +167,33 @@ describe('Article empty-line insert menu', () => {
     expect(view.state.doc.textContent).toBe('Selected words');
   });
 
+  it('toggles underline on selected text and preserves it in saved Markdown and the reader', async () => {
+    crepe.editor.action(replaceAll('A **bold** word and `literal <u>`'));
+    const tr = view.state.tr;
+    view.dispatch(tr.setSelection(TextSelection.create(tr.doc, 3, 12)));
+    await vi.waitFor(() => expect(button('Underline')).toBeTruthy());
+    const selection = view.state.selection;
+    const toggle = () => button('Underline').dispatchEvent(new Event('pointerdown', { bubbles: true, cancelable: true }));
+    toggle();
+    expect(view.state.selection.eq(selection)).toBe(true);
+
+    const markdown = crepe.getMarkdown();
+    const html = new MarkdownService().renderArticle(markdown).html;
+    const rendered = document.createElement('div');
+    rendered.innerHTML = html;
+    expect(rendered.querySelector('u')?.textContent).toBe('bold word');
+    expect(rendered.querySelector('u strong')?.textContent).toBe('bold');
+    expect(rendered.querySelector('code')?.textContent).toBe('literal <u>');
+    const underlined = view.state.doc;
+    crepe.editor.action(replaceAll(markdown));
+    expect(view.state.doc.eq(underlined)).toBe(true);
+    view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, 3, 12)));
+    await vi.waitFor(() => expect(button('Underline')?.classList.contains('active')).toBe(true));
+    toggle();
+    expect(view.dom.querySelector('u')).toBeNull();
+    expect(view.dom.querySelector('strong')?.textContent).toBe('bold');
+  });
+
   it.each(['Heading', 'Subheading'])('resets a cleared %s to body text and restores its format on undo', async label => {
     const text = 'Clear this heading';
     const tr = view.state.tr.insertText(text);
@@ -184,5 +229,57 @@ describe('Article empty-line insert menu', () => {
     view.dom.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true, cancelable: true }));
     expect(view.state.doc.firstChild?.type.name).toBe('paragraph');
     expect(controls().hidden).toBe(false);
+  });
+
+  it.each([
+    ['- Item', 'bullet_list'],
+    ['- Item\n- Next item', 'bullet_list'],
+    ['1. Item', 'ordered_list'],
+    ['- [ ] Item', 'bullet_list'],
+  ])('continues %s on the first Enter and exits it on the second', (markdown, listType) => {
+    placeCaretAfter(`${markdown}\n\nFollowing text`, 'Item');
+    const originalItems = view.state.doc.firstChild!.childCount;
+    pressEnter();
+    expect(view.state.doc.firstChild?.type.name).toBe(listType);
+    expect(view.state.doc.firstChild?.childCount).toBe(originalItems + 1);
+    expect(view.state.selection.$from.parent.textContent).toBe('');
+
+    pressEnter();
+    expect(view.state.selection.$from.depth).toBe(1);
+    expect(view.state.selection.$from.parent.type.name).toBe('paragraph');
+    expect(view.state.doc.firstChild?.childCount).toBe(1);
+    view.dispatch(view.state.tr.insertText('Body text'));
+    expect(view.state.doc.child(1).textContent).toBe('Body text');
+    expect(view.state.doc.lastChild?.textContent).toBe('Following text');
+  });
+
+  it('exits a nested list one level at a time', () => {
+    placeCaretAfter('- Parent\n  - Child', 'Child');
+    pressEnter();
+    pressEnter();
+    expect(view.state.selection.$from.depth).toBe(3);
+    expect(view.state.doc.firstChild?.childCount).toBe(2);
+    expect(view.state.doc.firstChild?.firstChild?.lastChild?.textContent).toBe('Child');
+
+    pressEnter();
+    expect(view.state.selection.$from.depth).toBe(1);
+    expect(view.state.doc.firstChild?.childCount).toBe(1);
+  });
+
+  it('renders a bullet marker immediately on a new empty item', () => {
+    placeCaretAfter('- Item', 'Item');
+    pressEnter();
+    expect(view.dom.querySelectorAll('.label.bullet svg circle[r="3.5"]')).toHaveLength(2);
+    expect(view.state.selection.$from.parent.content.size).toBe(0);
+  });
+
+  it('exits a list even when the empty item contains only spaces', () => {
+    placeCaretAfter('- Item', 'Item');
+    pressEnter();
+    view.dispatch(view.state.tr.insertText(' '));
+    pressEnter();
+    expect(view.state.selection.$from.depth).toBe(1);
+    expect(view.state.selection.$from.parent.content.size).toBe(0);
+    expect(view.state.doc.firstChild?.childCount).toBe(1);
   });
 });
